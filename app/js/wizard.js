@@ -305,12 +305,24 @@ async function handleSaveSubmit(e) {
 
   state.user = { firstName, lastName, email, company };
 
+  // Enrich ranked results with full session/exhibitor objects so plan.js has titles, times, etc.
+  const enrichedSessions = (state.plan?.sessions || []).map(ranked => {
+    const full = state.allSessions.find(s => s.session_id === ranked.session_id);
+    return full ? { ...full, ...ranked } : ranked;
+  });
+  const enrichedBooths = (state.plan?.booths || []).map(ranked => {
+    const full = state.allExhibitors.find(
+      e => e.stand_number === ranked.stand_number || e.company_name === ranked.company_name,
+    );
+    return full ? { ...full, ...ranked } : ranked;
+  });
+
   // Store pending plan for plan.js to pick up after auth
   localStorage.setItem('pendingPlan', JSON.stringify({
     answers: state.answers,
     user: state.user,
-    sessions: state.plan?.sessions || [],
-    booths: state.plan?.booths || [],
+    sessions: enrichedSessions,
+    booths: enrichedBooths,
     themes: state.plan?.themes || [],
   }));
 

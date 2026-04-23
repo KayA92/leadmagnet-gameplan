@@ -73,6 +73,14 @@ async function loadLatestPlan(userId) {
   return { ...plan, notes: notes || [] };
 }
 
+const TICK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function flames(rating) {
+  return [1, 2, 3].map(n =>
+    `<button class="flame-btn ${(rating || 0) >= n ? 'lit' : ''}" data-rating="${n}" aria-label="${n} flame">🔥</button>`
+  ).join('');
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderPlan(plan) {
   const root = $('plan-root');
@@ -90,60 +98,49 @@ function renderPlan(plan) {
 
   const themePills = themes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
 
-  const sessionCards = sessions.map(item => {
+  const sessionItems = sessions.map((item, i) => {
     const noteKey = `session:${item.session_id}`;
     const existingNote = notesByItem[noteKey] || '';
+    const dayLabel = item.day === 'Day 1' ? 'Wed 13 May' : item.day === 'Day 2' ? 'Thu 14 May' : '';
+    const timeMeta = [item.start_time, dayLabel, item.theatre].filter(Boolean).map(escHtml).join(' · ');
     return `
-      <div class="plan-card" data-item-type="session" data-item-id="${escHtml(item.session_id)}">
-        <div class="plan-card-header">
-          <span class="plan-card-rank">${item.rank || ''}</span>
-          <div class="plan-card-meta">
-            ${item.day ? `<span class="plan-card-time">${escHtml(item.start_time || '')} — ${item.day === 'Day 1' ? 'Wed' : 'Thu'}</span>` : ''}
-            ${item.theatre ? `<span class="plan-card-theatre">${escHtml(item.theatre)}</span>` : ''}
-          </div>
-        </div>
-        <h3 class="plan-card-title">${escHtml(item.title || item.session_id)}</h3>
-        ${item.reason ? `<p class="plan-card-reason"><span class="reason-label">Why you</span> ${escHtml(item.reason)}</p>` : ''}
-        <div class="plan-card-actions">
-          <div class="rating-wrap">
-            ${[1,2,3].map(n => `
-              <button class="flame-btn ${item.rating >= n ? 'lit' : ''}"
-                data-rating="${n}" aria-label="${n} flame${n > 1 ? 's' : ''}">🔥</button>
-            `).join('')}
-          </div>
-          <div class="note-wrap">
-            ${existingNote
-              ? `<p class="note-text">${escHtml(existingNote)}</p>`
-              : ''}
-            <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
-            <button class="save-note-btn btn-sm">Save note</button>
+      <div class="mini-item plan-mini-item" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
+        <div class="mini-tick">${TICK_SVG}</div>
+        <div class="mini-body">
+          <div class="mini-title">${escHtml(item.title || item.session_id)}</div>
+          <div class="mini-meta"><span class="type-pill session">Session</span>${timeMeta}</div>
+          ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why you</span>${escHtml(item.reason)}</p>` : ''}
+          <div class="plan-item-actions">
+            <div class="rating-wrap">${flames(item.rating)}</div>
+            <div class="note-wrap">
+              ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
+              <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
+              <button class="save-note-btn btn-sm">Save note</button>
+            </div>
           </div>
         </div>
       </div>`;
   }).join('');
 
-  const boothCards = booths.map(item => {
+  const boothItems = booths.map((item, i) => {
     const noteKey = `booth:${item.stand_number}`;
     const existingNote = notesByItem[noteKey] || '';
+    const products = (item.normalised_products || []).slice(0, 2).join(', ');
+    const boothMeta = [`Stand ${escHtml(item.stand_number || '')}`, products ? escHtml(products) : ''].filter(Boolean).join(' · ');
     return `
-      <div class="plan-card booth-card" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}">
-        <div class="plan-card-header">
-          <span class="plan-card-rank booth-rank">${item.rank || ''}</span>
-          <span class="plan-card-stand">Stand ${escHtml(item.stand_number || '')}</span>
-        </div>
-        <h3 class="plan-card-title">${escHtml(item.company_name)}</h3>
-        ${item.reason ? `<p class="plan-card-reason"><span class="reason-label">Why visit</span> ${escHtml(item.reason)}</p>` : ''}
-        <div class="plan-card-actions">
-          <div class="rating-wrap">
-            ${[1,2,3].map(n => `
-              <button class="flame-btn ${(item.rating || 0) >= n ? 'lit' : ''}"
-                data-rating="${n}">🔥</button>
-            `).join('')}
-          </div>
-          <div class="note-wrap">
-            ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
-            <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
-            <button class="save-note-btn btn-sm">Save note</button>
+      <div class="mini-item plan-mini-item" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
+        <div class="mini-tick">${TICK_SVG}</div>
+        <div class="mini-body">
+          <div class="mini-title">${escHtml(item.company_name)}</div>
+          <div class="mini-meta"><span class="type-pill booth">Booth</span>${boothMeta}</div>
+          ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why visit</span>${escHtml(item.reason)}</p>` : ''}
+          <div class="plan-item-actions">
+            <div class="rating-wrap">${flames(item.rating)}</div>
+            <div class="note-wrap">
+              ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
+              <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
+              <button class="save-note-btn btn-sm">Save note</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -151,7 +148,7 @@ function renderPlan(plan) {
 
   root.innerHTML = `
     <header class="plan-header">
-      <a href="/" class="brand">
+      <a href="/app/" class="brand">
         <span class="brand-mark"></span>
         <span class="brand-text">Game <em>Plan</em></span>
       </a>
@@ -162,13 +159,13 @@ function renderPlan(plan) {
 
     <section class="plan-section">
       <h2 class="plan-section-title">Your sessions <span class="count-badge">${sessions.length}</span></h2>
-      <div class="plan-cards">${sessionCards || '<p class="empty-state">No sessions in your plan yet.</p>'}</div>
+      <div class="mini-item-list">${sessionItems || '<p class="empty-state">No sessions in your plan yet.</p>'}</div>
     </section>
 
     ${booths.length ? `
       <section class="plan-section">
         <h2 class="plan-section-title">Priority stands <span class="count-badge">${booths.length}</span></h2>
-        <div class="plan-cards booths-grid">${boothCards}</div>
+        <div class="mini-item-list">${boothItems}</div>
       </section>
     ` : ''}
   `;

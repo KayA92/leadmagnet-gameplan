@@ -244,14 +244,14 @@ async function saveNote(planId, itemId, itemType, noteText) {
 
 // ── Auth flow ─────────────────────────────────────────────────────────────────
 async function handleSignIn(authUser) {
-  const pending = sessionStorage.getItem('pendingPlan');
+  const pending = localStorage.getItem('pendingPlan');
 
   if (pending) {
     try {
       const planData = JSON.parse(pending);
       const userId = await upsertUser(authUser, planData.user);
-      const plan   = await insertPlan(userId, planData);
-      sessionStorage.removeItem('pendingPlan');
+      await insertPlan(userId, planData);
+      localStorage.removeItem('pendingPlan');
       // Reload plan from DB (to include generated id)
       const full = await loadLatestPlan(userId);
       if (full) renderPlan(full);

@@ -76,21 +76,32 @@ function updateProgress() {
 }
 
 // ── Reveal animation (stage 6) ────────────────────────────────────────────────
-let _tickerInterval = null;
+const STATUS_STEPS = [
+  { t: 200,  text: 'Scanning every session…' },
+  { t: 1400, text: 'Matching theatres to your mission…' },
+  { t: 2600, text: 'Scoring exhibitors by your categories…' },
+  { t: 3800, text: 'Auto-selecting your best picks…' },
+];
+let _statusTimers = [];
 
 function startTicker() {
   const el = $('reveal-ticker');
   if (!el) return;
-  const titles = shuffleArray(state.allSessions.map(s => s.title));
-  let i = 0;
-  _tickerInterval = setInterval(() => {
-    el.textContent = titles[i % titles.length];
-    i++;
-  }, 90);
+  const sessions = shuffleArray([...state.allSessions, ...state.allSessions]).slice(0, 16);
+  el.innerHTML = sessions.map(s => {
+    const score = Math.random();
+    const scoreClass = score > 0.75 ? '' : score > 0.45 ? 'mid' : 'low';
+    const scoreLabel = score > 0.75 ? 'HIGH' : score > 0.45 ? 'MED' : 'LOW';
+    const speaker = s.speakers && s.speakers[0] ? s.speakers[0].name : '';
+    return `<div class="ticker-item"><span class="ticker-theatre">${escHtml(s.theatre || '')}</span><span class="ticker-title">${escHtml(s.title)}</span><span class="ticker-speaker">${escHtml(speaker)}</span><span class="ticker-score ${scoreClass}">${scoreLabel}</span></div>`;
+  }).join('');
 }
 
 function stopTicker() {
-  if (_tickerInterval) { clearInterval(_tickerInterval); _tickerInterval = null; }
+  const el = $('reveal-ticker');
+  if (el) el.innerHTML = '';
+  _statusTimers.forEach(t => clearTimeout(t));
+  _statusTimers = [];
 }
 
 async function animateProgress() {
@@ -131,6 +142,9 @@ async function startReveal() {
   state.filteredExhibitors = preFilterExhibitors(state.answers, state.allExhibitors);
 
   startTicker();
+  _statusTimers = STATUS_STEPS.map(({ t, text }) =>
+    setTimeout(() => { const el = $('revealStatusText'); if (el) el.textContent = text; }, t),
+  );
 
   const [apiResult] = await Promise.all([
     matchSessions(
@@ -159,70 +173,105 @@ async function startReveal() {
 }
 
 // ── Plan preview rendering (stage 7) ─────────────────────────────────────────
-function renderSessionCard(session, item) {
-  const timeStr = session.start_time
-    ? `${session.start_time} — ${session.day === 'Day 1' ? 'Wed' : 'Thu'}`
-    : '';
-  const speakers = (session.speakers || []).map(s => s.name).filter(Boolean).join(', ');
-
-  return `
-    <div class="plan-card">
-      <div class="plan-card-header">
-        <span class="plan-card-rank">${item.rank}</span>
-        <div class="plan-card-meta">
-          ${timeStr ? `<span class="plan-card-time">${escHtml(timeStr)}</span>` : ''}
-          <span class="plan-card-theatre">${escHtml(session.theatre || '')}</span>
-        </div>
-      </div>
-      <h3 class="plan-card-title">${escHtml(session.title)}</h3>
-      ${speakers ? `<p class="plan-card-speakers">${escHtml(speakers)}</p>` : ''}
-      ${item.reason ? `<p class="plan-card-reason"><span class="reason-label">Why you</span> ${escHtml(item.reason)}</p>` : ''}
-    </div>`;
-}
-
-function renderBoothCard(exhibitor, item) {
-  return `
-    <div class="plan-card booth-card">
-      <div class="plan-card-header">
-        <span class="plan-card-rank booth-rank">${item.rank}</span>
-        <span class="plan-card-stand">Stand ${escHtml(exhibitor.stand_number || '')}</span>
-      </div>
-      <h3 class="plan-card-title">${escHtml(exhibitor.company_name)}</h3>
-      ${exhibitor.is_host ? '<span class="host-badge">Host partner</span>' : ''}
-      ${item.reason ? `<p class="plan-card-reason"><span class="reason-label">Why visit</span> ${escHtml(item.reason)}</p>` : ''}
-    </div>`;
-}
-
 function renderPlanPreview() {
   const container = $('plan-preview-content');
   if (!container || !state.plan) return;
 
-  const { sessions: rankedSessions = [], booths: rankedBooths = [], themes = [] } = state.plan;
+  const { sessions: rankedSessions = [], booths: rankedBooths = [] } = state.plan;
+  const cpdHours = (rankedSessions.length * 40 / 60).toFixed(1);
 
-  // Resolve full session data
-  const sessionCards = rankedSessions.map(item => {
-    const full = state.allSessions.find(s => s.session_id === item.session_id);
-    return full ? renderSessionCard(full, item) : '';
-  }).join('');
+  const problemPreview = state.answers.problem.length > 45
+    ? state.answers.problem.substring(0, 43).trim() + '…'
+    : state.answers.problem;
 
-  // Resolve full exhibitor data
-  const boothCards = rankedBooths.map(item => {
-    const full = state.allExhibitors.find(
-      e => e.stand_number === item.stand_number || e.company_name === item.company_name,
+  const catLabels = {
+    'practice-management': 'practice management',
+    'ai-automation': 'AI & automation',
+    'bookkeeping': 'bookkeeping',
+    'tax-mtd': 'tax & MTD',
+    'doc-management': 'document workflows',
+    'payroll': 'payroll',
+    'just-looking': 'general inspiration',
+  };
+  const pickedCats = (state.answers.categories || []).map(c => catLabels[c] || c);
+  const catStr = pickedCats.length === 0 ? 'general interest'
+    : pickedCats.length === 1 ? pickedCats[0]
+    : pickedCats.length === 2 ? pickedCats.join(' and ')
+    : pickedCats.slice(0, -1).join(', ') + ' and ' + pickedCats.slice(-1);
+
+  const whyExplanation = `Matched to &ldquo;<strong>${escHtml(problemPreview)}</strong>&rdquo; · prioritising <strong>${catStr}</strong>.`;
+
+  const items = [];
+  rankedSessions.forEach(item => {
+    const s = state.allSessions.find(x => x.session_id === item.session_id);
+    if (s) items.push({ type: 'session', data: s });
+  });
+  rankedBooths.forEach(item => {
+    const b = state.allExhibitors.find(
+      x => x.stand_number === item.stand_number || x.company_name === item.company_name,
     );
-    return full ? renderBoothCard(full, item) : '';
-  }).join('');
+    if (b) items.push({ type: 'booth', data: b });
+  });
 
-  const themePills = themes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
+  const miniListHtml = items.map((entry, i) => {
+    const delay = i * 80;
+    if (entry.type === 'session') {
+      const s = entry.data;
+      const dayNum = s.day === 'Day 1' ? 1 : 2;
+      const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
+      return `<div class="mini-item" style="animation-delay:${delay}ms;">
+        <div class="mini-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="mini-body">
+          <div class="mini-title">${escHtml(s.title)}</div>
+          <div class="mini-meta"><span class="type-pill session">Session</span>${timeStr}</div>
+        </div>
+      </div>`;
+    } else {
+      const b = entry.data;
+      const desc = (b.normalised_products || []).slice(0, 2).join(', ');
+      const hostMark = b.is_host ? ` · <span style="color:var(--purple);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Host partner</span>` : '';
+      return `<div class="mini-item" style="animation-delay:${delay}ms;">
+        <div class="mini-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="mini-body">
+          <div class="mini-title">${escHtml(b.company_name)}${hostMark}</div>
+          <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(b.stand_number || '')} · ${escHtml(desc)}</div>
+        </div>
+      </div>`;
+    }
+  }).join('');
 
   container.innerHTML = `
-    ${themes.length ? `<div class="plan-themes">${themePills}</div>` : ''}
-    <h2 class="plan-section-title">Your ${rankedSessions.length} sessions</h2>
-    <div class="plan-cards">${sessionCards}</div>
-    ${rankedBooths.length ? `
-      <h2 class="plan-section-title">Priority stands</h2>
-      <div class="plan-cards booths-grid">${boothCards}</div>
-    ` : ''}
+    <div class="confirm-header">
+      <div class="confirm-eyebrow">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint);"></span>
+        Our AI ran the room · ${rankedSessions.length + rankedBooths.length} picks
+      </div>
+      <h2 class="confirm-title">250+ sessions read.<br>Your <em>shortlist of ${rankedSessions.length}</em>,<br>ready to go.</h2>
+      <p class="confirm-sub">${whyExplanation}</p>
+      <div class="confirm-summary-pills">
+        <div class="confirm-pill mint"><strong>${rankedSessions.length}</strong> sessions</div>
+        <div class="confirm-pill pink"><strong>${cpdHours}</strong> CPD hours</div>
+        <div class="confirm-pill"><strong>${rankedBooths.length}</strong> priority booths</div>
+      </div>
+    </div>
+
+    <div class="confirm-preview-section">
+      <div class="confirm-preview-header">
+        <div class="confirm-preview-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          The sessions &amp; booths our AI picked for you
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.55;margin-bottom:16px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--ink-3);border-radius:8px;font-family:'JetBrains Mono',monospace;letter-spacing:0.01em;">
+        <span style="display:inline-block;background:var(--ink-3);color:var(--text);padding:2px 8px;border-radius:4px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-right:8px;">Preview</span>
+        Save your plan to unlock live rating, team notes, and your CPD log.
+      </div>
+      <div class="mini-item-list">
+        ${miniListHtml}
+      </div>
+    </div>
+
+    <div style="height:120px;"></div>
   `;
 }
 
@@ -257,7 +306,7 @@ async function handleSaveSubmit(e) {
   state.user = { firstName, lastName, email, company };
 
   // Store pending plan for plan.js to pick up after auth
-  sessionStorage.setItem('pendingPlan', JSON.stringify({
+  localStorage.setItem('pendingPlan', JSON.stringify({
     answers: state.answers,
     user: state.user,
     sessions: state.plan?.sessions || [],

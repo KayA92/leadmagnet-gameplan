@@ -314,7 +314,7 @@
 <!-- Stage 6: Reveal animation -->
 <section class="stage" id="stage-6" data-stage="6">
   <div class="reveal-container">
-    <div class="reveal-status"><span class="reveal-status-dot"></span><span>Matching 250+ sessions to your mission…</span></div>
+    <div class="reveal-status"><span class="reveal-status-dot"></span><span id="revealStatusText">Scanning every session…</span></div>
     <h2 class="reveal-title">Matching 250+ sessions<br>to <em>your mission.</em></h2>
     <div class="ticker-window"><div class="ticker-track" id="reveal-ticker"></div></div>
     <div class="scan-bar"><div class="scan-bar-fill" id="reveal-progress-fill"></div></div>
@@ -329,12 +329,17 @@
 <!-- Stage 7: Plan preview -->
 <section class="stage flow-mode" id="stage-7" data-stage="7">
   <div class="confirm-container" id="plan-preview-content"></div>
-  <div class="plan-preview-actions q-actions" style="max-width:720px;margin:0 auto;padding:0 32px 80px;">
-    <button class="cta-primary" id="preview-save">
-      Save my plan
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </button>
-    <button class="btn-back" id="preview-back">← Back</button>
+  <div class="confirm-fixed-cta">
+    <div class="confirm-fixed-cta-inner">
+      <button class="continue-btn" id="preview-save">
+        Continue to my game plan
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <div class="confirm-fixed-cta-hint">You can change anything, anytime · nothing's locked</div>
+    </div>
+  </div>
+  <div style="text-align:center;padding:16px 0 40px;">
+    <button class="confirm-secondary" id="preview-back">← Start over with different answers</button>
   </div>
   <div class="footer-micro">
     Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · Your plan stays private until you save it

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<meta name="robots" content="noindex">
+<title>Your Accountex Game Plan · Workiro</title>
+<link rel="icon" type="image/svg+xml" href="https://workiro.com/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root { color-scheme: dark; }
+html, body { background: #0a0a12 !important; }
+:root {
+  --ink: #0a0a12; --ink-2: #151520; --ink-3: #1f1f2e; --ink-4: #2a2a3e;
+  --text: #f5f2ec; --text-muted: #8c8a9e; --text-faint: #4a4860;
+  --pink: #ff5e84; --purple: #a855f7; --mint: #22e6a8; --mint-deep: #0fb88a;
+  --amber: #fbbf24;
+  --grad: linear-gradient(90deg, #ff5e84 0%, #a855f7 100%);
+  --grad-mint: linear-gradient(135deg, #22e6a8 0%, #0fb88a 100%);
+  --glow-pink: 0 0 40px rgba(255,94,132,0.35);
+  --glow-mint: 0 0 40px rgba(34,230,168,0.35);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 16px; line-height: 1.5; color: var(--text);
+  -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh;
+}
+
+/* Background noise */
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.03 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.4; pointer-events: none; z-index: 1;
+}
+.ambient-glow { position: fixed; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; opacity: 0.25; }
+.ambient-glow.g1 { background: radial-gradient(circle, var(--pink) 0%, transparent 60%); top: -20vmax; left: -20vmax; animation: drift1 25s ease-in-out infinite; }
+.ambient-glow.g2 { background: radial-gradient(circle, var(--purple) 0%, transparent 60%); bottom: -20vmax; right: -20vmax; animation: drift2 30s ease-in-out infinite; }
+.ambient-glow.g3 { background: radial-gradient(circle, var(--mint) 0%, transparent 60%); top: 40%; left: 60%; opacity: 0.12; animation: drift3 40s ease-in-out infinite; }
+@keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(10vw,5vh); } }
+@keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-8vw,-10vh); } }
+@keyframes drift3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-15vw,10vh) scale(1.2); } }
+
+/* Loading state */
+#plan-loading {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; background: var(--ink);
+}
+.loading-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--ink-3); border-top-color: var(--pink);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+/* Error banner */
+#plan-error {
+  display: none; margin: 16px auto; max-width: 720px; padding: 14px 20px;
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35);
+  border-radius: 10px; color: #ef4444; font-size: 14px;
+  position: relative; z-index: 10;
+}
+
+/* Plan root wrapper */
+#plan-root {
+  position: relative; z-index: 10; min-height: 100vh;
+}
+
+/* Plan header */
+.plan-header {
+  padding: 24px 32px 20px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  border-bottom: 1px solid var(--ink-3);
+  background: linear-gradient(to bottom, rgba(10,10,18,0.98) 0%, rgba(10,10,18,0.85) 100%);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 50;
+}
+.plan-header-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--grad); position: relative; flex-shrink: 0; }
+.brand-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 4px; }
+.brand-mark::before { content: ''; position: absolute; inset: 8px; background: var(--grad); border-radius: 2px; z-index: 1; }
+.brand-text { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+.brand-text em { font-style: italic; color: var(--text-muted); }
+
+/* Themes */
+.plan-themes-section {
+  padding: 28px 32px 0;
+  max-width: 784px; margin: 0 auto;
+}
+.plan-themes { display: flex; flex-wrap: wrap; gap: 8px; }
+.theme-pill {
+  padding: 8px 16px; background: rgba(34,230,168,0.1);
+  border: 1px solid rgba(34,230,168,0.3); border-radius: 100px;
+  font-size: 13px; color: var(--mint); font-weight: 500;
+}
+
+/* Plan sections */
+.plan-section {
+  padding: 32px 32px 0;
+  max-width: 784px; margin: 0 auto;
+}
+.plan-section:last-child { padding-bottom: 80px; }
+.plan-section-title {
+  font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400;
+  margin-bottom: 16px; color: var(--text);
+  display: flex; align-items: center; gap: 12px;
+}
+.count-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: var(--ink-3); border-radius: 100px;
+  padding: 3px 10px; color: var(--text-muted); font-weight: 400;
+}
+
+/* Plan cards */
+.plan-cards { display: flex; flex-direction: column; gap: 12px; }
+.booths-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.plan-card {
+  background: var(--ink-2); border: 1px solid var(--ink-3);
+  border-radius: 14px; padding: 20px; transition: border-color 0.2s;
+}
+.plan-card:hover { border-color: var(--ink-4); }
+.plan-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.plan-card-rank {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  width: 24px; height: 24px; border-radius: 6px; background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; flex-shrink: 0;
+}
+.booth-rank { background: var(--grad-mint); }
+.plan-card-meta { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+.plan-card-time, .plan-card-theatre, .plan-card-stand {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint);
+  padding: 3px 8px; background: var(--ink-3); border-radius: 4px;
+}
+.plan-card-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; line-height: 1.35; }
+.plan-card-reason { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-top: 8px; }
+.reason-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--mint); margin-right: 6px;
+}
+
+/* Ratings + notes */
+.plan-card-actions {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--ink-3);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.rating-wrap { display: flex; align-items: center; gap: 4px; }
+.flame-btn {
+  background: none; border: none; font-size: 20px; cursor: pointer;
+  padding: 4px 6px; border-radius: 8px; opacity: 0.25;
+  transition: opacity 0.15s, transform 0.15s;
+  line-height: 1;
+}
+.flame-btn:hover { opacity: 0.7; transform: scale(1.15); }
+.flame-btn.lit { opacity: 1; filter: drop-shadow(0 0 6px rgba(255,150,50,0.6)); }
+.note-wrap { display: flex; flex-direction: column; gap: 8px; }
+.note-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+.note-input {
+  background: var(--ink-3); border: 1px solid var(--ink-4);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 14px;
+  resize: none; width: 100%; transition: border-color 0.2s;
+}
+.note-input:focus { outline: none; border-color: var(--pink); }
+.note-input::placeholder { color: var(--text-faint); }
+.save-note-btn, .btn-sm {
+  align-self: flex-start; font-family: inherit; font-size: 13px; font-weight: 600;
+  padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  background: var(--ink-3); border: 1px solid var(--ink-4); color: var(--text-muted);
+}
+.save-note-btn:hover { border-color: var(--mint); color: var(--mint); }
+.save-note-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Empty / no-plan states */
+.empty-plan {
+  padding: 80px 32px; text-align: center; max-width: 480px;
+  margin: 0 auto; position: relative; z-index: 10;
+}
+.empty-plan p { font-size: 16px; color: var(--text-muted); line-height: 1.6; }
+.empty-plan a { color: var(--mint); text-decoration: none; font-weight: 600; }
+.empty-plan a:hover { text-decoration: underline; }
+.empty-state { font-size: 14px; color: var(--text-faint); padding: 16px 0; }
+
+@media (max-width: 600px) {
+  .plan-header { padding: 16px 20px; }
+  .plan-themes-section, .plan-section { padding-left: 20px; padding-right: 20px; }
+  .booths-grid { grid-template-columns: 1fr; }
+  .plan-header-sub { display: none; }
+  .note-input { display: block; }
+  .save-note-btn { display: inline-flex; }
+}
+</style>
+</head>
+<body>
+<div class="ambient-glow g1"></div>
+<div class="ambient-glow g2"></div>
+<div class="ambient-glow g3"></div>
+
+<div id="plan-loading">
+  <div class="loading-spinner"></div>
+  <span class="loading-label">Loading your plan…</span>
+</div>
+
+<p id="plan-error"></p>
+
+<div id="plan-root"></div>
+
+<script type="module">
+  import { initPlan } from '../js/plan.js';
+  document.addEventListener('DOMContentLoaded', initPlan);
+</script>
+</body>
+</html>

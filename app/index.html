@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<meta name="robots" content="noindex">
+<title>Your Accountex Game Plan · Workiro</title>
+<link rel="icon" type="image/svg+xml" href="https://workiro.com/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root { color-scheme: dark; }
+html, body { background: #0a0a12 !important; }
+:root {
+  --ink: #0a0a12; --ink-2: #151520; --ink-3: #1f1f2e; --ink-4: #2a2a3e;
+  --text: #f5f2ec; --text-muted: #8c8a9e; --text-faint: #4a4860;
+  --pink: #ff5e84; --purple: #a855f7; --mint: #22e6a8; --mint-deep: #0fb88a;
+  --amber: #fbbf24;
+  --grad: linear-gradient(90deg, #ff5e84 0%, #a855f7 100%);
+  --grad-mint: linear-gradient(135deg, #22e6a8 0%, #0fb88a 100%);
+  --glow-pink: 0 0 40px rgba(255,94,132,0.35);
+  --glow-mint: 0 0 40px rgba(34,230,168,0.35);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 16px; line-height: 1.5; color: var(--text);
+  -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh;
+}
+body.flow-active { overflow-y: auto; }
+body.hero-active .top-bar { display: none; }
+
+/* Background noise */
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.03 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.4; pointer-events: none; z-index: 1;
+}
+.ambient-glow { position: fixed; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; opacity: 0.25; }
+.ambient-glow.g1 { background: radial-gradient(circle, var(--pink) 0%, transparent 60%); top: -20vmax; left: -20vmax; animation: drift1 25s ease-in-out infinite; }
+.ambient-glow.g2 { background: radial-gradient(circle, var(--purple) 0%, transparent 60%); bottom: -20vmax; right: -20vmax; animation: drift2 30s ease-in-out infinite; }
+.ambient-glow.g3 { background: radial-gradient(circle, var(--mint) 0%, transparent 60%); top: 40%; left: 60%; opacity: 0.12; animation: drift3 40s ease-in-out infinite; }
+@keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(10vw,5vh); } }
+@keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-8vw,-10vh); } }
+@keyframes drift3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-15vw,10vh) scale(1.2); } }
+
+/* Top bar */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: linear-gradient(to bottom, rgba(10,10,18,0.98) 0%, rgba(10,10,18,0.85) 70%, transparent 100%);
+  backdrop-filter: blur(12px);
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--grad); position: relative; flex-shrink: 0; }
+.brand-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 4px; }
+.brand-mark::before { content: ''; position: absolute; inset: 8px; background: var(--grad); border-radius: 2px; z-index: 1; }
+.brand-text { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+.brand-text em { font-style: italic; color: var(--text-muted); }
+.progress-indicator { display: flex; gap: 6px; align-items: center; }
+.progress-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); transition: all 0.4s; }
+.progress-dot.done { background: var(--mint); box-shadow: 0 0 8px rgba(34,230,168,0.6); }
+.progress-dot.current { background: var(--pink); box-shadow: 0 0 10px rgba(255,94,132,0.7); width: 24px; border-radius: 3px; }
+
+/* Stages */
+.stage {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 24px; z-index: 10;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(.4,0,.2,1);
+  overflow-y: auto;
+}
+.stage.active { opacity: 1; pointer-events: auto; }
+.stage.flow-mode {
+  position: absolute; inset: 0 0 auto 0; min-height: 100vh;
+  justify-content: flex-start; padding: 96px 24px 120px;
+}
+.stage.flow-mode:not(.active) { display: none; }
+body.hero-active .stage.flow-mode { padding-top: 56px; }
+
+/* Q container */
+.q-container { width: 100%; max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.q-number { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); display: flex; align-items: center; gap: 10px; }
+.q-number-bar { flex: 1; max-width: 120px; height: 1px; background: var(--ink-3); position: relative; overflow: hidden; }
+.q-number-bar::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 40%; background: var(--grad); animation: q-bar 2s ease-in-out infinite; }
+@keyframes q-bar { 0% { transform: translateX(-120%); } 100% { transform: translateX(400%); } }
+.q-title { font-family: 'Fraunces', serif; font-size: clamp(30px,5vw,50px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+.q-title em { font-style: italic; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.q-sub { font-size: 16px; color: var(--text-muted); max-width: 520px; }
+
+/* Options */
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option { display: flex; align-items: center; gap: 16px; padding: 18px 22px; background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; cursor: pointer; transition: all 0.2s; color: var(--text); font-size: 16px; font-weight: 500; text-align: left; font-family: inherit; width: 100%; }
+.option:hover { border-color: var(--pink); background: rgba(255,94,132,0.06); transform: translateX(4px); }
+.option.selected { border-color: var(--mint); background: rgba(34,230,168,0.08); box-shadow: var(--glow-mint); }
+.option-letter { font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 26px; height: 26px; border-radius: 6px; background: var(--ink); border: 1px solid var(--ink-3); display: flex; align-items: center; justify-content: center; color: var(--text-muted); flex-shrink: 0; transition: all 0.2s; }
+.option.selected .option-letter { border-color: var(--mint); color: var(--mint); }
+.option-label { flex: 1; }
+.option-hint { font-size: 13px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+.option-check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink-3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; font-size: 12px; color: transparent; }
+.option.selected .option-check { border-color: var(--mint); background: var(--mint); color: var(--ink); content: '✓'; }
+
+/* Category grid */
+.cat-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.cat-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 12px; color: var(--text); font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.cat-btn:hover { border-color: var(--pink); background: rgba(255,94,132,0.06); }
+.cat-btn.selected { border-color: var(--mint); background: rgba(34,230,168,0.1); color: var(--mint); box-shadow: var(--glow-mint); }
+.cat-btn.selected::before { content: '✓ '; font-size: 12px; }
+
+/* Textarea */
+.text-input-wrap { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; transition: all 0.2s; }
+.text-input-wrap:focus-within { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255,94,132,0.12); }
+.text-input { width: 100%; background: transparent; border: none; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 17px; padding: 20px; outline: none; line-height: 1.5; resize: none; min-height: 110px; display: block; }
+.text-input::placeholder { color: var(--text-faint); }
+.input-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 20px 14px; }
+.char-progress { flex: 1; max-width: 180px; height: 3px; background: var(--ink-3); border-radius: 100px; overflow: hidden; }
+.char-progress-fill { height: 100%; width: 0; background: var(--amber); border-radius: 100px; transition: width 0.3s, background 0.3s; }
+.char-progress-fill.ok { background: var(--mint); }
+.char-count-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint); }
+.min-note { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+.min-note.ok { color: var(--mint); }
+
+/* Prompt chips */
+.prompt-section { margin-top: 20px; padding: 16px; background: rgba(34,230,168,0.04); border: 1px dashed rgba(34,230,168,0.3); border-radius: 14px; }
+.prompt-section-label { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.prompt-chip { font-family: inherit; font-size: 13px; padding: 7px 13px; background: var(--ink-2); border: 1px solid rgba(34,230,168,0.3); color: var(--text); border-radius: 100px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
+.prompt-chip:hover { background: rgba(34,230,168,0.1); border-color: var(--mint); color: var(--mint); }
+
+/* Buttons */
+.q-actions { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+.btn-next { display: inline-flex; align-items: center; gap: 10px; background: var(--grad); color: white; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 30px; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: var(--glow-pink); }
+.btn-next:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 60px rgba(255,94,132,0.5); }
+.btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-back { background: transparent; border: 1px solid var(--ink-3); color: var(--text-muted); font-family: inherit; font-size: 14px; padding: 12px 20px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+.btn-back:hover { border-color: var(--text-muted); color: var(--text); }
+.btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--grad); color: white; font-family: 'IBM Plex Sans', sans-serif; font-size: 17px; font-weight: 700; padding: 18px 32px; border: none; border-radius: 12px; cursor: pointer; box-shadow: var(--glow-pink); transition: transform 0.2s, box-shadow 0.2s; }
+.btn-primary:hover { transform: translateY(-2px); }
+
+/* Hero */
+.hero-wrap { text-align: center; max-width: 820px; padding: 40px 24px; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 28px; padding: 8px 16px; border: 1px solid var(--ink-3); border-radius: 100px; background: rgba(255,255,255,0.02); }
+.hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 10px var(--mint); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.hero-title { font-family: 'Fraunces', serif; font-size: clamp(38px,7vw,80px); font-weight: 400; line-height: 1.02; letter-spacing: -0.025em; margin-bottom: 24px; }
+.hero-title em { font-style: italic; background: linear-gradient(90deg, #ff5e84, #a855f7, #22e6a8, #ff5e84); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: grad-shift 8s ease-in-out infinite; }
+@keyframes grad-shift { 0%,100% { background-position: 0%; } 50% { background-position: 100%; } }
+.hero-sub { font-size: clamp(16px,2vw,20px); color: var(--text-muted); margin-bottom: 36px; line-height: 1.55; }
+.hero-sub strong { color: var(--text); }
+.hero-footnote { margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: var(--mint); text-transform: uppercase; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+
+/* Reveal stage */
+.reveal-wrap { text-align: center; max-width: 560px; }
+.reveal-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mint); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.reveal-spinner { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); animation: pulse 1s ease-in-out infinite; }
+.reveal-ticker { font-family: 'Fraunces', serif; font-size: clamp(18px,3vw,28px); font-weight: 400; font-style: italic; color: var(--text-muted); min-height: 2em; line-height: 1.3; margin-bottom: 32px; transition: opacity 0.1s; }
+.reveal-progress-track { width: 100%; max-width: 400px; height: 4px; background: var(--ink-3); border-radius: 100px; overflow: hidden; margin: 0 auto; }
+.reveal-progress-fill { height: 100%; width: 0; background: var(--grad); border-radius: 100px; transition: width 0.3s ease; }
+.reveal-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-faint); margin-top: 16px; }
+
+/* Plan preview (stage 7) */
+.plan-preview-wrap { width: 100%; max-width: 720px; margin: 0 auto; }
+.plan-preview-hero { margin-bottom: 40px; text-align: center; }
+.plan-preview-hero h1 { font-family: 'Fraunces', serif; font-size: clamp(28px,4vw,46px); font-weight: 400; margin-bottom: 12px; }
+.plan-preview-hero p { color: var(--text-muted); font-size: 16px; }
+.plan-themes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; justify-content: center; }
+.theme-pill { padding: 8px 16px; background: rgba(34,230,168,0.1); border: 1px solid rgba(34,230,168,0.3); border-radius: 100px; font-size: 13px; color: var(--mint); font-weight: 500; }
+.plan-section-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; margin-bottom: 16px; color: var(--text); }
+.plan-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.plan-card { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; padding: 20px; transition: border-color 0.2s; }
+.plan-card:hover { border-color: var(--ink-4); }
+.plan-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.plan-card-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; width: 24px; height: 24px; border-radius: 6px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+.booth-rank { background: var(--grad-mint); }
+.plan-card-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.plan-card-time, .plan-card-theatre, .plan-card-stand { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); padding: 3px 8px; background: var(--ink-3); border-radius: 4px; }
+.plan-card-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; line-height: 1.35; }
+.plan-card-speakers { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+.plan-card-reason { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-top: 8px; }
+.reason-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mint); margin-right: 6px; }
+.host-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); border: 1px solid rgba(251,191,36,0.3); padding: 3px 8px; border-radius: 4px; margin-top: 4px; }
+.plan-preview-ctas { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 40px; padding: 40px 0; border-top: 1px solid var(--ink-3); }
+.plan-preview-ctas p { font-size: 14px; color: var(--text-muted); text-align: center; max-width: 420px; }
+
+/* Save form (stage 75) */
+.save-wrap { width: 100%; max-width: 480px; }
+.save-headline { font-family: 'Fraunces', serif; font-size: clamp(28px,4vw,44px); font-weight: 400; margin-bottom: 10px; }
+.save-sub { font-size: 16px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+.save-benefits { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; padding: 20px; background: rgba(34,230,168,0.06); border: 1px solid rgba(34,230,168,0.2); border-radius: 12px; }
+.save-benefit { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-muted); }
+.save-benefit-icon { color: var(--mint); flex-shrink: 0; }
+.form-row { display: flex; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; }
+.form-input { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 10px; padding: 14px 16px; color: var(--text); font-family: inherit; font-size: 16px; transition: border-color 0.2s; width: 100%; }
+.form-input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255,94,132,0.12); }
+.form-input::placeholder { color: var(--text-faint); }
+.save-error { color: #ef4444; font-size: 14px; margin-top: 8px; display: none; }
+.magic-note { margin-top: 16px; font-size: 12px; color: var(--text-faint); text-align: center; }
+
+/* Email sent screen */
+.email-sent-wrap { text-align: center; max-width: 480px; }
+.email-sent-icon { font-size: 48px; margin-bottom: 24px; }
+.email-sent-title { font-family: 'Fraunces', serif; font-size: clamp(26px,4vw,42px); font-weight: 400; margin-bottom: 12px; }
+.email-sent-sub { font-size: 16px; color: var(--text-muted); line-height: 1.6; }
+.email-sent-sub strong { color: var(--mint); }
+
+@media (max-width: 600px) {
+  .form-row { flex-direction: column; gap: 0; }
+  .stage.flow-mode { padding: 80px 20px 120px; }
+  .q-actions { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px 20px 24px; background: linear-gradient(180deg, transparent 0%, var(--ink) 30%); backdrop-filter: blur(10px); margin-top: 0; z-index: 50; }
+  .q-actions .btn-next { flex: 1; justify-content: center; }
+  .q-container { padding-bottom: 100px; }
+  .plan-preview-wrap { padding-bottom: 100px; }
+}
+</style>
+</head>
+<body>
+<div class="ambient-glow g1"></div>
+<div class="ambient-glow g2"></div>
+<div class="ambient-glow g3"></div>
+
+<header class="top-bar" id="top-bar">
+  <a href="/" class="brand">
+    <span class="brand-mark"></span>
+    <span class="brand-text">Game <em>Plan</em></span>
+  </a>
+  <div class="progress-indicator" id="progress">
+    <span class="progress-dot" title="How you attend"></span>
+    <span class="progress-dot" title="Your priorities"></span>
+    <span class="progress-dot" title="Software interests"></span>
+    <span class="progress-dot" title="Your availability"></span>
+    <span class="progress-dot" title="Your role"></span>
+  </div>
+</header>
+
+<!-- ── Stage 0: Hero ──────────────────────────────────────────────────────── -->
+<section class="stage flow-mode" id="stage-0">
+  <div class="hero-wrap">
+    <div class="hero-eyebrow">
+      <span class="hero-dot"></span>
+      Accountex London · 13–14 May 2026 · ExCeL
+    </div>
+    <h1 class="hero-title">
+      Your Accountex,<br><em>planned in 60 seconds.</em>
+    </h1>
+    <p class="hero-sub">
+      Answer 5 quick questions — our AI matches <strong>250+ sessions</strong>
+      to your firm's priorities, then saves your personal plan.
+    </p>
+    <button class="btn-primary" id="hero-start">
+      Build my plan&nbsp;→ <span style="opacity:.7;font-size:.9em">takes 60 seconds</span>
+    </button>
+    <div class="hero-footnote">
+      <span>✓ Free</span>
+      <span>✓ No spam</span>
+      <span>✓ AI-powered</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 1: Attend mode ──────────────────────────────────────────────── -->
+<section class="stage" id="stage-1">
+  <div class="q-container">
+    <div class="q-number"><span>Q1 of 5</span><span class="q-number-bar"></span></div>
+    <h2 class="q-title">How are you <em>attending?</em></h2>
+    <p class="q-sub">This helps us personalise your plan for you individually.</p>
+    <div class="options">
+      <button class="option selected" data-attend="just-me">
+        <span class="option-letter">A</span>
+        <span class="option-label">
+          <span>Just me</span>
+          <span class="option-hint">My own personalised plan</span>
+        </span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-attend="team-lead" style="opacity:.5;pointer-events:none" title="Coming soon">
+        <span class="option-letter">B</span>
+        <span class="option-label">
+          <span>Team lead <span style="font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-left:8px">coming soon</span></span>
+          <span class="option-hint">Coordinate plans across my team</span>
+        </span>
+        <span class="option-check"></span>
+      </button>
+    </div>
+    <div class="q-actions">
+      <button class="btn-next" id="attend-next">Continue →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 2: Problem statement ────────────────────────────────────────── -->
+<section class="stage flow-mode" id="stage-2">
+  <div class="q-container">
+    <div class="q-number"><span>Q2 of 5</span><span class="q-number-bar"></span></div>
+    <h2 class="q-title">What's your <em>biggest challenge</em> right now?</h2>
+    <p class="q-sub">Be as specific as you like — this is what the AI uses to match sessions.</p>
+    <div class="text-input-wrap">
+      <textarea class="text-input" id="problem-input" placeholder="e.g. We're drowning in manual client onboarding — document chasing, engagement letters, onboarding packs. Need to find tools and ideas to automate this…" maxlength="500" rows="5"></textarea>
+      <div class="input-meta">
+        <div class="char-progress"><div class="char-progress-fill" id="char-fill"></div></div>
+        <span class="char-count-label"><span id="char-count">0</span>/500</span>
+        <span class="min-note" id="char-min">20 chars minimum</span>
+      </div>
+    </div>
+    <div class="prompt-section">
+      <p class="prompt-section-label">💡 Stuck? Try one of these:</p>
+      <div class="chip-grid">
+        <button class="prompt-chip" data-chip="MTD compliance and client readiness">MTD readiness</button>
+        <button class="prompt-chip" data-chip="Automating repetitive workflows with AI">AI automation</button>
+        <button class="prompt-chip" data-chip="Attracting and retaining good staff">Recruitment & retention</button>
+        <button class="prompt-chip" data-chip="Moving clients to fixed-fee pricing models">Pricing strategy</button>
+        <button class="prompt-chip" data-chip="Reducing time spent on low-value work">Capacity &amp; efficiency</button>
+        <button class="prompt-chip" data-chip="Client communication and portal adoption">Client portals</button>
+        <button class="prompt-chip" data-chip="Payroll complexity and auto-enrolment">Payroll compliance</button>
+        <button class="prompt-chip" data-chip="Growing advisory services beyond compliance">Advisory growth</button>
+      </div>
+    </div>
+    <div class="q-actions">
+      <button class="btn-back" id="problem-back">← Back</button>
+      <button class="btn-next" id="problem-next" disabled>Continue →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 3: Categories ────────────────────────────────────────────────── -->
+<section class="stage" id="stage-3">
+  <div class="q-container">
+    <div class="q-number"><span>Q3 of 5</span><span class="q-number-bar"></span></div>
+    <h2 class="q-title">What are you <em>scouting for?</em></h2>
+    <p class="q-sub">Pick everything that applies — we'll match exhibitors too.</p>
+    <div class="cat-grid">
+      <button class="cat-btn" data-cat="practice-management">Practice management</button>
+      <button class="cat-btn" data-cat="ai-automation">AI &amp; automation</button>
+      <button class="cat-btn" data-cat="bookkeeping">Bookkeeping software</button>
+      <button class="cat-btn" data-cat="tax-mtd">Tax, VAT &amp; MTD</button>
+      <button class="cat-btn" data-cat="doc-management">Document management</button>
+      <button class="cat-btn" data-cat="payroll">Payroll</button>
+    </div>
+    <div class="q-actions">
+      <button class="btn-back" id="cat-back">← Back</button>
+      <button class="btn-next" id="cat-next" disabled>Continue →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 4: Availability ──────────────────────────────────────────────── -->
+<section class="stage" id="stage-4">
+  <div class="q-container">
+    <div class="q-number"><span>Q4 of 5</span><span class="q-number-bar"></span></div>
+    <h2 class="q-title">When are you <em>there?</em></h2>
+    <p class="q-sub">Accountex London is 13–14 May 2026 at ExCeL.</p>
+    <div class="options">
+      <button class="option" data-time="half-day-1">
+        <span class="option-letter">A</span>
+        <span class="option-label">
+          <span>Wednesday morning</span>
+          <span class="option-hint">13 May · Sessions 10:20–13:00</span>
+        </span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-time="full-day-1">
+        <span class="option-letter">B</span>
+        <span class="option-label">
+          <span>Wednesday all day</span>
+          <span class="option-hint">13 May · Full programme</span>
+        </span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-time="full-day-2">
+        <span class="option-letter">C</span>
+        <span class="option-label">
+          <span>Thursday all day</span>
+          <span class="option-hint">14 May · Full programme</span>
+        </span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-time="both-days">
+        <span class="option-letter">D</span>
+        <span class="option-label">
+          <span>Both days</span>
+          <span class="option-hint">13 &amp; 14 May · Maximum value</span>
+        </span>
+        <span class="option-check">✓</span>
+      </button>
+    </div>
+    <div class="q-actions">
+      <button class="btn-back" id="time-back">← Back</button>
+      <button class="btn-next" id="time-next" disabled>Continue →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 5: Role ──────────────────────────────────────────────────────── -->
+<section class="stage" id="stage-5">
+  <div class="q-container">
+    <div class="q-number"><span>Q5 of 5</span><span class="q-number-bar"></span></div>
+    <h2 class="q-title">What's your <em>role?</em></h2>
+    <p class="q-sub">We'll weight sessions differently depending on your seniority and focus.</p>
+    <div class="options">
+      <button class="option" data-role="founder">
+        <span class="option-letter">A</span>
+        <span class="option-label"><span>Practice founder / owner</span></span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-role="senior">
+        <span class="option-letter">B</span>
+        <span class="option-label"><span>Senior accountant / manager</span></span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-role="bookkeeper">
+        <span class="option-letter">C</span>
+        <span class="option-label"><span>Bookkeeper</span></span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-role="industry">
+        <span class="option-letter">D</span>
+        <span class="option-label"><span>Finance Director / CFO (industry)</span></span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-role="junior">
+        <span class="option-letter">E</span>
+        <span class="option-label"><span>Junior / newly qualified</span></span>
+        <span class="option-check">✓</span>
+      </button>
+      <button class="option" data-role="other">
+        <span class="option-letter">F</span>
+        <span class="option-label"><span>Other</span></span>
+        <span class="option-check">✓</span>
+      </button>
+    </div>
+    <div class="q-actions">
+      <button class="btn-back" id="role-back">← Back</button>
+      <button class="btn-next" id="role-next" disabled>Build my plan →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 6: Reveal / loading ──────────────────────────────────────────── -->
+<section class="stage" id="stage-6">
+  <div class="reveal-wrap">
+    <div class="reveal-label">
+      <span class="reveal-spinner"></span>
+      AI is analysing 250+ sessions
+    </div>
+    <div class="reveal-ticker" id="reveal-ticker">Loading sessions…</div>
+    <div class="reveal-progress-track">
+      <div class="reveal-progress-fill" id="reveal-progress-fill"></div>
+    </div>
+    <div class="reveal-count">Matching to your priorities…</div>
+  </div>
+</section>
+
+<!-- ── Stage 7: Plan preview ──────────────────────────────────────────────── -->
+<section class="stage flow-mode" id="stage-7">
+  <div class="plan-preview-wrap">
+    <div class="plan-preview-hero">
+      <h1>Your plan is ready.</h1>
+      <p>AI picked these from 250+ sessions based on your answers.</p>
+    </div>
+    <div id="plan-preview-content">
+      <!-- Populated by wizard.js renderPlanPreview() -->
+    </div>
+    <div class="plan-preview-ctas">
+      <button class="btn-primary" id="preview-save">Save my plan &amp; unlock full access →</button>
+      <p>Free · No spam · We'll email you a magic link to access your plan any time</p>
+      <button class="btn-back" id="preview-back">← Change my answers</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage 75: Email save ───────────────────────────────────────────────── -->
+<section class="stage" id="stage-75">
+  <div class="save-wrap">
+    <h2 class="save-headline">Save your plan.</h2>
+    <p class="save-sub">We'll email you a magic link — no password needed.</p>
+    <div class="save-benefits">
+      <div class="save-benefit"><span class="save-benefit-icon">✓</span> Rate sessions live at the show</div>
+      <div class="save-benefit"><span class="save-benefit-icon">✓</span> Add notes per session and exhibitor</div>
+      <div class="save-benefit"><span class="save-benefit-icon">✓</span> Auto-log your CPD hours</div>
+      <div class="save-benefit"><span class="save-benefit-icon">✓</span> Download your post-show debrief</div>
+    </div>
+    <form id="save-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="inp-first">First name *</label>
+          <input class="form-input" type="text" id="inp-first" name="firstName" required maxlength="40" autocomplete="given-name" placeholder="Kay">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inp-last">Last name</label>
+          <input class="form-input" type="text" id="inp-last" name="lastName" maxlength="40" autocomplete="family-name" placeholder="Anderson">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inp-email">Work email *</label>
+        <input class="form-input" type="email" id="inp-email" name="email" required autocomplete="email" placeholder="kay@yourfirm.co.uk">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inp-company">Firm / company <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label>
+        <input class="form-input" type="text" id="inp-company" name="company" maxlength="80" autocomplete="organization" placeholder="Your firm name">
+      </div>
+      <p id="save-error" class="save-error"></p>
+      <button class="btn-primary" id="save-btn" type="submit" style="width:100%;justify-content:center;margin-top:8px">
+        Get my plan →
+      </button>
+    </form>
+    <p class="magic-note">We'll send a magic link — one click to access your plan, no password required.</p>
+  </div>
+</section>
+
+<!-- ── Stage: Email sent ──────────────────────────────────────────────────── -->
+<section class="stage" id="stage-email-sent">
+  <div class="email-sent-wrap">
+    <div class="email-sent-icon">📬</div>
+    <h2 class="email-sent-title">Check your inbox.</h2>
+    <p class="email-sent-sub">
+      We've sent a magic link to <strong id="sent-email"></strong>.<br><br>
+      Click the link in the email to open your personalised Accountex plan.
+    </p>
+  </div>
+</section>
+
+<script type="module">
+  import { initWizard } from './js/wizard.js';
+  document.addEventListener('DOMContentLoaded', initWizard);
+</script>
+</body>
+</html>

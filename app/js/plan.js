@@ -250,7 +250,8 @@ async function handleSignIn(authUser) {
       if (full) renderPlan(full);
     } catch (err) {
       console.error('Failed to save plan:', err);
-      showError('Could not save your plan. Please try again.');
+      const detail = err?.message || err?.details || String(err);
+      showError(`Could not save your plan: ${detail} — <a href="/app/" style="color:var(--mint)">Start again →</a>`);
     }
   } else {
     // Returning user — auth UID is the users table PK
@@ -280,6 +281,20 @@ function showLoading(show) {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 export async function initPlan() {
+  // Detect Supabase auth errors returned in the redirect URL (both implicit #hash and PKCE ?query formats)
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const qpParams   = new URLSearchParams(window.location.search);
+  const errCode = hashParams.get('error_code') || qpParams.get('error_code');
+  const errDesc = hashParams.get('error_description') || qpParams.get('error_description');
+  if (errCode) {
+    showLoading(false);
+    const msg = errCode === 'otp_expired'
+      ? 'Your magic link has expired or was already used.'
+      : (errDesc ? decodeURIComponent(errDesc.replace(/\+/g, ' ')) : 'Authentication failed.');
+    showError(msg + ' <a href="/app/" style="color:var(--mint)">Start again →</a>');
+    return;
+  }
+
   showLoading(true);
 
   // Check for existing session first (returning user with localStorage session)

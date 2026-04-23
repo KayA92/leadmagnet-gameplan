@@ -4,7 +4,7 @@ export async function sendMagicLink(email) {
   return supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: 'https://workiro-ai.com/app/plan/',
+      emailRedirectTo: `${window.location.origin}/app/plan/`,
     },
   });
 }

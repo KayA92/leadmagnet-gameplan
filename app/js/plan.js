@@ -11,30 +11,23 @@ function escHtml(s) {
 
 // ── Supabase data access ──────────────────────────────────────────────────────
 
-// Ensure a row exists in the users table and return its id
+// Upsert a users row keyed on the Supabase auth UID
 async function upsertUser(authUser, userMeta) {
-  // Try to find by email first
-  const { data: existing } = await supabase
+  const { error } = await supabase
     .from('users')
-    .select('id')
-    .eq('email', authUser.email)
-    .maybeSingle();
-
-  if (existing) return existing.id;
-
-  const { data: created, error } = await supabase
-    .from('users')
-    .insert({
-      email: authUser.email,
-      first_name: userMeta?.firstName || '',
-      last_name:  userMeta?.lastName  || '',
-      company:    userMeta?.company   || null,
-    })
-    .select('id')
-    .single();
+    .upsert(
+      {
+        id:         authUser.id,
+        email:      authUser.email,
+        first_name: userMeta?.firstName || '',
+        last_name:  userMeta?.lastName  || '',
+        company:    userMeta?.company   || null,
+      },
+      { onConflict: 'id' },
+    );
 
   if (error) throw error;
-  return created.id;
+  return authUser.id;
 }
 
 async function insertPlan(userId, planData) {
@@ -260,20 +253,10 @@ async function handleSignIn(authUser) {
       showError('Could not save your plan. Please try again.');
     }
   } else {
-    // Returning user — look up by email
-    const { data } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', authUser.email)
-      .maybeSingle();
-
-    if (data) {
-      const full = await loadLatestPlan(data.id);
-      if (full) renderPlan(full);
-      else showNoPlanState();
-    } else {
-      showNoPlanState();
-    }
+    // Returning user — auth UID is the users table PK
+    const full = await loadLatestPlan(authUser.id);
+    if (full) renderPlan(full);
+    else showNoPlanState();
   }
 }
 

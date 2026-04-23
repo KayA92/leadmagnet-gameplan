@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js';
-import { getUser, onAuthChange } from './auth.js';
+import { getUser, onAuthChange, sendMagicLink } from './auth.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -268,7 +268,46 @@ function showNoPlanState() {
 
 function showError(msg) {
   const el = $('plan-error');
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
+  if (el) { el.innerHTML = msg; el.style.display = 'block'; }
+}
+
+function showReauthForm(headlineMsg = '') {
+  showLoading(false);
+  const root = $('plan-root');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="empty-plan">
+      ${headlineMsg ? `<p style="margin-bottom:18px;color:var(--text-muted);">${headlineMsg}</p>` : ''}
+      <p style="margin-bottom:20px;font-size:15px;">Enter your email and we'll send you a link to your saved game plan.</p>
+      <form id="reauth-form" style="display:flex;flex-direction:column;gap:12px;max-width:300px;margin:0 auto;">
+        <input type="email" id="reauth-email" placeholder="your@email.com" required
+          style="background:var(--ink-3);border:1px solid var(--ink-4);border-radius:8px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:14px;width:100%;outline:none;">
+        <button type="submit" id="reauth-btn"
+          style="background:var(--grad);border:none;border-radius:8px;padding:12px 20px;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">
+          Send me my plan →
+        </button>
+        <p id="reauth-msg" style="display:none;font-size:13px;text-align:center;margin:0;"></p>
+      </form>
+      <p style="margin-top:20px;font-size:13px;color:var(--text-faint);">No plan yet? <a href="/app/" style="color:var(--mint);">Create one →</a></p>
+    </div>`;
+
+  $('reauth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('reauth-email').value.trim();
+    const btn   = $('reauth-btn');
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+    const { error } = await sendMagicLink(email);
+    const msg = $('reauth-msg');
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'Send me my plan →';
+      if (msg) { msg.textContent = error.message || 'Something went wrong. Please try again.'; msg.style.color = '#ef4444'; msg.style.display = 'block'; }
+    } else {
+      if (msg) { msg.textContent = `Check your inbox — link sent to ${email}`; msg.style.color = 'var(--mint)'; msg.style.display = 'block'; }
+      btn.textContent = 'Sent ✓';
+    }
+  });
 }
 
 function showLoading(show) {
@@ -284,11 +323,10 @@ export async function initPlan() {
   const errCode = hashParams.get('error_code') || qpParams.get('error_code');
   const errDesc = hashParams.get('error_description') || qpParams.get('error_description');
   if (errCode) {
-    showLoading(false);
-    const msg = errCode === 'otp_expired'
+    const headline = errCode === 'otp_expired'
       ? 'Your magic link has expired or was already used.'
       : (errDesc ? decodeURIComponent(errDesc.replace(/\+/g, ' ')) : 'Authentication failed.');
-    showError(msg + ' <a href="/app/" style="color:var(--mint)">Start again →</a>');
+    showReauthForm(headline);
     return;
   }
 
@@ -311,15 +349,11 @@ export async function initPlan() {
     }
   });
 
-  // If nothing happens in 8s, show sign-in prompt
+  // If nothing happens in 8s, show the re-auth form for returning users
   setTimeout(() => {
-    showLoading(false);
     const root = $('plan-root');
     if (root && root.innerHTML.trim() === '') {
-      root.innerHTML = `
-        <div class="empty-plan">
-          <p>Please check your email for the magic link, or <a href="/app/">start again →</a></p>
-        </div>`;
+      showReauthForm();
     }
   }, 8000);
 }

@@ -829,6 +829,13 @@ body::before {
 }
 /* Brand on the left inside the tab bar */
 
+/* Tab content wrapper */
+.plan-tab-content {
+  max-width: 784px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+}
+
 /* App header inside each tab */
 .app-header {
   margin-bottom: 24px;
@@ -6915,6 +6922,8 @@ button.app-pill.purple.clickable:hover {
   .save-title { font-size: 32px; }
   .login-modal-panel { padding: 24px 20px; }
   .login-modal-title { font-size: 22px; }
+  .plan-tab-content { padding: 0 16px 80px; }
+  .intel-grid { grid-template-columns: 1fr; }
   .team-invite-hero { padding: 18px 20px; }
   .team-invite-url-row { grid-template-columns: 1fr; }
   .team-invite-copy-btn { justify-content: center; }

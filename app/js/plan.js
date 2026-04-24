@@ -9,6 +9,14 @@ function escHtml(s) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// ── Module-level state ────────────────────────────────────────────────────────
+let _plan        = null;
+let _allSessions = [];
+let _teamData    = null;
+let _authUser    = null;
+let _currentTab  = 'checklist';
+let _checklistFilter = 'all';
+
 // ── Supabase data access ──────────────────────────────────────────────────────
 
 async function loadLatestPlan(userId) {
@@ -29,6 +37,37 @@ async function loadLatestPlan(userId) {
     .eq('plan_id', plan.id);
 
   return { ...plan, notes: notes || [] };
+}
+
+async function loadTeamData(teamId) {
+  const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
+    supabase
+      .from('team_members')
+      .select('role, joined_at, users(id, first_name, last_name, company)')
+      .eq('team_id', teamId),
+    supabase
+      .from('plans')
+      .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
+      .eq('team_id', teamId),
+    supabase
+      .from('teams')
+      .select('invite_token, company')
+      .eq('id', teamId)
+      .single(),
+  ]);
+
+  const planIds = (teamPlans || []).map(p => p.id);
+  const { data: allNotes } = planIds.length
+    ? await supabase.from('notes').select('*').in('plan_id', planIds)
+    : { data: [] };
+
+  return {
+    members:     members     || [],
+    teamPlans:   teamPlans   || [],
+    allNotes:    allNotes    || [],
+    inviteToken: teamRow?.invite_token || null,
+    company:     teamRow?.company      || null,
+  };
 }
 
 // ── AI match helpers ──────────────────────────────────────────────────────────
@@ -75,10 +114,8 @@ function findAlternatives(session, planSessions, allSessions, categories) {
 // ── Render helpers ────────────────────────────────────────────────────────────
 
 const TICK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-
 const STAR_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-
-const ALT_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+const ALT_SVG  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
 function flames(rating) {
   return [1, 2, 3].map(n =>
@@ -86,10 +123,59 @@ function flames(rating) {
   ).join('');
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
-function renderPlan(plan, allSessions = []) {
-  const root = $('plan-root');
-  if (!root) return;
+// ── Tab nav ───────────────────────────────────────────────────────────────────
+
+function renderTabNav() {
+  const isTeam     = !!(_plan?.team_id);
+  const teamCount  = _teamData?.members?.length ?? 0;
+  const sessions   = _plan?.sessions || [];
+
+  const tabs = [
+    {
+      id: 'checklist', label: 'Checklist', badge: sessions.length,
+      icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
+    },
+    ...(isTeam ? [{
+      id: 'team', label: 'Team', badge: teamCount,
+      icon: 'M17 21V19C17 16.7909 15.2091 15 13 15H5C2.79086 15 1 16.7909 1 19V21M23 21V19C22.9986 17.1771 21.765 15.5857 20 15.13M16 3.13C17.7699 3.58317 19.0078 5.17799 19.0078 7.005C19.0078 8.83201 17.7699 10.4268 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z',
+    }] : []),
+    {
+      id: 'cpd', label: 'CPD', badge: null,
+      icon: 'M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7088 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999M22 4L12 14.01L9 11.01',
+    },
+    {
+      id: 'debrief', label: 'Debrief', badge: null,
+      icon: 'M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2ZM14 2V8H20M16 13H8M16 17H8M10 9H8',
+    },
+  ];
+
+  return `<nav class="app-tabs">
+    <div class="app-tabs-inner">
+      <div class="app-tabs-brand-row">
+        <a class="app-tabs-brand" href="/app/">
+          <div class="brand-mark"></div>
+          <div class="app-tabs-brand-text">The Accountex <em>Game Plan</em></div>
+        </a>
+      </div>
+      <div class="app-tabs-row">
+        ${tabs.map(t => `
+          <button class="app-tab ${_currentTab === t.id ? 'active' : ''}" onclick="planSwitchTab('${t.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>
+            ${t.label}
+            ${t.badge !== null && t.badge !== undefined ? `<span class="tab-badge">${t.badge}</span>` : ''}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  </nav>`;
+}
+
+// ── Checklist tab ─────────────────────────────────────────────────────────────
+
+function renderChecklistTab() {
+  const plan       = _plan;
+  const allSessions = _allSessions;
+  if (!plan) return '';
 
   const sessions   = plan.sessions   || [];
   const booths     = plan.booths     || [];
@@ -99,17 +185,61 @@ function renderPlan(plan, allSessions = []) {
 
   const notesByItem = {};
   for (const n of notes) {
-    notesByItem[`${n.item_type}:${n.item_id}`] = n.note_text;
+    const key = `${n.item_type}:${n.item_id}`;
+    // In team mode, show notes from all teammates; keyed by item + user
+    if (_teamData && n.created_by && n.created_by !== _authUser?.id) {
+      if (!notesByItem[key]) notesByItem[key] = [];
+      if (Array.isArray(notesByItem[key])) {
+        notesByItem[key].push(n);
+      }
+    } else if (!_teamData || n.created_by === _authUser?.id || !n.created_by) {
+      notesByItem[key] = n.note_text || '';
+    }
+  }
+
+  // In team mode, also collect notes from teammates' plans
+  let teamNotesByItem = {};
+  if (_teamData) {
+    for (const n of _teamData.allNotes) {
+      if (n.created_by && n.created_by !== _authUser?.id) {
+        const key = `${n.item_type}:${n.item_id}`;
+        if (!teamNotesByItem[key]) teamNotesByItem[key] = [];
+        teamNotesByItem[key].push(n);
+      }
+    }
+  }
+
+  // Filter pills (team mode)
+  let filterHtml = '';
+  if (_teamData && _teamData.members.length > 1) {
+    const pills = [
+      `<button class="checklist-filter-pill ${_checklistFilter === 'all' ? 'active' : ''}" onclick="planSetFilter('all')">All sessions</button>`,
+      ..._teamData.members.map(m => {
+        const u = m.users;
+        const isMe = u.id === _authUser?.id;
+        return `<button class="checklist-filter-pill ${isMe ? 'me' : ''} ${_checklistFilter === u.id ? 'active' : ''}" onclick="planSetFilter('${u.id}')">${escHtml(u.first_name)}</button>`;
+      }),
+    ];
+    filterHtml = `<div class="checklist-controls"><div class="checklist-filter-pills"><span class="checklist-filter-label">Show</span>${pills.join('')}</div></div>`;
+  }
+
+  // Determine which sessions to show (filter by teammate)
+  let visibleSessions = sessions;
+  if (_teamData && _checklistFilter !== 'all') {
+    const memberPlan = _teamData.teamPlans.find(p => p.user_id === _checklistFilter);
+    const memberSessionIds = new Set((memberPlan?.sessions || []).map(s => s.session_id));
+    visibleSessions = sessions.filter(s => memberSessionIds.has(s.session_id));
   }
 
   const themePills = themes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
 
-  const sessionItems = sessions.map((item, i) => {
+  const sessionItems = visibleSessions.map((item, i) => {
     const noteKey      = `session:${item.session_id}`;
-    const existingNote = notesByItem[noteKey] || '';
+    const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
     const dayLabel     = item.day === 'Day 1' ? 'Wed 13 May' : item.day === 'Day 2' ? 'Thu 14 May' : '';
     const whyTags      = whyMatched(item, plan);
     const alts         = findAlternatives(item, sessions, allSessions, categories);
+    const teamNotes    = teamNotesByItem[noteKey] || [];
 
     const whyHtml = whyTags.length ? `
       <div class="checklist-why-header">${STAR_SVG} Why AI picked this</div>
@@ -127,6 +257,15 @@ function renderPlan(plan, allSessions = []) {
               <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
             </div>
           </div>`).join('')}
+      </div>` : '';
+
+    const teamNotesHtml = teamNotes.length ? `
+      <div style="margin-top:8px;padding:8px 10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px;">
+        ${teamNotes.map(n => {
+          const author = _teamData?.members.find(m => m.users?.id === n.created_by);
+          const name = author ? author.users.first_name : 'Teammate';
+          return `<p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><span style="color:var(--purple);font-weight:600;">${escHtml(name)}:</span> ${escHtml(n.note_text || '')}</p>`;
+        }).join('')}
       </div>` : '';
 
     return `
@@ -153,6 +292,7 @@ function renderPlan(plan, allSessions = []) {
                 <button class="save-note-btn btn-sm">Save note</button>
               </div>
             </div>
+            ${teamNotesHtml}
           </div>
         </div>
       </div>`;
@@ -160,7 +300,7 @@ function renderPlan(plan, allSessions = []) {
 
   const boothItems = booths.map((item, i) => {
     const noteKey      = `booth:${item.stand_number}`;
-    const existingNote = notesByItem[noteKey] || '';
+    const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
     const products     = (item.normalised_products || []).slice(0, 2).join(', ');
     const boothMeta    = [`Stand ${escHtml(item.stand_number || '')}`, products ? escHtml(products) : ''].filter(Boolean).join(' · ');
     return `
@@ -182,22 +322,13 @@ function renderPlan(plan, allSessions = []) {
       </div>`;
   }).join('');
 
-  root.innerHTML = `
-    <header class="plan-header">
-      <a href="/app/" class="brand">
-        <span class="brand-mark"></span>
-        <span class="brand-text">Game <em>Plan</em></span>
-      </a>
-      <p class="plan-header-sub">Accountex London 2026 · 13–14 May · ExCeL</p>
-    </header>
-
+  return `
     ${themes.length ? `<section class="plan-themes-section"><div class="plan-themes">${themePills}</div></section>` : ''}
-
+    ${filterHtml}
     <section class="plan-section">
-      <h2 class="plan-section-title">Your sessions <span class="count-badge">${sessions.length}</span></h2>
+      <h2 class="plan-section-title">Your sessions <span class="count-badge">${visibleSessions.length}</span></h2>
       <div class="checklist">${sessionItems || '<p class="empty-state">No sessions in your plan yet.</p>'}</div>
     </section>
-
     ${booths.length ? `
       <section class="plan-section">
         <h2 class="plan-section-title">Priority stands <span class="count-badge">${booths.length}</span></h2>
@@ -205,13 +336,269 @@ function renderPlan(plan, allSessions = []) {
       </section>
     ` : ''}
   `;
+}
 
-  attachPlanListeners(plan.id, plan.sessions, plan.booths);
+// ── Team tab ──────────────────────────────────────────────────────────────────
+
+function buildIntelBlocks() {
+  if (!_teamData || _teamData.members.length < 2) {
+    return `
+      <div class="intel-block tone-purple">
+        <div class="intel-block-label">Waiting for your team</div>
+        <div class="intel-block-headline">Share the invite link.</div>
+        <div class="intel-block-body">Once teammates join, we'll surface patterns across everyone's stated problems and priorities.</div>
+      </div>
+    `;
+  }
+
+  const allPlans = _teamData.teamPlans;
+  const catLabels = {
+    'practice-management': 'Practice management', 'ai-automation': 'AI & automation',
+    'bookkeeping': 'Bookkeeping', 'tax-mtd': 'Tax & MTD',
+    'doc-management': 'Document management', 'payroll': 'Payroll',
+  };
+  const allCats = Object.keys(catLabels);
+
+  // Count category frequency across all plans
+  const catCounts = {};
+  for (const p of allPlans) {
+    for (const c of (p.categories || [])) {
+      catCounts[c] = (catCounts[c] || 0) + 1;
+    }
+  }
+  const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+  const multiCat = Object.entries(catCounts).filter(([, n]) => n >= 2)[0];
+  const blindSpot = allCats.find(c => !catCounts[c]);
+  const topAiTheme = allPlans.flatMap(p => p.ai_themes || []).slice(0, 1)[0];
+
+  return `
+    <div class="intel-block tone-pink">
+      <div class="intel-block-label">Top problem</div>
+      <div class="intel-block-headline">${topCat ? escHtml(catLabels[topCat[0]] || topCat[0]) : 'Multiple areas'}</div>
+      <div class="intel-block-body">${topCat ? `${topCat[1]} of ${allPlans.length} team members are scouting this area.` : 'Your team covers a wide range of priorities.'}</div>
+    </div>
+    <div class="intel-block tone-purple">
+      <div class="intel-block-label">Emerging pattern</div>
+      <div class="intel-block-headline">${multiCat ? escHtml(catLabels[multiCat[0]] || multiCat[0]) : 'Broad coverage'}</div>
+      <div class="intel-block-body">${multiCat ? `${multiCat[1]} people are evaluating this — worth a dedicated debrief session.` : 'Your team has spread coverage well across categories.'}</div>
+    </div>
+    <div class="intel-block tone-amber">
+      <div class="intel-block-label">Blind spot</div>
+      <div class="intel-block-headline">${blindSpot ? escHtml(catLabels[blindSpot]) : 'None found'}</div>
+      <div class="intel-block-body">${blindSpot ? `Nobody on your team is scouting ${catLabels[blindSpot].toLowerCase()} — worth a quick look if it's relevant.` : 'Your team has solid coverage across all major categories.'}</div>
+    </div>
+    <div class="intel-block tone-mint">
+      <div class="intel-block-label">This quarter's focus</div>
+      <div class="intel-block-headline">${topAiTheme ? escHtml(topAiTheme.length > 50 ? topAiTheme.slice(0, 48) + '…' : topAiTheme) : 'Review after the show'}</div>
+      <div class="intel-block-body">Drawn from your team's top AI-matched sessions and stated priorities.</div>
+    </div>
+  `;
+}
+
+function renderTeammateCard(m, index) {
+  const u         = m.users;
+  const isMe      = u.id === _authUser?.id;
+  const initials  = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
+  const avatarClass = `t${(index % 4) + 1}`;
+  const memberPlan  = _teamData.teamPlans.find(p => p.user_id === u.id);
+  const sessionCount = (memberPlan?.sessions || []).length;
+  const noteCount = _teamData.allNotes.filter(n => n.plan_id === memberPlan?.id).length;
+  const cats = (memberPlan?.categories || []).map(c => ({
+    'practice-management': 'Practice mgmt', 'ai-automation': 'AI & automation',
+    'bookkeeping': 'Bookkeeping', 'tax-mtd': 'Tax / MTD',
+    'doc-management': 'Docs / portals', 'payroll': 'Payroll',
+  }[c] || c));
+  const joinedDate = new Date(m.joined_at);
+  const joinedStr = isNaN(joinedDate) ? '' : `Joined · ${joinedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+
+  return `
+    <div class="teammate ${isMe ? 'me' : ''}">
+      <div class="teammate-top">
+        <div class="teammate-avatar ${avatarClass}">${escHtml(initials)}</div>
+        <div class="teammate-info">
+          <div class="teammate-name-row">
+            <span class="teammate-name">${escHtml(u.first_name)} ${escHtml(u.last_name)}</span>
+            ${isMe ? '<span class="teammate-you-tag">You</span>' : ''}
+          </div>
+          <div class="teammate-role">${escHtml(u.company || '')}</div>
+        </div>
+      </div>
+      ${memberPlan?.problem ? `
+        <div class="teammate-mission">
+          <div class="teammate-mission-label">Their mission</div>
+          <div class="teammate-mission-text">"${escHtml(memberPlan.problem)}"</div>
+        </div>
+      ` : ''}
+      ${cats.length ? `
+        <div class="teammate-meta-block">
+          <div class="teammate-meta-label">Evaluating</div>
+          <div class="teammate-meta-pills">
+            ${cats.map(c => `<span class="teammate-meta-pill cat">${escHtml(c)}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+      <div class="teammate-footer">
+        <div class="teammate-footer-stats">
+          <span><strong>${sessionCount}</strong> sessions</span>
+          <span><strong>${noteCount}</strong> notes</span>
+        </div>
+        <div class="teammate-footer-joined">${escHtml(joinedStr)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTeamTab() {
+  if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
+
+  const myMembership = _teamData.members.find(m => m.users?.id === _authUser?.id);
+  const isLead = myMembership?.role === 'lead';
+
+  // Derive invite URL display components
+  const firmSlug = (_teamData.company || 'your-team')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'your-team';
+  const shortToken = (_teamData.inviteToken || '').slice(0, 8);
+  const fullInviteUrl = `${window.location.origin}/app/?team=${_teamData.inviteToken || ''}`;
+
+  const inviteHeroHtml = isLead ? `
+    <div class="team-invite-hero">
+      <div class="team-invite-hero-inner">
+        <div class="team-invite-hero-label">Invite your team</div>
+        <div class="team-invite-hero-title">One link, <em>everyone in.</em></div>
+        <div class="team-invite-hero-sub">Send this to each person you're bringing. They answer the same onboarding, get their own plan, and land in this workspace — where you'll see <strong>who's at which session</strong>, whose notes are flowing in live, and the <strong>team debrief</strong> writing itself. No passwords, no sign-up fuss.</div>
+        <div class="team-invite-url-row">
+          <div class="team-invite-url" title="${escHtml(fullInviteUrl)}">
+            <strong>workiro-ai.com/app/?team=</strong>${escHtml(firmSlug)}-${escHtml(shortToken)}
+          </div>
+          <button class="team-invite-copy-btn" onclick="planCopyInvite('${escHtml(fullInviteUrl)}', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy link
+          </button>
+        </div>
+        <div class="team-invite-secondary">
+          <button class="team-invite-secondary-btn" onclick="planShareEmail('${escHtml(fullInviteUrl)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Send via email
+          </button>
+          <button class="team-invite-secondary-btn" onclick="navigator.clipboard.writeText('${escHtml(fullInviteUrl)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy again
+          </button>
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div class="team-invite-hero">
+      <div class="team-invite-hero-inner">
+        <div class="team-invite-hero-label">You're in</div>
+        <div class="team-invite-hero-title">Joined <em>${escHtml(_teamData.company || 'the team')}</em> workspace.</div>
+        <div class="team-invite-hero-sub">Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Any teammate can see who's going to what.</div>
+      </div>
+    </div>
+  `;
+
+  const memberCount = _teamData.members.length;
+
+  return `
+    <div class="app-header">
+      <div class="app-header-top">
+        <div>
+          <h2 class="app-title">Your team, <em>already aligned.</em></h2>
+          <p class="app-sub">What everyone's scouting, who's covering what, and where the team's real problems are.</p>
+        </div>
+      </div>
+    </div>
+
+    ${inviteHeroHtml}
+
+    <div class="team-synthesis">
+      <div class="team-synthesis-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/></svg>
+        AI team intel
+      </div>
+      <div class="team-synthesis-title">The brief your team <em>hasn't written yet.</em></div>
+      <p class="team-synthesis-lede">We read every teammate's stated problem and priority pick. Here's what jumps out — attributed, not averaged.</p>
+      <div class="intel-grid">
+        ${buildIntelBlocks()}
+      </div>
+    </div>
+
+    <div class="app-section">
+      <div class="app-section-header">
+        <div class="app-section-title">Who's going &amp; why <span class="app-section-count">${memberCount} ${memberCount === 1 ? 'mission' : 'missions'}</span></div>
+      </div>
+      <div class="teammate-grid">
+        ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ── CPD stub ──────────────────────────────────────────────────────────────────
+
+function renderCpdTab() {
+  const sessions = _plan?.sessions || [];
+  const attended = sessions.filter(s => s.attended).length;
+  const cpdHours = (attended * 40 / 60).toFixed(1);
+  return `
+    <div class="app-header">
+      <h2 class="app-title">CPD <em>log.</em></h2>
+      <p class="app-sub">Your continuing professional development hours, tracked as you go.</p>
+    </div>
+    <div style="padding:32px 0;text-align:center;color:var(--text-muted);">
+      <div style="font-family:'Fraunces',serif;font-size:56px;font-weight:500;color:var(--mint);">${cpdHours}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px;">CPD hours logged</div>
+      <p style="margin-top:20px;font-size:14px;">Mark sessions as attended on the Checklist tab to add hours here.</p>
+    </div>
+  `;
+}
+
+// ── Debrief stub ──────────────────────────────────────────────────────────────
+
+function renderDebriefTab() {
+  const sessions = _plan?.sessions || [];
+  const rated    = sessions.filter(s => s.rating).length;
+  return `
+    <div class="app-header">
+      <h2 class="app-title">Your <em>debrief.</em></h2>
+      <p class="app-sub">A full write-up — every note attributed, all sessions rated, vendor conversations, speaker quotes.</p>
+    </div>
+    <div style="padding:32px 0;color:var(--text-muted);font-size:14px;line-height:1.65;">
+      ${rated > 0
+        ? `<p>You've rated <strong style="color:var(--text)">${rated} session${rated !== 1 ? 's' : ''}</strong>. Keep rating and adding notes on the Checklist tab — your summary will build up here.</p>`
+        : `<p>Rate your first session on the Checklist tab to see your debrief start taking shape.</p>`}
+    </div>
+  `;
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+
+function renderApp() {
+  const root = $('plan-root');
+  if (!root) return;
+
+  root.innerHTML = renderTabNav() + `<div class="plan-tab-content">${renderCurrentTab()}</div>`;
+
+  if (_currentTab === 'checklist') {
+    attachPlanListeners(_plan.id, _plan.sessions, _plan.booths);
+  }
+}
+
+function renderCurrentTab() {
+  switch (_currentTab) {
+    case 'checklist': return renderChecklistTab();
+    case 'team':      return renderTeamTab();
+    case 'cpd':       return renderCpdTab();
+    case 'debrief':   return renderDebriefTab();
+    default:          return renderChecklistTab();
+  }
 }
 
 // ── Event listeners ───────────────────────────────────────────────────────────
+
 function attachPlanListeners(planId, sessions, booths) {
-  // Attended toggle
   document.querySelectorAll('.checklist-box').forEach(btn => {
     btn.addEventListener('click', async () => {
       const row    = btn.closest('[data-item-type]');
@@ -221,37 +608,31 @@ function attachPlanListeners(planId, sessions, booths) {
     });
   });
 
-  // Ratings
   document.querySelectorAll('.flame-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const card     = btn.closest('[data-item-type]');
       const itemType = card.dataset.itemType;
       const itemId   = card.dataset.itemId;
       const rating   = parseInt(btn.dataset.rating);
-
       const currentRating = parseInt(card.dataset.rating || '0');
       const newRating     = currentRating === rating ? 0 : rating;
-
       card.dataset.rating = newRating;
       card.querySelectorAll('.flame-btn').forEach((b, i) => {
         b.classList.toggle('lit', i < newRating);
       });
-
       await updateRating(planId, itemId, itemType, newRating, sessions, booths);
     });
   });
 
-  // Notes
   document.querySelectorAll('.save-note-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const card     = btn.closest('[data-item-type]');
       const itemType = card.dataset.itemType;
       const itemId   = card.dataset.itemId;
       const text     = card.querySelector('.note-input').value.trim();
-
       btn.textContent = 'Saving…';
       btn.disabled    = true;
-      await saveNote(planId, itemId, itemType, text);
+      await saveNote(planId, itemId, itemType, text, _authUser?.id);
       btn.textContent = 'Saved ✓';
       setTimeout(() => { btn.textContent = 'Save note'; btn.disabled = false; }, 1500);
     });
@@ -262,36 +643,47 @@ async function toggleAttended(planId, itemId, sessions) {
   const updated = sessions.map(s =>
     s.session_id === itemId ? { ...s, attended: !s.attended } : s,
   );
+  _plan.sessions = updated;
   await supabase.from('plans').update({ sessions: updated }).eq('id', planId);
 }
 
 async function updateRating(planId, itemId, itemType, rating, sessions, booths) {
   const field = itemType === 'session' ? 'sessions' : 'booths';
   const list  = itemType === 'session' ? sessions : booths;
-
   const updated = list.map(item => {
     const id = itemType === 'session' ? item.session_id : item.stand_number;
     return id === itemId ? { ...item, rating } : item;
   });
-
+  if (itemType === 'session') _plan.sessions = updated;
+  else _plan.booths = updated;
   await supabase.from('plans').update({ [field]: updated }).eq('id', planId);
 }
 
-async function saveNote(planId, itemId, itemType, noteText) {
+async function saveNote(planId, itemId, itemType, noteText, createdBy) {
   await supabase.from('notes').upsert(
-    { plan_id: planId, item_id: itemId, item_type: itemType, note_text: noteText },
+    { plan_id: planId, item_id: itemId, item_type: itemType, note_text: noteText, created_by: createdBy || null },
     { onConflict: 'plan_id,item_id,item_type' },
   );
 }
 
 // ── Auth flow ─────────────────────────────────────────────────────────────────
-async function handleSignIn(authUser) {
+
+async function handleSignIn(authUser, teamToken) {
   try {
     if (!authUser.is_anonymous) {
+      // Recover pending plan from localStorage only if no plan already exists in DB.
+      // The wizard saves under the anonymous user ID; after magic-link sign-in the
+      // anonymous session is upgraded (same user ID), so the plan is already there.
+      // We only need this path when the DB save failed in the wizard.
       const pending = localStorage.getItem('pendingPlan');
       if (pending) {
+        const { count } = await supabase
+          .from('plans')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', authUser.id);
+
         const planData = JSON.parse(pending);
-        await supabase.from('users').upsert(
+        const { error: upsertErr } = await supabase.from('users').upsert(
           {
             id:         authUser.id,
             email:      authUser.email,
@@ -301,18 +693,32 @@ async function handleSignIn(authUser) {
           },
           { onConflict: 'id' },
         );
-        await supabase.from('plans').insert({
-          user_id:     authUser.id,
-          attend_mode: planData.answers.attendMode,
-          problem:     planData.answers.problem,
-          categories:  planData.answers.categories,
-          time_window: planData.answers.time,
-          role:        planData.answers.role,
-          sessions:    planData.sessions,
-          booths:      planData.booths,
-          ai_themes:   planData.themes || [],
-        });
+        if (upsertErr) throw upsertErr;
+
+        if (!count) {
+          const { error: insertErr } = await supabase.from('plans').insert({
+            user_id:     authUser.id,
+            attend_mode: planData.answers.attendMode,
+            problem:     planData.answers.problem,
+            categories:  planData.answers.categories,
+            time_window: planData.answers.time,
+            role:        planData.answers.role,
+            sessions:    planData.sessions,
+            booths:      planData.booths,
+            ai_themes:   planData.themes || [],
+          });
+          if (insertErr) throw insertErr;
+        }
         localStorage.removeItem('pendingPlan');
+      }
+
+      // Join team if invite token present
+      if (teamToken) {
+        const { data: joinResult } = await supabase.rpc('join_team', { p_invite_token: teamToken });
+        if (joinResult?.error) {
+          showError(`Could not join team: ${joinResult.error}`);
+          return;
+        }
       }
     }
 
@@ -321,11 +727,22 @@ async function handleSignIn(authUser) {
       fetch('/data/programme.json').then(r => r.json()).catch(() => []),
     ]);
 
-    if (full) renderPlan(full, allSessions);
-    else showNoPlanState();
+    if (!full) { showNoPlanState(); return; }
+
+    let teamData = null;
+    if (full.team_id) {
+      teamData = await loadTeamData(full.team_id);
+    }
+
+    _plan        = full;
+    _allSessions = allSessions;
+    _teamData    = teamData;
+    _authUser    = authUser;
+
+    renderApp();
   } catch (err) {
     const detail = err?.message || err?.details || String(err);
-    showError(`Could not save your plan: ${detail} — <a href="/app/" style="color:var(--mint)">Start again →</a>`);
+    showError(`Could not load your plan: ${detail} — <a href="/app/" style="color:var(--mint)">Start again →</a>`);
   }
 }
 
@@ -386,12 +803,42 @@ function showLoading(show) {
   if (el) el.style.display = show ? 'flex' : 'none';
 }
 
+// ── Global helpers (called from inline onclick in rendered HTML) ───────────────
+
+window.planSwitchTab = function(tabId) {
+  _currentTab = tabId;
+  renderApp();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.planSetFilter = function(filter) {
+  _checklistFilter = filter;
+  renderApp();
+};
+
+window.planCopyInvite = function(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.innerHTML;
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  });
+};
+
+window.planShareEmail = function(url) {
+  const subject = encodeURIComponent('Join my Accountex Game Plan team');
+  const body = encodeURIComponent(`I've built our team's Accountex plan using the Workiro Game Plan tool.\n\nClick this link to complete your own quick wizard and join our shared workspace:\n\n${url}\n\nTakes about 2 minutes.`);
+  window.open(`mailto:?subject=${subject}&body=${body}`);
+};
+
 // ── Entry point ───────────────────────────────────────────────────────────────
+
 export async function initPlan() {
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const qpParams   = new URLSearchParams(window.location.search);
   const errCode    = hashParams.get('error_code') || qpParams.get('error_code');
   const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
+  const teamToken  = qpParams.get('team');
+
   if (errCode) {
     const headline = errCode === 'otp_expired'
       ? 'Your magic link has expired or was already used.'
@@ -405,7 +852,7 @@ export async function initPlan() {
   const user = await getUser();
   if (user) {
     showLoading(false);
-    await handleSignIn(user);
+    await handleSignIn(user, teamToken);
     return;
   }
 
@@ -413,7 +860,7 @@ export async function initPlan() {
     if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
       showLoading(false);
-      await handleSignIn(authUser);
+      await handleSignIn(authUser, teamToken);
     }
   });
 

@@ -15,6 +15,7 @@ const state = {
   },
   user: { firstName: '', lastName: '', email: '', company: '' },
   plan: null,
+  teamInviteToken: null,
   filteredSessions: [],
   filteredExhibitors: [],
   allSessions: [],
@@ -350,12 +351,13 @@ async function handleSaveSubmit(e) {
       userId = data.user.id;
     }
 
-    await supabase.from('users').upsert(
+    const { error: userErr } = await supabase.from('users').upsert(
       { id: userId, email, first_name: firstName, last_name: lastName, company: company || null },
       { onConflict: 'id' },
     );
+    if (userErr) throw userErr;
 
-    await supabase.from('plans').insert({
+    const { data: newPlan, error: planErr } = await supabase.from('plans').insert({
       user_id:     userId,
       attend_mode: state.answers.attendMode,
       problem:     state.answers.problem,
@@ -365,13 +367,37 @@ async function handleSaveSubmit(e) {
       sessions:    enrichedSessions,
       booths:      enrichedBooths,
       ai_themes:   state.plan?.themes || [],
-    });
-  } catch {
-    // DB save failed — localStorage still has the plan so the magic link path still works
+    }).select('id').single();
+    if (planErr) throw planErr;
+
+    if (state.answers.attendMode === 'team-lead' && newPlan?.id) {
+      const { data: team } = await supabase
+        .from('teams')
+        .insert({ lead_user_id: userId, company: company || null })
+        .select('id, invite_token')
+        .single();
+
+      if (team) {
+        await supabase.from('plans').update({ team_id: team.id }).eq('id', newPlan.id);
+        await supabase.from('team_members').insert({ team_id: team.id, user_id: userId, role: 'lead' });
+        state.teamInviteToken = team.invite_token;
+      }
+    }
+  } catch (dbErr) {
+    // Surface DB errors so they're visible during debugging
+    const errEl = $('save-error');
+    if (errEl) {
+      errEl.textContent = `DB save failed: ${dbErr?.message || dbErr?.details || String(dbErr)}`;
+      errEl.style.display = 'block';
+    }
+    console.error('DB save error:', dbErr);
   }
 
-  // Send magic link — critical path, always runs regardless of DB outcome
-  const { error: emailErr } = await sendMagicLink(email);
+  // Send magic link — team lead's link redirects back with the team token so the plan page auto-joins
+  const redirectTo = state.teamInviteToken
+    ? `${window.location.origin}/app/plan/?team=${state.teamInviteToken}`
+    : undefined;
+  const { error: emailErr } = await sendMagicLink(email, redirectTo);
   if (emailErr) {
     btn.disabled = false;
     btn.textContent = 'Get my plan →';
@@ -386,6 +412,26 @@ async function handleSaveSubmit(e) {
   goToStage('email-sent');
   const sentEmail = $('sent-email');
   if (sentEmail) sentEmail.textContent = email;
+
+  if (state.answers.attendMode === 'team-lead' && state.teamInviteToken) {
+    const inviteUrl = `${window.location.origin}/app/?team=${state.teamInviteToken}`;
+    const block = $('team-invite-block');
+    const urlEl = $('team-invite-url');
+    const copyBtn = $('team-invite-copy');
+    if (block) block.removeAttribute('hidden');
+    if (urlEl) urlEl.textContent = inviteUrl;
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(inviteUrl).then(() => {
+          copyBtn.textContent = 'Copied ✓';
+          setTimeout(() => { copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy link'; }, 2000);
+        });
+      });
+    }
+    // Update the "Go to your game plan" link to carry the team token
+    const ctaLink = $('magic-confirm-cta-link');
+    if (ctaLink) ctaLink.href = `/app/plan/?team=${state.teamInviteToken}`;
+  }
 }
 
 // ── Problem textarea helpers ──────────────────────────────────────────────────
@@ -417,6 +463,10 @@ function addPromptChip(text) {
 export async function initWizard() {
   // Clear any stale hash from a previous session so we always start at stage 0
   if (window.location.hash) history.replaceState(null, '', location.pathname);
+
+  // If arriving via a team invite link, store the token for later use on save
+  const pendingTeamToken = new URLSearchParams(window.location.search).get('team');
+  if (pendingTeamToken) state.teamInviteToken = pendingTeamToken;
 
   // Load data files
   try {

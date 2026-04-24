@@ -21,7 +21,9 @@ const state = {
 };
 
 const FLOW_STAGES = new Set(['0', '2', '7']);
-const Q_STAGES = ['1', '2', '3', '4', '5']; // for progress dots
+const Q_STAGES    = ['1', '2', '3', '4', '5']; // for progress dots
+const STAGE_HASH  = { '1':'q1','2':'q2','3':'q3','4':'q4','5':'q5','7':'preview','75':'save' };
+const HASH_STAGE  = Object.fromEntries(Object.entries(STAGE_HASH).map(([k,v]) => [v, k]));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -40,7 +42,7 @@ function shuffleArray(arr) {
 }
 
 // ── Stage transitions ─────────────────────────────────────────────────────────
-function goToStage(n) {
+function goToStage(n, fromHistory = false) {
   const id = String(n);
 
   // Deactivate current
@@ -60,6 +62,16 @@ function goToStage(n) {
 
   window.scrollTo(0, 0);
   updateProgress();
+
+  // Push/replace URL hash so browser back works (stages 6 and email-sent are excluded)
+  if (!fromHistory) {
+    const hash = STAGE_HASH[id];
+    if (hash) {
+      history.pushState({ stage: id }, '', `#${hash}`);
+    } else if (id === '0') {
+      history.replaceState({ stage: '0' }, '', location.pathname + location.search);
+    }
+  }
 
   if (id === '6') startReveal();
   if (id === '7') renderPlanPreview();
@@ -367,6 +379,9 @@ function addPromptChip(text) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 export async function initWizard() {
+  // Clear any stale hash from a previous session so we always start at stage 0
+  if (window.location.hash) history.replaceState(null, '', location.pathname);
+
   // Load data files
   try {
     const [progRes, exhRes] = await Promise.all([
@@ -404,7 +419,7 @@ export async function initWizard() {
   document.querySelectorAll('[data-chip]').forEach(btn => {
     btn.addEventListener('click', () => addPromptChip(btn.dataset.chip));
   });
-  $('problem-back')?.addEventListener('click', () => goToStage(1));
+  $('problem-back')?.addEventListener('click', () => history.back());
   $('problem-next')?.addEventListener('click', () => {
     if (state.answers.problem.length >= 20) goToStage(3);
   });
@@ -413,7 +428,7 @@ export async function initWizard() {
   document.querySelectorAll('[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => toggleCategory(btn.dataset.cat));
   });
-  $('cat-back')?.addEventListener('click', () => goToStage(2));
+  $('cat-back')?.addEventListener('click', () => history.back());
   $('cat-next')?.addEventListener('click', () => {
     if (state.answers.categories.length > 0) goToStage(4);
   });
@@ -428,7 +443,7 @@ export async function initWizard() {
       $('time-next').disabled = false;
     });
   });
-  $('time-back')?.addEventListener('click', () => goToStage(3));
+  $('time-back')?.addEventListener('click', () => history.back());
   $('time-next')?.addEventListener('click', () => {
     if (state.answers.time) goToStage(5);
   });
@@ -443,7 +458,7 @@ export async function initWizard() {
       $('role-next').disabled = false;
     });
   });
-  $('role-back')?.addEventListener('click', () => goToStage(4));
+  $('role-back')?.addEventListener('click', () => history.back());
   $('role-next')?.addEventListener('click', () => {
     if (state.answers.role) goToStage(6);
   });
@@ -451,10 +466,23 @@ export async function initWizard() {
 
   // ── Stage 7: save CTA
   $('preview-save')?.addEventListener('click', () => goToStage(75));
-  $('preview-back')?.addEventListener('click', () => goToStage(5));
+  $('preview-back')?.addEventListener('click', () => history.back());
 
   // ── Stage 75: save form
   $('save-form')?.addEventListener('submit', handleSaveSubmit);
+
+  // Handle browser back/forward
+  window.addEventListener('popstate', () => {
+    const hash    = window.location.hash.slice(1);
+    const stageId = HASH_STAGE[hash] || '0';
+    // If preview is requested but plan isn't in memory (e.g. after reload), reset to start
+    if (stageId === '7' && !state.plan) {
+      history.replaceState(null, '', location.pathname);
+      goToStage('0', true);
+      return;
+    }
+    goToStage(stageId, true);
+  });
 
   // Show stage 0
   goToStage('0');

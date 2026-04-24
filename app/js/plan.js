@@ -482,9 +482,13 @@ function renderTeamTab() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             Send via email
           </button>
-          <button class="team-invite-secondary-btn" onclick="navigator.clipboard.writeText('${escHtml(fullInviteUrl)}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy again
+          <button class="team-invite-secondary-btn" onclick="planShareSlack('${escHtml(fullInviteUrl)}', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Share in Slack
+          </button>
+          <button class="team-invite-secondary-btn" onclick="planShowQr('${escHtml(fullInviteUrl)}', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Show QR code
           </button>
         </div>
       </div>
@@ -531,6 +535,100 @@ function renderTeamTab() {
       </div>
       <div class="teammate-grid">
         ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+      </div>
+    </div>
+
+    <div class="taxready-cta-v2">
+      <div class="taxready-cta-v2-eyebrow">
+        <span class="taxready-cta-v2-dot"></span>
+        Bonus · Stand 1144
+      </div>
+      <h2 class="taxready-cta-v2-headline">
+        Outrank every accountant in your postcode. <em>Free.</em>
+      </h2>
+      <p class="taxready-cta-v2-body">
+        TaxReady is the UK's AI-matched accountant directory. <strong>2,690+ firms already on it.</strong> The one rated highest in each city wins the inbound leads. We'll list you in 3 minutes at our booth — or claim it yourself below.
+      </p>
+
+      <div class="taxready-cta-v2-visual-row">
+        <div class="taxready-cta-v2-map">
+          <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <path d="M110 30 L130 28 L135 42 L150 50 L155 65 L148 80 L160 90 L165 105 L175 118 L170 135 L180 148 L175 165 L185 180 L180 195 L190 215 L175 235 L155 245 L135 255 L115 250 L95 240 L80 220 L75 195 L65 180 L70 160 L65 140 L75 125 L70 105 L80 88 L75 70 L90 55 L100 42 Z"
+                  fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <path d="M40 155 L55 150 L60 165 L55 185 L45 195 L35 185 L32 170 Z"
+                  fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <circle cx="122" cy="138" r="30" fill="none" stroke="rgba(255,94,132,0.3)" stroke-width="1" stroke-dasharray="3 3">
+              <animate attributeName="r" values="20;60;20" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.6;0;0.6" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="120" cy="95" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="135" cy="115" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="95" cy="130" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="150" cy="145" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="115" cy="155" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="140" cy="175" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="105" cy="190" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="155" cy="200" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="125" cy="215" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="110" cy="110" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="130" cy="170" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="150" cy="105" r="3.5" fill="rgba(255,94,132,0.5)"/>
+            <circle cx="122" cy="138" r="12" fill="rgba(34,230,168,0.22)">
+              <animate attributeName="r" values="9;16;9" dur="2.2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.6;0.15;0.6" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="122" cy="138" r="7" fill="#22e6a8" stroke="#fff" stroke-width="2.5"/>
+            <g transform="translate(140, 50)">
+              <rect x="0" y="0" width="150" height="92" rx="10" fill="#0a0a12" stroke="rgba(34,230,168,0.55)" stroke-width="1.5"/>
+              <circle cx="12" cy="15" r="3.5" fill="#22e6a8">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              <text x="22" y="19" fill="#22e6a8" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" letter-spacing="0.1em">AI TOP MATCH</text>
+              <text x="12" y="43" fill="#fff" font-family="Fraunces,serif" font-size="15" font-weight="500">Your Firm Ltd</text>
+              <text x="12" y="60" fill="#22e6a8" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="600">★★★★★ · 47 reviews</text>
+              <text x="12" y="77" fill="rgba(255,255,255,0.55)" font-family="IBM Plex Sans,sans-serif" font-size="9">M1 · Small business specialists</text>
+              <line x1="0" y1="92" x2="-18" y2="96" stroke="rgba(34,230,168,0.55)" stroke-width="1.5" stroke-linecap="round"/>
+            </g>
+            <g transform="translate(15, 255)">
+              <rect x="0" y="0" width="130" height="18" rx="9" fill="rgba(255,94,132,0.08)" stroke="rgba(255,94,132,0.25)" stroke-width="1"/>
+              <circle cx="10" cy="9" r="2.5" fill="#ff5e84">
+                <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite"/>
+              </circle>
+              <text x="19" y="12" fill="rgba(255,255,255,0.65)" font-family="JetBrains Mono,monospace" font-size="7" letter-spacing="0.1em">AI SCANNING 12 RIVALS</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="taxready-cta-v2-booth">
+          <div class="taxready-cta-v2-booth-top">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>STAND 1144</span>
+          </div>
+          <div class="taxready-cta-v2-booth-bignum">3 mins</div>
+          <div class="taxready-cta-v2-booth-desc">Fill in a quick form at our booth. We'll handle the rest.</div>
+          <div class="taxready-cta-v2-booth-tick-list">
+            <div class="taxready-cta-v2-booth-tick">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Free to claim
+            </div>
+            <div class="taxready-cta-v2-booth-tick">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              10+ reviews to qualify
+            </div>
+            <div class="taxready-cta-v2-booth-tick">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              No setup fee, ever
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a class="taxready-cta-v2-btn" href="https://taxready.me/accountants.html" target="_blank" rel="noopener">
+        Claim your free profile
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <div class="taxready-cta-v2-foot">
+        Or drop by <strong>stand 1144</strong> for a hand · <a href="https://xumagazine.com" target="_blank" rel="noopener">As featured in XU Magazine</a>
       </div>
     </div>
   `;
@@ -676,24 +774,29 @@ async function handleSignIn(authUser, teamToken) {
       // anonymous session is upgraded (same user ID), so the plan is already there.
       // We only need this path when the DB save failed in the wizard.
       const pending = localStorage.getItem('pendingPlan');
-      if (pending) {
+      const planData = pending ? JSON.parse(pending) : null;
+
+      // Always ensure user exists in public.users before any team operations.
+      // When the magic link is opened in a different browser than the wizard,
+      // pendingPlan is absent and the users upsert would otherwise be skipped,
+      // causing join_team to fail with a foreign key violation on team_members.
+      const { error: upsertErr } = await supabase.from('users').upsert(
+        {
+          id:         authUser.id,
+          email:      authUser.email || '',
+          first_name: planData?.user?.firstName || '',
+          last_name:  planData?.user?.lastName  || '',
+          company:    planData?.user?.company   || null,
+        },
+        { onConflict: 'id' },
+      );
+      if (upsertErr) throw upsertErr;
+
+      if (planData) {
         const { count } = await supabase
           .from('plans')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', authUser.id);
-
-        const planData = JSON.parse(pending);
-        const { error: upsertErr } = await supabase.from('users').upsert(
-          {
-            id:         authUser.id,
-            email:      authUser.email,
-            first_name: planData.user?.firstName || '',
-            last_name:  planData.user?.lastName  || '',
-            company:    planData.user?.company   || null,
-          },
-          { onConflict: 'id' },
-        );
-        if (upsertErr) throw upsertErr;
 
         if (!count) {
           const { error: insertErr } = await supabase.from('plans').insert({
@@ -714,7 +817,9 @@ async function handleSignIn(authUser, teamToken) {
 
       // Join team if invite token present
       if (teamToken) {
-        const { data: joinResult } = await supabase.rpc('join_team', { p_invite_token: teamToken });
+        const { data: joinResult, error: joinErr } = await supabase.rpc('join_team', { p_invite_token: teamToken });
+        localStorage.removeItem('pendingTeamToken');
+        if (joinErr) throw joinErr;
         if (joinResult?.error) {
           showError(`Could not join team: ${joinResult.error}`);
           return;
@@ -728,6 +833,42 @@ async function handleSignIn(authUser, teamToken) {
     ]);
 
     if (!full) { showNoPlanState(); return; }
+
+    // Auto-create team for team leads whose plan doesn't yet have a team_id.
+    // This defers team creation to the first authenticated load, since the teams
+    // table requires a non-anonymous session (RLS blocks wizard-time creation).
+    if (full.attend_mode === 'team-lead' && !full.team_id && !authUser.is_anonymous) {
+      const { data: userRow } = await supabase
+        .from('users')
+        .select('company')
+        .eq('id', authUser.id)
+        .single();
+
+      const { data: team, error: teamErr } = await supabase
+        .from('teams')
+        .insert({
+          lead_user_id: authUser.id,
+          company:      userRow?.company || null,
+          invite_token: crypto.randomUUID(),
+          max_members:  5,
+        })
+        .select('id, invite_token')
+        .single();
+      if (teamErr) throw teamErr;
+
+      const { error: planUpdateErr } = await supabase
+        .from('plans')
+        .update({ team_id: team.id })
+        .eq('id', full.id);
+      if (planUpdateErr) throw planUpdateErr;
+
+      const { error: memberErr } = await supabase
+        .from('team_members')
+        .insert({ team_id: team.id, user_id: authUser.id, role: 'lead' });
+      if (memberErr) throw memberErr;
+
+      full.team_id = team.id;
+    }
 
     let teamData = null;
     if (full.team_id) {
@@ -830,6 +971,22 @@ window.planShareEmail = function(url) {
   window.open(`mailto:?subject=${subject}&body=${body}`);
 };
 
+window.planShareSlack = function(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.innerHTML;
+    btn.textContent = 'Copied — paste in Slack ✓';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  });
+};
+
+window.planShowQr = function(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.innerHTML;
+    btn.textContent = 'Link copied — show to scan ✓';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  });
+};
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export async function initPlan() {
@@ -837,7 +994,7 @@ export async function initPlan() {
   const qpParams   = new URLSearchParams(window.location.search);
   const errCode    = hashParams.get('error_code') || qpParams.get('error_code');
   const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
-  const teamToken  = qpParams.get('team');
+  const teamToken  = qpParams.get('team') || localStorage.getItem('pendingTeamToken') || null;
 
   if (errCode) {
     const headline = errCode === 'otp_expired'
@@ -850,12 +1007,17 @@ export async function initPlan() {
   showLoading(true);
 
   const user = await getUser();
-  if (user) {
+
+  if (user && !user.is_anonymous) {
+    // Fully authenticated — load immediately and we're done.
     showLoading(false);
     await handleSignIn(user, teamToken);
     return;
   }
 
+  // For anonymous users or no session: keep the auth listener alive.
+  // When a magic link is clicked the anonymous session is upgraded to an
+  // authenticated one, firing SIGNED_IN — we must be listening for that.
   const unsubscribe = onAuthChange(async (event, authUser) => {
     if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
@@ -863,6 +1025,13 @@ export async function initPlan() {
       await handleSignIn(authUser, teamToken);
     }
   });
+
+  if (user && user.is_anonymous) {
+    // Show the anonymous user's plan right away (team tab won't show until
+    // they authenticate, but the checklist is visible immediately).
+    showLoading(false);
+    await handleSignIn(user, teamToken);
+  }
 
   setTimeout(() => {
     const root = $('plan-root');

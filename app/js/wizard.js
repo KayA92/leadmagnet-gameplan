@@ -339,6 +339,12 @@ async function handleSaveSubmit(e) {
     themes: state.plan?.themes || [],
   }));
 
+  // Persist the invite token separately so plan.js can call join_team even if
+  // Supabase strips the ?team= query param from the magic link redirect URL.
+  if (state.teamInviteToken) {
+    localStorage.setItem('pendingTeamToken', state.teamInviteToken);
+  }
+
   try {
     // Sign in anonymously and write to DB immediately (data safe even if link expires)
     let userId;
@@ -357,7 +363,7 @@ async function handleSaveSubmit(e) {
     );
     if (userErr) throw userErr;
 
-    const { data: newPlan, error: planErr } = await supabase.from('plans').insert({
+    const { error: planErr } = await supabase.from('plans').insert({
       user_id:     userId,
       attend_mode: state.answers.attendMode,
       problem:     state.answers.problem,
@@ -369,20 +375,8 @@ async function handleSaveSubmit(e) {
       ai_themes:   state.plan?.themes || [],
     }).select('id').single();
     if (planErr) throw planErr;
-
-    if (state.answers.attendMode === 'team-lead' && newPlan?.id) {
-      const { data: team } = await supabase
-        .from('teams')
-        .insert({ lead_user_id: userId, company: company || null })
-        .select('id, invite_token')
-        .single();
-
-      if (team) {
-        await supabase.from('plans').update({ team_id: team.id }).eq('id', newPlan.id);
-        await supabase.from('team_members').insert({ team_id: team.id, user_id: userId, role: 'lead' });
-        state.teamInviteToken = team.invite_token;
-      }
-    }
+    // Team creation happens on the plan page after the user authenticates via magic link,
+    // because the teams table requires an authenticated (non-anonymous) session.
   } catch (dbErr) {
     // Surface DB errors so they're visible during debugging
     const errEl = $('save-error');
@@ -393,7 +387,9 @@ async function handleSaveSubmit(e) {
     console.error('DB save error:', dbErr);
   }
 
-  // Send magic link — team lead's link redirects back with the team token so the plan page auto-joins
+  // Always forward the invite token if present — even if the member mistakenly selected
+  // "team-lead" in the wizard, the ?team= param ensures join_team runs on the plan page
+  // and attaches them to the correct team rather than creating a new one.
   const redirectTo = state.teamInviteToken
     ? `${window.location.origin}/app/plan/?team=${state.teamInviteToken}`
     : undefined;
@@ -413,24 +409,16 @@ async function handleSaveSubmit(e) {
   const sentEmail = $('sent-email');
   if (sentEmail) sentEmail.textContent = email;
 
-  if (state.answers.attendMode === 'team-lead' && state.teamInviteToken) {
-    const inviteUrl = `${window.location.origin}/app/?team=${state.teamInviteToken}`;
+  if (state.answers.attendMode === 'team-lead') {
     const block = $('team-invite-block');
-    const urlEl = $('team-invite-url');
-    const copyBtn = $('team-invite-copy');
     if (block) block.removeAttribute('hidden');
-    if (urlEl) urlEl.textContent = inviteUrl;
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(inviteUrl).then(() => {
-          copyBtn.textContent = 'Copied ✓';
-          setTimeout(() => { copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy link'; }, 2000);
-        });
-      });
-    }
-    // Update the "Go to your game plan" link to carry the team token
+  }
+  // Both team leads and invited members must click the magic link to activate team features.
+  if (state.answers.attendMode === 'team-lead' || state.teamInviteToken) {
     const ctaLink = $('magic-confirm-cta-link');
-    if (ctaLink) ctaLink.href = `/app/plan/?team=${state.teamInviteToken}`;
+    if (ctaLink) ctaLink.style.display = 'none';
+    const ctaNote = document.querySelector('.magic-confirm-cta-note');
+    if (ctaNote) ctaNote.style.display = 'none';
   }
 }
 
@@ -481,7 +469,7 @@ export async function initWizard() {
   }
 
   // ── Stage 0: hero CTA
-  $('hero-start')?.addEventListener('click', () => goToStage(1));
+  $('hero-start')?.addEventListener('click', () => goToStage(state.teamInviteToken ? 2 : 1));
 
   // ── Stage 1: attend mode (just-me pre-selected)
   document.querySelectorAll('[data-attend]').forEach(btn => {

@@ -1,6 +1,7 @@
 import { preFilterSessions, preFilterExhibitors } from './filter.js';
 import { matchSessions } from './api.js';
-import { sendMagicLink } from './auth.js';
+import { signInAnon, getUser, sendMagicLink } from './auth.js';
+import { supabase } from './supabase.js';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const state = {
@@ -308,7 +309,7 @@ async function handleSaveSubmit(e) {
   e.preventDefault();
   const btn = $('save-btn');
   btn.disabled = true;
-  btn.textContent = 'Sending…';
+  btn.textContent = 'Saving…';
 
   const firstName = $('inp-first').value.trim();
   const lastName  = $('inp-last').value.trim();
@@ -317,19 +318,18 @@ async function handleSaveSubmit(e) {
 
   state.user = { firstName, lastName, email, company };
 
-  // Enrich ranked results with full session/exhibitor objects so plan.js has titles, times, etc.
   const enrichedSessions = (state.plan?.sessions || []).map(ranked => {
     const full = state.allSessions.find(s => s.session_id === ranked.session_id);
     return full ? { ...full, ...ranked } : ranked;
   });
   const enrichedBooths = (state.plan?.booths || []).map(ranked => {
     const full = state.allExhibitors.find(
-      e => e.stand_number === ranked.stand_number || e.company_name === ranked.company_name,
+      ex => ex.stand_number === ranked.stand_number || ex.company_name === ranked.company_name,
     );
     return full ? { ...full, ...ranked } : ranked;
   });
 
-  // Store pending plan for plan.js to pick up after auth
+  // localStorage safety net — plan.js picks this up when the link is clicked on the same device
   localStorage.setItem('pendingPlan', JSON.stringify({
     answers: state.answers,
     user: state.user,
@@ -338,18 +338,54 @@ async function handleSaveSubmit(e) {
     themes: state.plan?.themes || [],
   }));
 
-  const { error } = await sendMagicLink(email);
+  try {
+    // Sign in anonymously and write to DB immediately (data safe even if link expires)
+    let userId;
+    const existing = await getUser();
+    if (existing) {
+      userId = existing.id;
+    } else {
+      const { data, error } = await signInAnon();
+      if (error) throw error;
+      userId = data.user.id;
+    }
 
-  if (error) {
+    await supabase.from('users').upsert(
+      { id: userId, email, first_name: firstName, last_name: lastName, company: company || null },
+      { onConflict: 'id' },
+    );
+
+    await supabase.from('plans').insert({
+      user_id:     userId,
+      attend_mode: state.answers.attendMode,
+      problem:     state.answers.problem,
+      categories:  state.answers.categories,
+      time_window: state.answers.time,
+      role:        state.answers.role,
+      sessions:    enrichedSessions,
+      booths:      enrichedBooths,
+      ai_themes:   state.plan?.themes || [],
+    });
+  } catch {
+    // DB save failed — localStorage still has the plan so the magic link path still works
+  }
+
+  // Send magic link — critical path, always runs regardless of DB outcome
+  const { error: emailErr } = await sendMagicLink(email);
+  if (emailErr) {
     btn.disabled = false;
     btn.textContent = 'Get my plan →';
     const errEl = $('save-error');
-    if (errEl) { errEl.textContent = error.message || 'Something went wrong. Please try again.'; errEl.style.display = 'block'; }
-  } else {
-    goToStage('email-sent');
-    const sentEmail = $('sent-email');
-    if (sentEmail) sentEmail.textContent = email;
+    if (errEl) {
+      errEl.textContent = emailErr.message || 'Something went wrong. Please try again.';
+      errEl.style.display = 'block';
+    }
+    return;
   }
+
+  goToStage('email-sent');
+  const sentEmail = $('sent-email');
+  if (sentEmail) sentEmail.textContent = email;
 }
 
 // ── Problem textarea helpers ──────────────────────────────────────────────────

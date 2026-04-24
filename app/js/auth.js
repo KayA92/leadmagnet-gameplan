@@ -27,3 +27,14 @@ export function onAuthChange(callback) {
   );
   return () => subscription.unsubscribe();
 }
+
+export async function signInAnon() {
+  return supabase.auth.signInAnonymously();
+}
+
+export async function updateUserEmail(email, redirectTo) {
+  return supabase.auth.updateUser({
+    email,
+    options: { emailRedirectTo: redirectTo },
+  });
+}

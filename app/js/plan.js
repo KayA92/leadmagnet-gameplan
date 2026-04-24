@@ -11,46 +11,6 @@ function escHtml(s) {
 
 // ── Supabase data access ──────────────────────────────────────────────────────
 
-// Upsert a users row keyed on the Supabase auth UID
-async function upsertUser(authUser, userMeta) {
-  const { error } = await supabase
-    .from('users')
-    .upsert(
-      {
-        id:         authUser.id,
-        email:      authUser.email,
-        first_name: userMeta?.firstName || '',
-        last_name:  userMeta?.lastName  || '',
-        company:    userMeta?.company   || null,
-      },
-      { onConflict: 'id' },
-    );
-
-  if (error) throw error;
-  return authUser.id;
-}
-
-async function insertPlan(userId, planData) {
-  const { data, error } = await supabase
-    .from('plans')
-    .insert({
-      user_id:    userId,
-      attend_mode: planData.answers.attendMode,
-      problem:    planData.answers.problem,
-      categories: planData.answers.categories,
-      time_window: planData.answers.time,
-      role:       planData.answers.role,
-      sessions:   planData.sessions,
-      booths:     planData.booths,
-      ai_themes:  planData.themes,
-    })
-    .select('id')
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
 async function loadLatestPlan(userId) {
   // 1. Get latest plan row
   const { data: plan, error: planErr } = await supabase
@@ -234,27 +194,39 @@ async function saveNote(planId, itemId, itemType, noteText) {
 
 // ── Auth flow ─────────────────────────────────────────────────────────────────
 async function handleSignIn(authUser) {
-  const pending = localStorage.getItem('pendingPlan');
-
-  if (pending) {
-    try {
+  try {
+    const pending = localStorage.getItem('pendingPlan');
+    if (pending) {
       const planData = JSON.parse(pending);
-      const userId = await upsertUser(authUser, planData.user);
-      await insertPlan(userId, planData);
+      await supabase.from('users').upsert(
+        {
+          id:         authUser.id,
+          email:      authUser.email,
+          first_name: planData.user?.firstName || '',
+          last_name:  planData.user?.lastName  || '',
+          company:    planData.user?.company   || null,
+        },
+        { onConflict: 'id' },
+      );
+      await supabase.from('plans').insert({
+        user_id:     authUser.id,
+        attend_mode: planData.answers.attendMode,
+        problem:     planData.answers.problem,
+        categories:  planData.answers.categories,
+        time_window: planData.answers.time,
+        role:        planData.answers.role,
+        sessions:    planData.sessions,
+        booths:      planData.booths,
+        ai_themes:   planData.themes || [],
+      });
       localStorage.removeItem('pendingPlan');
-      // Reload plan from DB (to include generated id)
-      const full = await loadLatestPlan(userId);
-      if (full) renderPlan(full);
-    } catch (err) {
-      console.error('Failed to save plan:', err);
-      const detail = err?.message || err?.details || String(err);
-      showError(`Could not save your plan: ${detail} — <a href="/app/" style="color:var(--mint)">Start again →</a>`);
     }
-  } else {
-    // Returning user — auth UID is the users table PK
     const full = await loadLatestPlan(authUser.id);
     if (full) renderPlan(full);
     else showNoPlanState();
+  } catch (err) {
+    const detail = err?.message || err?.details || String(err);
+    showError(`Could not save your plan: ${detail} — <a href="/app/" style="color:var(--mint)">Start again →</a>`);
   }
 }
 
@@ -342,7 +314,7 @@ export async function initPlan() {
 
   // Wait for auth state change (new user arriving via magic link)
   const unsubscribe = onAuthChange(async (event, authUser) => {
-    if (event === 'SIGNED_IN' && authUser) {
+    if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
       showLoading(false);
       await handleSignIn(authUser);

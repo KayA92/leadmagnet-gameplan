@@ -195,31 +195,35 @@ async function saveNote(planId, itemId, itemType, noteText) {
 // ── Auth flow ─────────────────────────────────────────────────────────────────
 async function handleSignIn(authUser) {
   try {
-    const pending = localStorage.getItem('pendingPlan');
-    if (pending) {
-      const planData = JSON.parse(pending);
-      await supabase.from('users').upsert(
-        {
-          id:         authUser.id,
-          email:      authUser.email,
-          first_name: planData.user?.firstName || '',
-          last_name:  planData.user?.lastName  || '',
-          company:    planData.user?.company   || null,
-        },
-        { onConflict: 'id' },
-      );
-      await supabase.from('plans').insert({
-        user_id:     authUser.id,
-        attend_mode: planData.answers.attendMode,
-        problem:     planData.answers.problem,
-        categories:  planData.answers.categories,
-        time_window: planData.answers.time,
-        role:        planData.answers.role,
-        sessions:    planData.sessions,
-        booths:      planData.booths,
-        ai_themes:   planData.themes || [],
-      });
-      localStorage.removeItem('pendingPlan');
+    // Anonymous users navigating directly to /plan/ — plan already in DB, keep pendingPlan
+    // in localStorage so the real magic-link sign-in can save it under their permanent UID.
+    if (!authUser.is_anonymous) {
+      const pending = localStorage.getItem('pendingPlan');
+      if (pending) {
+        const planData = JSON.parse(pending);
+        await supabase.from('users').upsert(
+          {
+            id:         authUser.id,
+            email:      authUser.email,
+            first_name: planData.user?.firstName || '',
+            last_name:  planData.user?.lastName  || '',
+            company:    planData.user?.company   || null,
+          },
+          { onConflict: 'id' },
+        );
+        await supabase.from('plans').insert({
+          user_id:     authUser.id,
+          attend_mode: planData.answers.attendMode,
+          problem:     planData.answers.problem,
+          categories:  planData.answers.categories,
+          time_window: planData.answers.time,
+          role:        planData.answers.role,
+          sessions:    planData.sessions,
+          booths:      planData.booths,
+          ai_themes:   planData.themes || [],
+        });
+        localStorage.removeItem('pendingPlan');
+      }
     }
     const full = await loadLatestPlan(authUser.id);
     if (full) renderPlan(full);

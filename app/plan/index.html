@@ -84,7 +84,7 @@
   padding: 3px 10px; color: var(--text-muted); font-weight: 400;
 }
 
-/* ── Plan-page mini-item overrides (more content than wizard preview) ── */
+/* ── Booth mini-item overrides ── */
 .plan-mini-item { align-items: flex-start; padding: 14px 16px; }
 .plan-mini-item .mini-tick { margin-top: 2px; }
 .plan-mini-item .mini-title {
@@ -92,15 +92,25 @@
   font-size: 14px; font-weight: 600;
 }
 .plan-mini-item .mini-meta { margin: 4px 0 8px; }
-.plan-item-reason { font-size: 13px; color: var(--text-muted); line-height: 1.45; margin-bottom: 12px; }
+
+/* ── Shared session + booth content styles ── */
+.plan-item-reason { font-size: 13px; color: var(--text-muted); line-height: 1.45; margin: 8px 0 10px; }
 .plan-item-reason-label {
   font-family: 'JetBrains Mono', monospace; font-size: 10px;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--mint); margin-right: 6px;
 }
 .plan-item-actions {
   display: flex; flex-direction: column; gap: 10px;
-  padding-top: 10px; border-top: 1px solid var(--ink-3);
+  padding-top: 10px; border-top: 1px solid var(--ink-3); margin-top: 10px;
 }
+
+/* ── Checklist layout within plan sections ── */
+.plan-section .checklist { display: flex; flex-direction: column; gap: 0; }
+.plan-section .checklist-row { border-radius: 10px; margin-bottom: 6px; }
+.plan-section .checklist-main-title { font-size: 14px; font-weight: 600; white-space: normal; }
+.plan-section .checklist-main-meta { margin: 4px 0 8px; }
+.plan-section .checklist-why-header { margin-top: 10px; }
+.plan-section .checklist-alternatives { margin-top: 10px; }
 
 /* ── Ratings ── */
 .rating-wrap { display: flex; align-items: center; gap: 4px; }

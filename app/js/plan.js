@@ -12,7 +12,6 @@ function escHtml(s) {
 // ── Supabase data access ──────────────────────────────────────────────────────
 
 async function loadLatestPlan(userId) {
-  // 1. Get latest plan row
   const { data: plan, error: planErr } = await supabase
     .from('plans')
     .select('*')
@@ -24,7 +23,6 @@ async function loadLatestPlan(userId) {
   if (planErr) throw planErr;
   if (!plan) return null;
 
-  // 2. Get notes for that plan
   const { data: notes } = await supabase
     .from('notes')
     .select('*')
@@ -33,7 +31,54 @@ async function loadLatestPlan(userId) {
   return { ...plan, notes: notes || [] };
 }
 
+// ── AI match helpers ──────────────────────────────────────────────────────────
+
+function whyMatched(session, plan) {
+  const tags       = [];
+  const categories = plan.categories || [];
+  const problem    = plan.problem    || '';
+  const role       = plan.role       || '';
+  const haystack   = `${session.title || ''} ${session.description || ''}`.toLowerCase();
+
+  for (const cat of categories) {
+    if (session.category === cat || haystack.includes(cat.toLowerCase())) {
+      tags.push({ type: 'category', text: cat });
+    }
+  }
+
+  if (problem) {
+    const words = problem.toLowerCase().split(/\W+/).filter(w => w.length > 4);
+    for (const w of words) {
+      if (haystack.includes(w)) {
+        tags.push({ type: 'problem', text: `Your problem: "${w}"` });
+        break;
+      }
+    }
+  }
+
+  if (role) tags.push({ type: 'role', text: `Fits: ${role}` });
+
+  return tags.slice(0, 5);
+}
+
+function findAlternatives(session, planSessions, allSessions, categories) {
+  const planIds = new Set(planSessions.map(s => s.session_id));
+  return allSessions.filter(s =>
+    s.session_id !== session.session_id &&
+    !planIds.has(s.session_id) &&
+    s.day === session.day &&
+    s.start_time === session.start_time &&
+    categories.some(cat => s.category === cat),
+  ).slice(0, 1);
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+
 const TICK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+const STAR_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+const ALT_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
 function flames(rating) {
   return [1, 2, 3].map(n =>
@@ -42,14 +87,15 @@ function flames(rating) {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderPlan(plan) {
+function renderPlan(plan, allSessions = []) {
   const root = $('plan-root');
   if (!root) return;
 
-  const sessions = plan.sessions || [];
-  const booths   = plan.booths   || [];
-  const themes   = plan.ai_themes || [];
-  const notes    = plan.notes    || [];
+  const sessions   = plan.sessions   || [];
+  const booths     = plan.booths     || [];
+  const themes     = plan.ai_themes  || [];
+  const notes      = plan.notes      || [];
+  const categories = plan.categories || [];
 
   const notesByItem = {};
   for (const n of notes) {
@@ -59,23 +105,53 @@ function renderPlan(plan) {
   const themePills = themes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
 
   const sessionItems = sessions.map((item, i) => {
-    const noteKey = `session:${item.session_id}`;
+    const noteKey      = `session:${item.session_id}`;
     const existingNote = notesByItem[noteKey] || '';
-    const dayLabel = item.day === 'Day 1' ? 'Wed 13 May' : item.day === 'Day 2' ? 'Thu 14 May' : '';
-    const timeMeta = [item.start_time, dayLabel, item.theatre].filter(Boolean).map(escHtml).join(' · ');
+    const dayLabel     = item.day === 'Day 1' ? 'Wed 13 May' : item.day === 'Day 2' ? 'Thu 14 May' : '';
+    const whyTags      = whyMatched(item, plan);
+    const alts         = findAlternatives(item, sessions, allSessions, categories);
+
+    const whyHtml = whyTags.length ? `
+      <div class="checklist-why-header">${STAR_SVG} Why AI picked this</div>
+      <div class="checklist-why-tags">
+        ${whyTags.map(t => `<span class="checklist-why-tag why-${t.type}">${escHtml(t.text)}</span>`).join('')}
+      </div>` : '';
+
+    const altsHtml = alts.length ? `
+      <div class="checklist-alternatives">
+        <div class="checklist-alternatives-label">${ALT_SVG} Also strong at ${escHtml(item.start_time || '')}</div>
+        ${alts.map(alt => `
+          <div class="checklist-alternative-card">
+            <div class="checklist-alternative-body">
+              <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
+              <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
+            </div>
+          </div>`).join('')}
+      </div>` : '';
+
     return `
-      <div class="mini-item plan-mini-item" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
-        <div class="mini-tick">${TICK_SVG}</div>
-        <div class="mini-body">
-          <div class="mini-title">${escHtml(item.title || item.session_id)}</div>
-          <div class="mini-meta"><span class="type-pill session">Session</span>${timeMeta}</div>
-          ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why you</span>${escHtml(item.reason)}</p>` : ''}
-          <div class="plan-item-actions">
-            <div class="rating-wrap">${flames(item.rating)}</div>
-            <div class="note-wrap">
-              ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
-              <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
-              <button class="save-note-btn btn-sm">Save note</button>
+      <div class="checklist-row${item.attended ? ' attended' : ''}" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
+        <div class="checklist-row-main">
+          <div class="checklist-row-leftcol">
+            <button class="checklist-box" aria-label="Mark as attended">${TICK_SVG}</button>
+            <div class="checklist-time-block">
+              <div class="checklist-time-main">${escHtml(item.start_time || '')}</div>
+              <div class="checklist-time-sub">${escHtml(dayLabel)}</div>
+            </div>
+          </div>
+          <div class="checklist-main">
+            <div class="checklist-main-title">${escHtml(item.title || item.session_id)}</div>
+            <div class="checklist-main-meta">${item.theatre ? escHtml(item.theatre) + ' · ' : ''}<span class="type-pill session">Session</span></div>
+            ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why you</span>${escHtml(item.reason)}</p>` : ''}
+            ${whyHtml}
+            ${altsHtml}
+            <div class="plan-item-actions">
+              <div class="rating-wrap">${flames(item.rating)}</div>
+              <div class="note-wrap">
+                ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
+                <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
+                <button class="save-note-btn btn-sm">Save note</button>
+              </div>
             </div>
           </div>
         </div>
@@ -83,10 +159,10 @@ function renderPlan(plan) {
   }).join('');
 
   const boothItems = booths.map((item, i) => {
-    const noteKey = `booth:${item.stand_number}`;
+    const noteKey      = `booth:${item.stand_number}`;
     const existingNote = notesByItem[noteKey] || '';
-    const products = (item.normalised_products || []).slice(0, 2).join(', ');
-    const boothMeta = [`Stand ${escHtml(item.stand_number || '')}`, products ? escHtml(products) : ''].filter(Boolean).join(' · ');
+    const products     = (item.normalised_products || []).slice(0, 2).join(', ');
+    const boothMeta    = [`Stand ${escHtml(item.stand_number || '')}`, products ? escHtml(products) : ''].filter(Boolean).join(' · ');
     return `
       <div class="mini-item plan-mini-item" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         <div class="mini-tick">${TICK_SVG}</div>
@@ -119,7 +195,7 @@ function renderPlan(plan) {
 
     <section class="plan-section">
       <h2 class="plan-section-title">Your sessions <span class="count-badge">${sessions.length}</span></h2>
-      <div class="mini-item-list">${sessionItems || '<p class="empty-state">No sessions in your plan yet.</p>'}</div>
+      <div class="checklist">${sessionItems || '<p class="empty-state">No sessions in your plan yet.</p>'}</div>
     </section>
 
     ${booths.length ? `
@@ -133,19 +209,28 @@ function renderPlan(plan) {
   attachPlanListeners(plan.id, plan.sessions, plan.booths);
 }
 
-// ── Event listeners for rating and notes ─────────────────────────────────────
+// ── Event listeners ───────────────────────────────────────────────────────────
 function attachPlanListeners(planId, sessions, booths) {
+  // Attended toggle
+  document.querySelectorAll('.checklist-box').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const row    = btn.closest('[data-item-type]');
+      const itemId = row.dataset.itemId;
+      row.classList.toggle('attended');
+      await toggleAttended(planId, itemId, sessions);
+    });
+  });
+
   // Ratings
   document.querySelectorAll('.flame-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const card = btn.closest('[data-item-type]');
+      const card     = btn.closest('[data-item-type]');
       const itemType = card.dataset.itemType;
       const itemId   = card.dataset.itemId;
       const rating   = parseInt(btn.dataset.rating);
 
-      // Toggle off if same rating clicked
       const currentRating = parseInt(card.dataset.rating || '0');
-      const newRating = currentRating === rating ? 0 : rating;
+      const newRating     = currentRating === rating ? 0 : rating;
 
       card.dataset.rating = newRating;
       card.querySelectorAll('.flame-btn').forEach((b, i) => {
@@ -159,18 +244,25 @@ function attachPlanListeners(planId, sessions, booths) {
   // Notes
   document.querySelectorAll('.save-note-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const card  = btn.closest('[data-item-type]');
+      const card     = btn.closest('[data-item-type]');
       const itemType = card.dataset.itemType;
       const itemId   = card.dataset.itemId;
-      const text  = card.querySelector('.note-input').value.trim();
+      const text     = card.querySelector('.note-input').value.trim();
 
       btn.textContent = 'Saving…';
-      btn.disabled = true;
+      btn.disabled    = true;
       await saveNote(planId, itemId, itemType, text);
       btn.textContent = 'Saved ✓';
       setTimeout(() => { btn.textContent = 'Save note'; btn.disabled = false; }, 1500);
     });
   });
+}
+
+async function toggleAttended(planId, itemId, sessions) {
+  const updated = sessions.map(s =>
+    s.session_id === itemId ? { ...s, attended: !s.attended } : s,
+  );
+  await supabase.from('plans').update({ sessions: updated }).eq('id', planId);
 }
 
 async function updateRating(planId, itemId, itemType, rating, sessions, booths) {
@@ -195,8 +287,6 @@ async function saveNote(planId, itemId, itemType, noteText) {
 // ── Auth flow ─────────────────────────────────────────────────────────────────
 async function handleSignIn(authUser) {
   try {
-    // Anonymous users navigating directly to /plan/ — plan already in DB, keep pendingPlan
-    // in localStorage so the real magic-link sign-in can save it under their permanent UID.
     if (!authUser.is_anonymous) {
       const pending = localStorage.getItem('pendingPlan');
       if (pending) {
@@ -225,8 +315,13 @@ async function handleSignIn(authUser) {
         localStorage.removeItem('pendingPlan');
       }
     }
-    const full = await loadLatestPlan(authUser.id);
-    if (full) renderPlan(full);
+
+    const [full, allSessions] = await Promise.all([
+      loadLatestPlan(authUser.id),
+      fetch('/data/programme.json').then(r => r.json()).catch(() => []),
+    ]);
+
+    if (full) renderPlan(full, allSessions);
     else showNoPlanState();
   } catch (err) {
     const detail = err?.message || err?.details || String(err);
@@ -272,11 +367,11 @@ function showReauthForm(headlineMsg = '') {
     const email = $('reauth-email').value.trim();
     const btn   = $('reauth-btn');
     btn.textContent = 'Sending…';
-    btn.disabled = true;
+    btn.disabled    = true;
     const { error } = await sendMagicLink(email);
     const msg = $('reauth-msg');
     if (error) {
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = 'Send me my plan →';
       if (msg) { msg.textContent = error.message || 'Something went wrong. Please try again.'; msg.style.color = '#ef4444'; msg.style.display = 'block'; }
     } else {
@@ -293,11 +388,10 @@ function showLoading(show) {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 export async function initPlan() {
-  // Detect Supabase auth errors returned in the redirect URL (both implicit #hash and PKCE ?query formats)
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const qpParams   = new URLSearchParams(window.location.search);
-  const errCode = hashParams.get('error_code') || qpParams.get('error_code');
-  const errDesc = hashParams.get('error_description') || qpParams.get('error_description');
+  const errCode    = hashParams.get('error_code') || qpParams.get('error_code');
+  const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
   if (errCode) {
     const headline = errCode === 'otp_expired'
       ? 'Your magic link has expired or was already used.'
@@ -308,7 +402,6 @@ export async function initPlan() {
 
   showLoading(true);
 
-  // Check for existing session first (returning user with localStorage session)
   const user = await getUser();
   if (user) {
     showLoading(false);
@@ -316,7 +409,6 @@ export async function initPlan() {
     return;
   }
 
-  // Wait for auth state change (new user arriving via magic link)
   const unsubscribe = onAuthChange(async (event, authUser) => {
     if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
@@ -325,7 +417,6 @@ export async function initPlan() {
     }
   });
 
-  // If nothing happens in 8s, show the re-auth form for returning users
   setTimeout(() => {
     const root = $('plan-root');
     if (root && root.innerHTML.trim() === '') {

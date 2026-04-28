@@ -1556,7 +1556,34 @@ window.planSwitchTab = function(tabId) {
   _currentTab = tabId;
   renderApp();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (tabId === 'debrief') refreshDebriefNotes();
 };
+
+async function refreshDebriefNotes() {
+  if (!_plan?.id) return;
+
+  const { data: freshNotes } = await supabase.from('notes').select('*').eq('plan_id', _plan.id);
+  if (freshNotes) _plan.notes = freshNotes;
+
+  if (_teamData && _plan.team_id) {
+    const [{ data: freshTeamPlans }, { data: freshMembers }] = await Promise.all([
+      supabase.from('plans').select('id, user_id, problem, categories, role, sessions, booths, ai_themes').eq('team_id', _plan.team_id),
+      supabase.from('team_members').select('role, joined_at, users(id, first_name, last_name, company)').eq('team_id', _plan.team_id),
+    ]);
+
+    if (freshTeamPlans) {
+      _teamData.teamPlans = freshTeamPlans;
+      const planIds = freshTeamPlans.map(p => p.id);
+      if (planIds.length) {
+        const { data: freshTeamNotes } = await supabase.from('notes').select('*').in('plan_id', planIds);
+        if (freshTeamNotes) _teamData.allNotes = freshTeamNotes;
+      }
+    }
+    if (freshMembers) _teamData.members = freshMembers;
+  }
+
+  if (_currentTab === 'debrief') renderApp();
+}
 
 
 window.planSwapSession = function(currentId, newId) {
@@ -1651,6 +1678,20 @@ window.planSaveNote = async function(noteId) {
   await saveNote(_plan.id, itemId, itemType, text, _authUser?.id);
   panel.dataset.savedText = text;
   _renderNotePanel(panel, noteId, text);
+
+  // Keep in-memory note arrays current so debrief reflects changes immediately
+  const noteObj = { plan_id: _plan.id, item_type: itemType, item_id: itemId, note_text: text, created_by: _authUser?.id || null };
+  const notes = _plan.notes || [];
+  const idx = notes.findIndex(n => n.item_type === itemType && n.item_id === itemId && n.plan_id === _plan.id);
+  if (idx >= 0) notes[idx] = noteObj; else notes.push(noteObj);
+  _plan.notes = notes;
+
+  if (_teamData) {
+    const teamIdx = _teamData.allNotes.findIndex(n => n.item_type === itemType && n.item_id === itemId && n.plan_id === _plan.id);
+    if (teamIdx >= 0) _teamData.allNotes[teamIdx] = noteObj; else _teamData.allNotes.push(noteObj);
+  }
+
+  if (_currentTab === 'debrief') renderApp();
 };
 
 window.planDismissAlternative = function(currentId, altId, ev) {

@@ -374,7 +374,7 @@ async function handleSaveSubmit(e) {
     );
     if (userErr) throw userErr;
 
-    const { error: planErr } = await supabase.from('plans').insert({
+    const { data: savedPlan, error: planErr } = await supabase.from('plans').insert({
       user_id:     userId,
       attend_mode: state.answers.attendMode,
       problem:     state.answers.problem,
@@ -386,16 +386,19 @@ async function handleSaveSubmit(e) {
       ai_themes:   state.plan?.themes || [],
     }).select('id').single();
     if (planErr) throw planErr;
+    localStorage.setItem('pendingPlanId', savedPlan.id);
     // Team creation happens on the plan page after the user authenticates via magic link,
     // because the teams table requires an authenticated (non-anonymous) session.
   } catch (dbErr) {
-    // Surface DB errors so they're visible during debugging
     const errEl = $('save-error');
     if (errEl) {
-      errEl.textContent = `DB save failed: ${dbErr?.message || dbErr?.details || String(dbErr)}`;
+      errEl.textContent = `Save failed: ${dbErr?.message || dbErr?.details || String(dbErr)}`;
       errEl.style.display = 'block';
     }
     console.error('DB save error:', dbErr);
+    btn.disabled = false;
+    btn.textContent = 'Unlock my game plan';
+    return;
   }
 
   // Always forward the invite token if present — even if the member mistakenly selected
@@ -407,7 +410,7 @@ async function handleSaveSubmit(e) {
   const { error: emailErr } = await sendMagicLink(email, redirectTo);
   if (emailErr) {
     btn.disabled = false;
-    btn.textContent = 'Get my plan →';
+    btn.textContent = 'Unlock my game plan';
     const errEl = $('save-error');
     if (errEl) {
       errEl.textContent = emailErr.message || 'Something went wrong. Please try again.';

@@ -15,8 +15,8 @@ export async function getSession() {
 }
 
 export async function getUser() {
-  const session = await getSession();
-  return session?.user ?? null;
+  const { data: { user } } = await supabase.auth.getUser();
+  return user ?? null;
 }
 
 // Fires callback with (event, user) on every auth state change.

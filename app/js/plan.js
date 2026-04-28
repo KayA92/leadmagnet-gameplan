@@ -793,24 +793,39 @@ async function handleSignIn(authUser, teamToken) {
       if (upsertErr) throw upsertErr;
 
       if (planData) {
-        const { count } = await supabase
-          .from('plans')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', authUser.id);
+        const pendingPlanId = localStorage.getItem('pendingPlanId');
+        let claimed = false;
 
-        if (!count) {
-          const { error: insertErr } = await supabase.from('plans').insert({
-            user_id:     authUser.id,
-            attend_mode: planData.answers.attendMode,
-            problem:     planData.answers.problem,
-            categories:  planData.answers.categories,
-            time_window: planData.answers.time,
-            role:        planData.answers.role,
-            sessions:    planData.sessions,
-            booths:      planData.booths,
-            ai_themes:   planData.themes || [],
-          });
-          if (insertErr) throw insertErr;
+        if (pendingPlanId) {
+          const { error: claimErr } = await supabase.rpc('claim_anonymous_plan', { p_plan_id: pendingPlanId });
+          if (!claimErr) {
+            claimed = true;
+          } else {
+            console.warn('claim_anonymous_plan failed:', claimErr);
+          }
+          localStorage.removeItem('pendingPlanId');
+        }
+
+        if (!claimed) {
+          const { count } = await supabase
+            .from('plans')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', authUser.id);
+
+          if (!count) {
+            const { error: insertErr } = await supabase.from('plans').insert({
+              user_id:     authUser.id,
+              attend_mode: planData.answers.attendMode,
+              problem:     planData.answers.problem,
+              categories:  planData.answers.categories,
+              time_window: planData.answers.time,
+              role:        planData.answers.role,
+              sessions:    planData.sessions,
+              booths:      planData.booths,
+              ai_themes:   planData.themes || [],
+            });
+            if (insertErr) throw insertErr;
+          }
         }
         localStorage.removeItem('pendingPlan');
       }

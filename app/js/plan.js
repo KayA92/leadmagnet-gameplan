@@ -889,11 +889,15 @@ async function handleSignIn(authUser, teamToken) {
       // causing join_team to fail with a foreign key violation on team_members.
       const { error: upsertErr } = await supabase.from('users').upsert(
         {
-          id:         authUser.id,
-          email:      authUser.email || '',
-          first_name: planData?.user?.firstName || '',
-          last_name:  planData?.user?.lastName  || '',
-          company:    planData?.user?.company   || null,
+          id:    authUser.id,
+          email: authUser.email || '',
+          // Only overwrite name/company when we have fresh data from this browser session.
+          // Omitting these fields on conflict leaves existing DB values intact.
+          ...(planData?.user ? {
+            first_name: planData.user.firstName || '',
+            last_name:  planData.user.lastName  || '',
+            company:    planData.user.company   || null,
+          } : {}),
         },
         { onConflict: 'id' },
       );

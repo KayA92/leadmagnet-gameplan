@@ -224,7 +224,7 @@ function buildFallbackPlan() {
       rank: i + 1,
       reason: 'Aligned with your selected categories.',
     })),
-    themes: ['Sessions matched to your priorities and availability'],
+    themes: [],
   };
 }
 

@@ -15,7 +15,7 @@ let _allSessions = [];
 let _teamData    = null;
 let _authUser    = null;
 let _currentTab  = 'checklist';
-let _checklistFilter = 'all';
+
 let _dismissedAlternatives = new Set();
 let _resolvedSlots = new Set();
 let _inviteNudgeDismissed = false;
@@ -156,9 +156,14 @@ const TICK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const STAR_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
 const ALT_SVG  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
-function flames(rating) {
+
+function flameSvg() {
+  return `<svg class="flame-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+}
+
+function rowFlames(rating) {
   return [1, 2, 3].map(n =>
-    `<button class="flame-btn ${(rating || 0) >= n ? 'lit' : ''}" data-rating="${n}" aria-label="${n} flame">🔥</button>`
+    `<button class="row-fire-btn flame-btn ${(rating || 0) >= n ? 'lit' : ''}" data-rating="${n}" aria-label="${n} flame">${flameSvg()}</button>`
   ).join('');
 }
 
@@ -211,6 +216,72 @@ function renderTabNav() {
 
 // ── Checklist tab ─────────────────────────────────────────────────────────────
 
+function parseTimeToMinutes(hhmm) {
+  if (!hhmm) return 0;
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + (m || 0);
+}
+
+function suggestBoothsForGap() {
+  return (_plan?.booths || []).slice(0, 2).map(b => ({ name: b.company_name }));
+}
+
+function renderGapCard(startTime, endTime) {
+  const diffMin = parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
+  if (diffMin < 20) return '';
+  const hours    = Math.floor(diffMin / 60);
+  const mins     = diffMin % 60;
+  const duration = hours > 0 ? `${hours}h${mins > 0 ? ` ${mins}m` : ''}` : `${mins} min`;
+  const suggested = suggestBoothsForGap();
+  const boothLine = suggested.length
+    ? suggested.map(b => `<strong>${escHtml(b.name)}</strong>`).join(' · ')
+    : 'your priority booths';
+  const kind = diffMin >= 60 ? 'Lunch break' : diffMin >= 45 ? 'Long break' : 'Break';
+  return `
+    <div class="checklist-gap-card">
+      <div class="checklist-gap-main">
+        <div class="checklist-gap-time">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span><strong>${kind}</strong> · ${escHtml(startTime)}–${escHtml(endTime)} · ${duration}</span>
+        </div>
+        <div class="checklist-gap-body">Good window to visit: ${boothLine}</div>
+      </div>
+      <button class="checklist-gap-cta" onclick="document.getElementById('booths-anchor')?.scrollIntoView({behavior:'smooth'})" type="button">
+        View booths
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>`;
+}
+
+function _renderNotePanel(panel, noteId, savedText) {
+  const hintText = noteId.startsWith('booth:')
+    ? 'Pricing · Demo scheduled · Decision blocker'
+    : 'What stood out · Who to follow up with';
+  if (savedText) {
+    panel.className = 'checklist-note-panel saved';
+    panel.innerHTML = `
+      <div class="note-saved-body">
+        <div class="note-saved-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Your note
+        </div>
+        <div class="note-saved-text">${escHtml(savedText)}</div>
+      </div>
+      <button class="note-saved-edit-btn" onclick="planOpenNote('${escHtml(noteId)}')" type="button" aria-label="Edit note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Edit
+      </button>`;
+  } else {
+    panel.className = 'checklist-note-panel idle';
+    panel.innerHTML = `
+      <button class="note-add-btn" onclick="planOpenNote('${escHtml(noteId)}')" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add a note
+      </button>
+      <div class="note-add-hint">${escHtml(hintText)}</div>`;
+  }
+}
+
 function renderChecklistTab() {
   const plan        = _plan;
   if (!plan) return '';
@@ -252,7 +323,8 @@ function renderChecklistTab() {
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
 
-  const themePills = themes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
+  const filteredThemes = themes.filter(t => !t.toLowerCase().includes('matched to your priorities'));
+  const themePills = filteredThemes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
 
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
@@ -303,6 +375,32 @@ function renderChecklistTab() {
         }).join('')}
       </div>` : '';
 
+    const noteItemId  = `session:${escHtml(item.session_id)}`;
+    const notePanel   = existingNote
+      ? `<div class="checklist-note-panel saved" data-note-id="${noteItemId}" data-saved-text="${escHtml(existingNote)}">
+           <div class="note-saved-body">
+             <div class="note-saved-label">
+               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+               Your note
+             </div>
+             <div class="note-saved-text">${escHtml(existingNote)}</div>
+           </div>
+           <button class="note-saved-edit-btn" onclick="planOpenNote('${noteItemId}')" type="button" aria-label="Edit note">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+             Edit
+           </button>
+         </div>`
+      : `<div class="checklist-note-panel idle" data-note-id="${noteItemId}" data-saved-text="">
+           <button class="note-add-btn" onclick="planOpenNote('${noteItemId}')" type="button">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+             Add a note
+           </button>
+           <div class="note-add-hint">What stood out · Who to follow up with</div>
+         </div>`;
+
+    const userInitial = (_authUser?.email || 'Y')[0].toUpperCase();
+    const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
+
     return `
       <div class="checklist-row${item.attended ? ' attended' : ''} is-session" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
         <div class="checklist-row-main">
@@ -317,18 +415,22 @@ function renderChecklistTab() {
           <div class="checklist-main">
             <div class="checklist-main-title">${escHtml(item.title || item.session_id)}</div>
             <div class="checklist-main-meta">${item.theatre ? escHtml(item.theatre) + ' · ' : ''}<span class="type-pill session">Session</span></div>
-            ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why you</span>${escHtml(item.reason)}</p>` : ''}
             ${whyHtml}
             ${altsHtml}
-            <div class="plan-item-actions">
-              <div class="rating-wrap">${flames(item.rating)}</div>
-              <div class="note-wrap">
-                ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
-                <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
-                <button class="save-note-btn btn-sm">Save note</button>
+            ${notePanel}
+            ${teamNotesHtml}
+          </div>
+          <div class="checklist-row-right">
+            <div class="row-rate-wrap">
+              <div class="row-rate-caption">${ratingLabel}</div>
+              <div class="row-rate-inline">${rowFlames(item.rating)}</div>
+            </div>
+            <div class="row-team-wrap">
+              <div class="row-rate-caption">Going</div>
+              <div class="checklist-avatars">
+                <div class="mini-av t3" title="You">${userInitial}</div>
               </div>
             </div>
-            ${teamNotesHtml}
           </div>
         </div>
       </div>`;
@@ -349,6 +451,31 @@ function renderChecklistTab() {
         <a class="checklist-row-host-link" href="https://www.workiro.com" target="_blank" rel="noopener">workiro.com</a>
       </div>` : '';
 
+    const noteItemId  = `booth:${escHtml(item.stand_number)}`;
+    const notePanel   = existingNote
+      ? `<div class="checklist-note-panel saved" data-note-id="${noteItemId}" data-saved-text="${escHtml(existingNote)}">
+           <div class="note-saved-body">
+             <div class="note-saved-label">
+               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+               Your note
+             </div>
+             <div class="note-saved-text">${escHtml(existingNote)}</div>
+           </div>
+           <button class="note-saved-edit-btn" onclick="planOpenNote('${noteItemId}')" type="button" aria-label="Edit note">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+             Edit
+           </button>
+         </div>`
+      : `<div class="checklist-note-panel idle" data-note-id="${noteItemId}" data-saved-text="">
+           <button class="note-add-btn" onclick="planOpenNote('${noteItemId}')" type="button">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+             Add a note
+           </button>
+           <div class="note-add-hint">Pricing · Demo scheduled · Decision blocker</div>
+         </div>`;
+
+    const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
+
     return `
       <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
@@ -363,21 +490,19 @@ function renderChecklistTab() {
           <div class="checklist-main">
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta"><span class="type-pill booth">Booth</span>${products ? ' · ' + escHtml(products) : ''}</div>
-            ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why visit</span>${escHtml(item.reason)}</p>` : ''}
-            <div class="plan-item-actions">
-              <div class="rating-wrap">${flames(item.rating)}</div>
-              <div class="note-wrap">
-                ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
-                <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
-                <button class="save-note-btn btn-sm">Save note</button>
-              </div>
+            ${notePanel}
+          </div>
+          <div class="checklist-row-right">
+            <div class="row-rate-wrap">
+              <div class="row-rate-caption">${ratingLabel}</div>
+              <div class="row-rate-inline">${rowFlames(item.rating)}</div>
             </div>
           </div>
         </div>
       </div>`;
   }
 
-  // Build session HTML with day group labels
+  // Build session HTML with day group labels and gap cards
   let currentDay = null;
   const sessionParts = [];
   sortedSessions.forEach((item, i) => {
@@ -388,6 +513,11 @@ function renderChecklistTab() {
       if (dayLabel) sessionParts.push(`<div class="checklist-day-label">${dayLabel}</div>`);
     }
     sessionParts.push(renderSessionRow(item, i));
+    const next = sortedSessions[i + 1];
+    if (next && next.day === item.day && item.end_time && next.start_time) {
+      const gap = parseTimeToMinutes(next.start_time) - parseTimeToMinutes(item.end_time);
+      if (gap >= 20) sessionParts.push(renderGapCard(item.end_time, next.start_time));
+    }
   });
   const sessionItems = sessionParts.join('');
 
@@ -840,19 +970,6 @@ function attachPlanListeners(planId, sessions, booths) {
     });
   });
 
-  document.querySelectorAll('.save-note-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const card     = btn.closest('[data-item-type]');
-      const itemType = card.dataset.itemType;
-      const itemId   = card.dataset.itemId;
-      const text     = card.querySelector('.note-input').value.trim();
-      btn.textContent = 'Saving…';
-      btn.disabled    = true;
-      await saveNote(planId, itemId, itemType, text, _authUser?.id);
-      btn.textContent = 'Saved ✓';
-      setTimeout(() => { btn.textContent = 'Save note'; btn.disabled = false; }, 1500);
-    });
-  });
 }
 
 async function toggleAttended(planId, itemId, sessions) {
@@ -1102,10 +1219,6 @@ window.planSwitchTab = function(tabId) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.planSetFilter = function(filter) {
-  _checklistFilter = filter;
-  renderApp();
-};
 
 window.planSwapSession = function(currentId, newId) {
   if (!_plan) return;
@@ -1124,6 +1237,53 @@ window.planDismissInviteNudge = function(ev) {
   if (ev) ev.stopPropagation();
   _inviteNudgeDismissed = true;
   renderApp();
+};
+
+window.planOpenNote = function(noteId) {
+  const panel = document.querySelector(`.checklist-note-panel[data-note-id="${CSS.escape(noteId)}"]`);
+  if (!panel) return;
+  const savedText = panel.dataset.savedText || '';
+  panel.className = 'checklist-note-panel editing';
+  panel.innerHTML = `
+    <div class="note-edit-head"><span class="note-edit-label">Your note</span></div>
+    <textarea class="rate-panel-note" id="noteDraft-${escHtml(noteId)}"
+      placeholder="What stood out · Who to follow up with"
+      maxlength="280">${escHtml(savedText)}</textarea>
+    <div class="note-edit-actions">
+      <div class="note-edit-count"><span id="noteCount-${escHtml(noteId)}">${savedText.length}</span> / 280</div>
+      <div class="note-edit-buttons">
+        <button class="note-edit-btn cancel" onclick="planCancelNote('${escHtml(noteId)}')" type="button">Cancel</button>
+        <button class="note-edit-btn save" onclick="planSaveNote('${escHtml(noteId)}')" type="button">Save note</button>
+      </div>
+    </div>`;
+  const ta = document.getElementById(`noteDraft-${noteId}`);
+  if (ta) {
+    ta.addEventListener('input', () => {
+      const counter = document.getElementById(`noteCount-${noteId}`);
+      if (counter) counter.textContent = ta.value.length;
+    });
+    ta.focus();
+  }
+};
+
+window.planCancelNote = function(noteId) {
+  const panel = document.querySelector(`.checklist-note-panel[data-note-id="${CSS.escape(noteId)}"]`);
+  if (!panel) return;
+  _renderNotePanel(panel, noteId, panel.dataset.savedText || '');
+};
+
+window.planSaveNote = async function(noteId) {
+  if (!_plan?.id) return;
+  const ta = document.getElementById(`noteDraft-${noteId}`);
+  const text = ta?.value?.trim() || '';
+  const panel = document.querySelector(`.checklist-note-panel[data-note-id="${CSS.escape(noteId)}"]`);
+  if (!panel) return;
+  const colonIdx = noteId.indexOf(':');
+  const itemType = noteId.slice(0, colonIdx);
+  const itemId   = noteId.slice(colonIdx + 1);
+  await saveNote(_plan.id, itemId, itemType, text, _authUser?.id);
+  panel.dataset.savedText = text;
+  _renderNotePanel(panel, noteId, text);
 };
 
 window.planDismissAlternative = function(currentId, altId, ev) {

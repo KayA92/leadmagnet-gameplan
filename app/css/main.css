@@ -932,7 +932,7 @@ body::before {
 
 /* Tab content wrapper */
 .plan-tab-content {
-  max-width: 784px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 32px 80px;
 }
@@ -3704,7 +3704,6 @@ button.app-pill.purple.clickable:hover {
   color: var(--pink);
 }
 .row-fire-btn.lit .flame-icon {
-  filter: drop-shadow(0 0 6px rgba(255,94,132,0.5));
   transform: scale(1.08);
 }
 .row-fire-btn.lit:hover .flame-icon {

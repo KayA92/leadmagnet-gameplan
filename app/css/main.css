@@ -7247,3 +7247,117 @@ button.app-pill.purple.clickable:hover {
 }
 .slot-swap-row-btn:hover { opacity: 0.88; }
 .slot-swap-row-btn.disabled { background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: default; }
+
+/* ── Sponsors footer ("Brought to you by") ──────────────────────── */
+.sponsors-footer {
+  padding: 36px 32px 52px;
+  max-width: 784px;
+  margin: 0 auto;
+  border-top: 1px solid var(--ink-3);
+}
+.sponsors-footer-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mint);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.sponsors-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.sponsor-card {
+  background: var(--ink-2);
+  border: 1px solid var(--ink-3);
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sponsor-card-logo {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+.xu-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.xu-logo-circle {
+  width: 48px;
+  height: 48px;
+  background: #e91288;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+.xu-logo-word {
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--text);
+}
+.workiro-wm {
+  display: flex;
+  flex-direction: column;
+}
+.workiro-wm-row {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+.workiro-wm-accent {
+  display: inline-block;
+  position: relative;
+}
+.workiro-wm-accent::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 3px;
+  background: var(--mint);
+  border-radius: 2px;
+}
+.workiro-wm-sub {
+  font-size: 13px;
+  color: var(--purple);
+  margin-top: 5px;
+  letter-spacing: 0.02em;
+}
+.sponsor-card-desc {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0;
+  flex: 1;
+}
+.sponsor-card-link {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--mint);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sponsor-card-link:hover { opacity: 0.8; }
+@media (max-width: 600px) {
+  .sponsors-footer { padding: 32px 20px 48px; }
+  .sponsors-grid { grid-template-columns: 1fr; }
+}

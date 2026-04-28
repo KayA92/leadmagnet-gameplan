@@ -907,67 +907,53 @@ function _allNotesNow() {
 function buildHeatRanked() {
   const sessions  = _plan?.sessions || [];
   const teamPlans = _teamData?.teamPlans || [];
-  const allNotes  = _allNotesNow();
 
-  // Aggregate ratings across all team members' plans (or just the user's own plan)
-  const scoreMap = {}; // session_id → { total, count }
+  const scoreMap = {};
   const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
   for (const p of allPlans) {
     for (const s of (p.sessions || [])) {
       if (!s.rating) continue;
-      if (!scoreMap[s.session_id]) scoreMap[s.session_id] = { total: 0, count: 0 };
-      scoreMap[s.session_id].total += s.rating;
-      scoreMap[s.session_id].count += 1;
+      const key = String(s.session_id);
+      if (!scoreMap[key]) scoreMap[key] = { total: 0, count: 0 };
+      scoreMap[key].total += s.rating;
+      scoreMap[key].count += 1;
     }
   }
 
-  // Also include sessions that have notes from anyone, even if not rated
-  const noteCountMap = {};
-  for (const n of allNotes) {
-    if (n.item_type !== 'session' || !n.note_text?.trim()) continue;
-    noteCountMap[n.item_id] = (noteCountMap[n.item_id] || 0) + 1;
-  }
-
   return sessions
-    .filter(s => scoreMap[s.session_id] || noteCountMap[s.session_id])
+    .filter(s => scoreMap[String(s.session_id)])
     .map(s => ({
       session:    s,
-      avgRating:  scoreMap[s.session_id] ? scoreMap[s.session_id].total / scoreMap[s.session_id].count : 0,
-      raterCount: scoreMap[s.session_id]?.count || 0,
+      avgRating:  scoreMap[String(s.session_id)].total / scoreMap[String(s.session_id)].count,
+      raterCount: scoreMap[String(s.session_id)].count,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating || (noteCountMap[b.session.session_id] || 0) - (noteCountMap[a.session.session_id] || 0));
+    .sort((a, b) => b.avgRating - a.avgRating);
 }
 
 function buildBoothHeatRanked() {
   const booths    = _plan?.booths || [];
   const teamPlans = _teamData?.teamPlans || [];
-  const allNotes  = _allNotesNow();
 
   const scoreMap = {};
   const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
   for (const p of allPlans) {
     for (const b of (p.booths || [])) {
       if (!b.rating) continue;
-      if (!scoreMap[b.stand_number]) scoreMap[b.stand_number] = { total: 0, count: 0 };
-      scoreMap[b.stand_number].total += b.rating;
-      scoreMap[b.stand_number].count += 1;
+      const key = String(b.stand_number);
+      if (!scoreMap[key]) scoreMap[key] = { total: 0, count: 0 };
+      scoreMap[key].total += b.rating;
+      scoreMap[key].count += 1;
     }
   }
 
-  const noteCountMap = {};
-  for (const n of allNotes) {
-    if (n.item_type !== 'booth' || !n.note_text?.trim()) continue;
-    noteCountMap[n.item_id] = (noteCountMap[n.item_id] || 0) + 1;
-  }
-
   return booths
-    .filter(b => scoreMap[b.stand_number] || noteCountMap[b.stand_number])
+    .filter(b => scoreMap[String(b.stand_number)])
     .map(b => ({
       booth:      b,
-      avgRating:  scoreMap[b.stand_number] ? scoreMap[b.stand_number].total / scoreMap[b.stand_number].count : 0,
-      raterCount: scoreMap[b.stand_number]?.count || 0,
+      avgRating:  scoreMap[String(b.stand_number)].total / scoreMap[String(b.stand_number)].count,
+      raterCount: scoreMap[String(b.stand_number)].count,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating || (noteCountMap[b.booth.stand_number] || 0) - (noteCountMap[a.booth.stand_number] || 0));
+    .sort((a, b) => b.avgRating - a.avgRating);
 }
 
 function buildSummaryText() {
@@ -985,12 +971,25 @@ function buildSummaryText() {
     return m ? m.users.first_name : null;
   }
 
-  function notesFor(itemType, itemId) {
-    return allNotes.filter(n => n.item_type === itemType && n.item_id === itemId && n.note_text?.trim());
-  }
-
   const heatRanked      = buildHeatRanked();
   const boothHeatRanked = buildBoothHeatRanked();
+
+  // Build note maps so we can include sessions/booths that have notes even if
+  // they aren't in the rated hot list — summary covers all activity
+  const sessionNoteMap = {}; // session_id → notes[]
+  const boothNoteMap   = {}; // stand_number → notes[]
+  for (const n of allNotes) {
+    if (!n.note_text?.trim()) continue;
+    if (n.item_type === 'session') {
+      const k = String(n.item_id);
+      if (!sessionNoteMap[k]) sessionNoteMap[k] = [];
+      sessionNoteMap[k].push(n);
+    } else if (n.item_type === 'booth') {
+      const k = String(n.item_id);
+      if (!boothNoteMap[k]) boothNoteMap[k] = [];
+      boothNoteMap[k].push(n);
+    }
+  }
 
   const lines = [];
   lines.push(`ACCOUNTEX 2025 — DEBRIEF`);
@@ -1003,13 +1002,22 @@ function buildSummaryText() {
     lines.push('');
   }
 
-  if (heatRanked.length) {
+  // Sessions: rated ones first (from heatRanked), then any noted-but-unrated sessions
+  const ratedSessionIds = new Set(heatRanked.map(h => String(h.session.session_id)));
+  const allSessionItems = [
+    ...heatRanked.map(h => ({ session: h.session, avgRating: h.avgRating })),
+    ...(_plan?.sessions || [])
+      .filter(s => !ratedSessionIds.has(String(s.session_id)) && sessionNoteMap[String(s.session_id)])
+      .map(s => ({ session: s, avgRating: 0 })),
+  ];
+
+  if (allSessionItems.length) {
     lines.push('TOP SESSIONS');
-    for (const { session: s, avgRating } of heatRanked) {
-      const flames = '🔥'.repeat(Math.round(avgRating));
-      lines.push(`${flames} ${s.title}`);
+    for (const { session: s, avgRating } of allSessionItems) {
+      const flames = avgRating > 0 ? '🔥'.repeat(Math.round(avgRating)) : '';
+      lines.push(`${flames ? flames + ' ' : ''}${s.title}`);
       lines.push(`   ${s.theatre ? s.theatre + ' · ' : ''}Day ${s.day || '?'}${s.start_time ? ' · ' + s.start_time : ''}`);
-      for (const n of notesFor('session', s.session_id)) {
+      for (const n of (sessionNoteMap[String(s.session_id)] || [])) {
         const who = authorName(n.created_by);
         lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
       }
@@ -1017,12 +1025,21 @@ function buildSummaryText() {
     lines.push('');
   }
 
-  if (boothHeatRanked.length) {
+  // Booths: rated ones first, then noted-but-unrated
+  const ratedBoothIds = new Set(boothHeatRanked.map(h => String(h.booth.stand_number)));
+  const allBoothItems = [
+    ...boothHeatRanked.map(h => ({ booth: h.booth, avgRating: h.avgRating })),
+    ...(_plan?.booths || [])
+      .filter(b => !ratedBoothIds.has(String(b.stand_number)) && boothNoteMap[String(b.stand_number)])
+      .map(b => ({ booth: b, avgRating: 0 })),
+  ];
+
+  if (allBoothItems.length) {
     lines.push('VENDORS TO FOLLOW UP');
-    for (const { booth: b, avgRating } of boothHeatRanked) {
-      const flames = '🔥'.repeat(Math.round(avgRating));
-      lines.push(`${flames} ${b.company_name} (Stand ${b.stand_number})`);
-      for (const n of notesFor('booth', b.stand_number)) {
+    for (const { booth: b, avgRating } of allBoothItems) {
+      const flames = avgRating > 0 ? '🔥'.repeat(Math.round(avgRating)) : '';
+      lines.push(`${flames ? flames + ' ' : ''}${b.company_name} (Stand ${b.stand_number})`);
+      for (const n of (boothNoteMap[String(b.stand_number)] || [])) {
         const who = authorName(n.created_by);
         lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
       }
@@ -1030,7 +1047,7 @@ function buildSummaryText() {
     lines.push('');
   }
 
-  if (!heatRanked.length && !boothHeatRanked.length) {
+  if (!allSessionItems.length && !allBoothItems.length) {
     lines.push('Rate sessions and vendors on the Checklist tab — your summary will build up here.');
     lines.push('');
   }
@@ -1059,7 +1076,8 @@ function renderDebriefTab() {
   }
 
   function notesFor(itemType, itemId) {
-    return allNotes.filter(n => n.item_type === itemType && n.item_id === itemId && n.note_text?.trim());
+    const id = String(itemId);
+    return allNotes.filter(n => n.item_type === itemType && String(n.item_id) === id && n.note_text?.trim());
   }
 
   function initials(u) {

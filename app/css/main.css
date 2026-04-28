@@ -5186,6 +5186,43 @@ button.app-pill.purple.clickable:hover {
 }
 .debrief-hero-body strong { color: var(--text); }
 
+/* Debrief section headers */
+.team-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.team-section-eyebrow.tone-pink   { color: var(--pink); }
+.team-section-eyebrow.tone-purple { color: var(--purple); }
+.team-section-eyebrow.tone-mint   { color: var(--mint); }
+.team-section-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(26px, 3.6vw, 34px);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--text);
+  margin: 0 0 14px;
+}
+.team-section-title em {
+  font-style: italic;
+  color: var(--text);
+}
+.team-section-lede {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+  max-width: 640px;
+}
+.team-section-lede strong { color: var(--text); font-weight: 600; }
+
 /* Email drafter */
 .email-draft {
   background: var(--ink-2);

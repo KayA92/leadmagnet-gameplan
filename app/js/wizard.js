@@ -7,7 +7,7 @@ import { supabase } from './supabase.js';
 const state = {
   stage: '0',
   answers: {
-    attendMode: 'just-me',
+    attendMode: 'team-lead',
     problem: '',
     categories: [],
     time: null,
@@ -420,17 +420,6 @@ async function handleSaveSubmit(e) {
   const sentEmail = $('sent-email');
   if (sentEmail) sentEmail.textContent = email;
 
-  if (state.answers.attendMode === 'team-lead') {
-    const block = $('team-invite-block');
-    if (block) block.removeAttribute('hidden');
-  }
-  // Both team leads and invited members must click the magic link to activate team features.
-  if (state.answers.attendMode === 'team-lead' || state.teamInviteToken) {
-    const ctaLink = $('magic-confirm-cta-link');
-    if (ctaLink) ctaLink.style.display = 'none';
-    const ctaNote = document.querySelector('.magic-confirm-cta-note');
-    if (ctaNote) ctaNote.style.display = 'none';
-  }
 }
 
 // ── Problem textarea helpers ──────────────────────────────────────────────────
@@ -480,17 +469,7 @@ export async function initWizard() {
   }
 
   // ── Stage 0: hero CTA
-  $('hero-start')?.addEventListener('click', () => goToStage(state.teamInviteToken ? 2 : 1));
-
-  // ── Stage 1: attend mode (just-me pre-selected)
-  document.querySelectorAll('[data-attend]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-attend]').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state.answers.attendMode = btn.dataset.attend;
-    });
-  });
-  $('attend-next')?.addEventListener('click', () => goToStage(2));
+  $('hero-start')?.addEventListener('click', () => goToStage(2));
 
   // ── Stage 2: problem statement
   const ta = $('problem-input');

@@ -184,34 +184,10 @@
   </section>
 </section>
 
-<!-- Stage 1: Who's going -->
-<section class="stage flow-mode" id="stage-1" data-stage="1">
-  <div class="q-container">
-    <div class="q-number"><span>01 / 05</span><div class="q-number-bar"></div><span>About you</span></div>
-    <h2 class="q-title">First up — <em>who's going?</em></h2>
-    <p class="q-sub">Solo attendees get a personal plan. Teams get a shared workspace where everyone can divide and conquer (and nobody goes to the same session twice).</p>
-    <div class="options">
-      <button class="option selected" data-attend="just-me">
-        <span class="option-letter">A</span>
-        <span class="option-label">Just me<div class="option-hint">I'll plan and attend solo</div></span>
-        <span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
-      <button class="option" data-attend="team-lead">
-        <span class="option-letter">B</span>
-        <span class="option-label">I'm bringing a team<div class="option-hint">2–5 people from my practice — I want us to divide and conquer. You'll get a shareable link after.</div></span>
-        <span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
-    </div>
-    <div class="q-actions">
-      <button class="btn-next" id="attend-next">Continue <span class="keybind">↵</span></button>
-    </div>
-  </div>
-</section>
-
 <!-- Stage 2: Problem -->
 <section class="stage flow-mode" id="stage-2" data-stage="2">
   <div class="q-container">
-    <div class="q-number"><span>02 / 05</span><div class="q-number-bar"></div><span>Your mission</span></div>
+    <div class="q-number"><span>01 / 04</span><div class="q-number-bar"></div><span>Your mission</span></div>
     <h2 class="q-title">What's the <em>biggest problem</em><br>you want solved this year?</h2>
     <p class="q-sub"><span class="desktop-only">Be specific — "client onboarding takes too long" beats "efficiency." The AI uses this to match you to sessions and exhibitors that actually address it.</span><span class="mobile-only">Be specific — "onboarding takes too long" beats "efficiency."</span></p>
     <div class="text-input-wrap">
@@ -264,7 +240,7 @@
 <!-- Stage 3: Categories -->
 <section class="stage flow-mode" id="stage-3" data-stage="3">
   <div class="q-container">
-    <div class="q-number"><span>03 / 05</span><div class="q-number-bar"></div><span>What you're evaluating</span></div>
+    <div class="q-number"><span>02 / 04</span><div class="q-number-bar"></div><span>What you're evaluating</span></div>
     <h2 class="q-title">Any <em>software categories</em><br>you're scouting?</h2>
     <p class="q-sub">Pick as many as you like. We'll prioritise those exhibitor booths in your floor-walk, with notes on who's worth queuing for.</p>
     <div class="options">
@@ -297,7 +273,7 @@
 <!-- Stage 4: Availability -->
 <section class="stage flow-mode" id="stage-4" data-stage="4">
   <div class="q-container">
-    <div class="q-number"><span>04 / 05</span><div class="q-number-bar"></div><span>Your day</span></div>
+    <div class="q-number"><span>03 / 04</span><div class="q-number-bar"></div><span>Your day</span></div>
     <h2 class="q-title">When are you <em>there?</em></h2>
     <p class="q-sub">Pick one or more — we'll pack matched sessions into the time you've got.</p>
     <div class="time-grid">
@@ -342,7 +318,7 @@
 <!-- Stage 5: Role -->
 <section class="stage flow-mode" id="stage-5" data-stage="5">
   <div class="q-container">
-    <div class="q-number"><span>05 / 05</span><div class="q-number-bar"></div><span>Your role</span></div>
+    <div class="q-number"><span>04 / 04</span><div class="q-number-bar"></div><span>Your role</span></div>
     <h2 class="q-title">What's your <em>role?</em></h2>
     <p class="q-sub">So we frame your matches the right way for you.</p>
     <div class="tag-grid">
@@ -522,16 +498,11 @@
         </div>
       </div>
     </div>
-    <div id="team-invite-block" hidden style="margin-bottom:28px;padding:22px 24px;background:linear-gradient(135deg,rgba(255,94,132,0.06) 0%,rgba(168,85,247,0.08) 100%);border:1px solid rgba(168,85,247,0.25);border-radius:16px;">
+    <div id="team-invite-block" style="margin-bottom:28px;padding:22px 24px;background:linear-gradient(135deg,rgba(255,94,132,0.06) 0%,rgba(168,85,247,0.08) 100%);border:1px solid rgba(168,85,247,0.25);border-radius:16px;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--pink);font-weight:700;margin-bottom:8px;">One more step to unlock your team workspace</div>
       <p style="font-size:13.5px;color:var(--text-muted);line-height:1.55;margin:0;"><strong style="color:var(--text);">Click the magic link in your email</strong> to activate the Team tab — that's where your shareable invite link lives so your team members can join the shared workspace.</p>
     </div>
 
-    <a href="/app/plan/" class="magic-confirm-cta" id="magic-confirm-cta-link">
-      Go to your game plan
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </a>
-    <p class="magic-confirm-cta-note">You can also return any time using the magic link in your email.</p>
   </div>
 </section>
 

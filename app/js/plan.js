@@ -837,7 +837,7 @@ async function handleSignIn(authUser, teamToken) {
     // Auto-create team for team leads whose plan doesn't yet have a team_id.
     // This defers team creation to the first authenticated load, since the teams
     // table requires a non-anonymous session (RLS blocks wizard-time creation).
-    if (full.attend_mode === 'team-lead' && !full.team_id && !authUser.is_anonymous) {
+    if (!full.team_id && !authUser.is_anonymous) {
       const { data: userRow } = await supabase
         .from('users')
         .select('company')

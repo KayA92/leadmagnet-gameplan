@@ -966,7 +966,7 @@ function attachPlanListeners(planId, sessions, booths) {
       card.querySelectorAll('.flame-btn').forEach((b, i) => {
         b.classList.toggle('lit', i < newRating);
       });
-      await updateRating(planId, itemId, itemType, newRating, sessions, booths);
+      await updateRating(planId, itemId, itemType, newRating);
     });
   });
 
@@ -993,9 +993,9 @@ async function savePlanSessions() {
   await supabase.from('plans').update({ sessions: _plan.sessions }).eq('id', _plan.id);
 }
 
-async function updateRating(planId, itemId, itemType, rating, sessions, booths) {
+async function updateRating(planId, itemId, itemType, rating) {
   const field = itemType === 'session' ? 'sessions' : 'booths';
-  const list  = itemType === 'session' ? sessions : booths;
+  const list  = itemType === 'session' ? (_plan.sessions || []) : (_plan.booths || []);
   const updated = list.map(item => {
     const id = itemType === 'session' ? item.session_id : item.stand_number;
     return id === itemId ? { ...item, rating } : item;

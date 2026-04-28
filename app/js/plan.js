@@ -900,9 +900,14 @@ function renderCpdTab() {
 
 // ── Debrief helpers ───────────────────────────────────────────────────────────
 
+function _allNotesNow() {
+  return _teamData ? (_teamData.allNotes || []) : (_plan?.notes || []);
+}
+
 function buildHeatRanked() {
   const sessions  = _plan?.sessions || [];
   const teamPlans = _teamData?.teamPlans || [];
+  const allNotes  = _allNotesNow();
 
   // Aggregate ratings across all team members' plans (or just the user's own plan)
   const scoreMap = {}; // session_id → { total, count }
@@ -916,19 +921,27 @@ function buildHeatRanked() {
     }
   }
 
+  // Also include sessions that have notes from anyone, even if not rated
+  const noteCountMap = {};
+  for (const n of allNotes) {
+    if (n.item_type !== 'session' || !n.note_text?.trim()) continue;
+    noteCountMap[n.item_id] = (noteCountMap[n.item_id] || 0) + 1;
+  }
+
   return sessions
-    .filter(s => scoreMap[s.session_id])
+    .filter(s => scoreMap[s.session_id] || noteCountMap[s.session_id])
     .map(s => ({
       session:    s,
-      avgRating:  scoreMap[s.session_id].total / scoreMap[s.session_id].count,
-      raterCount: scoreMap[s.session_id].count,
+      avgRating:  scoreMap[s.session_id] ? scoreMap[s.session_id].total / scoreMap[s.session_id].count : 0,
+      raterCount: scoreMap[s.session_id]?.count || 0,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating);
+    .sort((a, b) => b.avgRating - a.avgRating || (noteCountMap[b.session.session_id] || 0) - (noteCountMap[a.session.session_id] || 0));
 }
 
 function buildBoothHeatRanked() {
   const booths    = _plan?.booths || [];
   const teamPlans = _teamData?.teamPlans || [];
+  const allNotes  = _allNotesNow();
 
   const scoreMap = {};
   const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
@@ -941,14 +954,20 @@ function buildBoothHeatRanked() {
     }
   }
 
+  const noteCountMap = {};
+  for (const n of allNotes) {
+    if (n.item_type !== 'booth' || !n.note_text?.trim()) continue;
+    noteCountMap[n.item_id] = (noteCountMap[n.item_id] || 0) + 1;
+  }
+
   return booths
-    .filter(b => scoreMap[b.stand_number])
+    .filter(b => scoreMap[b.stand_number] || noteCountMap[b.stand_number])
     .map(b => ({
       booth:      b,
-      avgRating:  scoreMap[b.stand_number].total / scoreMap[b.stand_number].count,
-      raterCount: scoreMap[b.stand_number].count,
+      avgRating:  scoreMap[b.stand_number] ? scoreMap[b.stand_number].total / scoreMap[b.stand_number].count : 0,
+      raterCount: scoreMap[b.stand_number]?.count || 0,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating);
+    .sort((a, b) => b.avgRating - a.avgRating || (noteCountMap[b.booth.stand_number] || 0) - (noteCountMap[a.booth.stand_number] || 0));
 }
 
 function buildSummaryText() {
@@ -957,8 +976,8 @@ function buildSummaryText() {
   const company   = _userProfile?.company    || '';
   const name      = [firstName, lastName].filter(Boolean).join(' ');
 
-  const allNotes  = _teamData ? _teamData.allNotes : (_plan?.notes || []);
-  const members   = _teamData?.members || [];
+  const allNotes = _allNotesNow();
+  const members  = _teamData?.members || [];
 
   function authorName(createdBy) {
     if (!createdBy) return null;
@@ -1032,7 +1051,7 @@ function renderDebriefTab() {
   const heatRanked      = buildHeatRanked();
   const boothHeatRanked = buildBoothHeatRanked();
 
-  const allNotes = _teamData ? _teamData.allNotes : (_plan?.notes || []);
+  const allNotes = _allNotesNow();
   const members  = _teamData?.members || [];
 
   function memberFor(createdBy) {
@@ -1082,8 +1101,8 @@ function renderDebriefTab() {
             <div class="debrief-hot-meta">${escHtml(meta)}</div>
           </div>
           <div class="debrief-hot-rating">
-            ${renderDebriefFlames(avgRating)}
-            <div class="debrief-hot-count">${raterCount} rated</div>
+            ${raterCount > 0 ? renderDebriefFlames(avgRating) : ''}
+            <div class="debrief-hot-count">${raterCount > 0 ? `${raterCount} rated` : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}</div>
           </div>
         </div>
         ${noteHtml}

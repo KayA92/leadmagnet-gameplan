@@ -205,6 +205,17 @@ function renderPlanPreview() {
     'tax-mtd': 'tax & MTD',
     'doc-management': 'document workflows',
     'payroll': 'payroll',
+    'esign': 'e-signing',
+    'crm-comms': 'CRM & comms',
+    'data-analytics': 'data analytics',
+    'cyber-security': 'cyber security',
+    'aml-kyc': 'AML / KYC',
+    'expenses': 'expense management',
+    'hr-people': 'HR & people',
+    'banking-payments': 'banking & payments',
+    'doc-automation': 'document automation',
+    'outsourcing': 'outsourcing',
+    'marketing-growth': 'marketing & growth',
     'just-looking': 'general inspiration',
   };
   const pickedCats = (state.answers.categories || []).map(c => catLabels[c] || c);
@@ -428,9 +439,9 @@ function updateCharCount(val) {
   const countEl = $('char-count');
   const fillEl = $('char-fill');
   const minNote = $('char-min');
-  if (countEl) countEl.textContent = len;
+  if (countEl) countEl.textContent = len + ' / 1000';
   if (fillEl) {
-    fillEl.style.width = Math.min((len / 500) * 100, 100) + '%';
+    fillEl.style.width = Math.min((len / 1000) * 100, 100) + '%';
     fillEl.className = 'char-progress-fill' + (len >= 20 ? ' ok' : '');
   }
   if (minNote) minNote.className = 'min-note' + (len >= 20 ? ' ok' : '');

@@ -223,6 +223,107 @@ body::before {
 .option.selected .option-check svg { opacity: 1; transform: scale(1); }
 .option-check svg { opacity: 0; transform: scale(0.6); transition: all 0.2s cubic-bezier(.4,0,.2,1); color: var(--ink); }
 
+/* Time-slot grid — 3-column tile layout (Wed / Thu × AM / PM / Full) */
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 720px;
+}
+.time-tile {
+  background: var(--ink-2);
+  border: 1px solid var(--ink-3);
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(.4,0,.2,1);
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+.time-tile:hover {
+  border-color: var(--pink);
+  background: rgba(255,94,132,0.06);
+  transform: translateY(-2px);
+}
+.time-tile.selected {
+  border-color: var(--mint);
+  background: rgba(34,230,168,0.08);
+  box-shadow: var(--glow-mint);
+}
+.time-tile-daypill {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--mint);
+  background: rgba(34,230,168,0.14);
+  padding: 4px 9px;
+  border-radius: 5px;
+  line-height: 1;
+}
+.time-tile.selected .time-tile-daypill {
+  color: var(--ink);
+  background: var(--mint);
+}
+.time-tile-period {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  line-height: 1.1;
+  margin-top: 2px;
+}
+.time-tile-hours {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.time-tile::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--ink-3);
+  transition: all 0.2s cubic-bezier(.4,0,.2,1);
+}
+.time-tile.selected::after {
+  background: var(--mint);
+  border-color: var(--mint);
+  box-shadow: 0 0 8px rgba(34,230,168,0.6);
+}
+.time-tile.selected::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: rotate(-45deg);
+  z-index: 2;
+}
+@media (max-width: 720px) {
+  .time-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .time-tile { padding: 14px 14px 12px; }
+  .time-tile-period { font-size: 18px; }
+  .time-tile-hours { font-size: 12px; }
+  .time-tile-daypill { font-size: 9px; padding: 3px 7px; }
+}
+
 /* Tag pills (role + problem prompts + quirk prompts) */
 .tag-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .tag-pill {

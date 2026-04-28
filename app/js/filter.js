@@ -9,14 +9,31 @@ const CATEGORY_MATCH = {
   'tax-mtd':             ['Tax / VAT / MTD', 'Regulation', 'AML'],
   'doc-management':      ['Practice Management', 'AI'],
   'payroll':             ['Payroll'],
+  'esign':               ['Practice Management'],
+  'crm-comms':           ['Sales & Marketing'],
+  'data-analytics':      ['AI'],
+  'cyber-security':      ['Regulation'],
+  'aml-kyc':             ['AML', 'Regulation'],
+  'expenses':            ['Bookkeeping'],
+  'hr-people':           ['Talent'],
+  'banking-payments':    ['Bookkeeping'],
+  'doc-automation':      ['Practice Management', 'AI'],
+  'outsourcing':         ['Practice Management'],
+  'marketing-growth':    ['Sales & Marketing'],
 };
 
 const ROLE_THEATRE = {
   founder:    ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
+  director:   ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
   senior:     ['practice excellence', 'theatre 3', 'acca', 'theatre 4'],
+  accountant: ['practice excellence', 'theatre 3', 'acca', 'theatre 4'],
   bookkeeper: ['bookkeeper', 'theatre 6'],
   industry:   ['fd show', 'theatre 1', 'theatre 2'],
+  advisor:    ['fd show', 'theatre 1', 'theatre 2'],
+  'ops-admin':['practice excellence', 'theatre 6'],
   junior:     ['talent', 'theatre 12', 'masterclass'],
+  student:    ['talent', 'theatre 12', 'masterclass'],
+  vendor:     [],
   other:      [],
 };
 
@@ -29,16 +46,18 @@ const PROBLEM_KEYWORDS = [
 
 // Attendance window → which days and start-time cutoff to apply
 const TIME_FILTERS = {
-  'half-day-1': { days: ['Day 1'], startBefore: '13:20' },
-  'full-day-1': { days: ['Day 1'], startBefore: null },
-  'full-day-2': { days: ['Day 2'], startBefore: null },
-  'both-days':  { days: ['Day 1', 'Day 2'], startBefore: null },
+  'wed-am':   { days: ['Day 1'], startBefore: '13:00', startFrom: null },
+  'wed-pm':   { days: ['Day 1'], startBefore: null,    startFrom: '13:00' },
+  'wed-full': { days: ['Day 1'], startBefore: null,    startFrom: null },
+  'thu-am':   { days: ['Day 2'], startBefore: '13:00', startFrom: null },
+  'thu-pm':   { days: ['Day 2'], startBefore: null,    startFrom: '13:00' },
+  'thu-full': { days: ['Day 2'], startBefore: null,    startFrom: null },
 };
 
 // ── Session pre-filter ────────────────────────────────────────────────────────
 export function preFilterSessions(answers, allSessions) {
   const { categories = [], time, role, problem = '' } = answers;
-  const tf = TIME_FILTERS[time] || TIME_FILTERS['both-days'];
+  const tf = TIME_FILTERS[time] || TIME_FILTERS['wed-full'];
   const problemLower = problem.toLowerCase();
   const boostedTheatres = ROLE_THEATRE[role] || [];
 
@@ -60,8 +79,10 @@ export function preFilterSessions(answers, allSessions) {
     // Day filter
     if (!tf.days.includes(session.day)) continue;
 
-    // Half-day time cutoff — exclude sessions starting at 13:20 or later
+    // AM cutoff — exclude sessions starting at or after the AM/PM boundary
     if (tf.startBefore && session.start_time >= tf.startBefore) continue;
+    // PM cutoff — exclude sessions starting before the afternoon boundary
+    if (tf.startFrom && session.start_time < tf.startFrom) continue;
 
     let score = 0;
 
@@ -117,6 +138,17 @@ const EXHIBITOR_PRODUCT_MATCH = {
   'tax-mtd':             ['MTD - Making Tax Digital', 'Tax', 'VAT', 'AML', 'Audit'],
   'doc-management':      ['Document Management', 'Data Entry / OCR'],
   'payroll':             ['Payroll', 'Auto Enrolment & Pensions', 'HR'],
+  'esign':               ['Document Management', 'E-Signature'],
+  'crm-comms':           ['CRM', 'Sales & Marketing'],
+  'data-analytics':      ['Analytics & Reporting', 'AI / Automation / Optimisation'],
+  'cyber-security':      ['Cyber Security'],
+  'aml-kyc':             ['AML', 'Compliance'],
+  'expenses':            ['Expense Management', 'Accounts'],
+  'hr-people':           ['HR', 'Auto Enrolment & Pensions'],
+  'banking-payments':    ['Banking', 'Cash Flow Forecasting', 'Accounting Software'],
+  'doc-automation':      ['Data Entry / OCR', 'Document Management', 'AI / Automation / Optimisation'],
+  'outsourcing':         ['Consulting & Business Services'],
+  'marketing-growth':    ['Sales & Marketing'],
 };
 
 export function preFilterExhibitors(answers, allExhibitors) {

@@ -215,12 +215,12 @@
     <h2 class="q-title">What's the <em>biggest problem</em><br>you want solved this year?</h2>
     <p class="q-sub"><span class="desktop-only">Be specific — "client onboarding takes too long" beats "efficiency." The AI uses this to match you to sessions and exhibitors that actually address it.</span><span class="mobile-only">Be specific — "onboarding takes too long" beats "efficiency."</span></p>
     <div class="text-input-wrap">
-      <textarea class="text-input" id="problem-input" placeholder="Tap a prompt below, or write your own — e.g. 'Our client onboarding is taking 3 weeks.'" maxlength="500" rows="5"></textarea>
+      <textarea class="text-input" id="problem-input" placeholder="Tap a prompt below, or write your own — e.g. 'Our client onboarding is taking 3 weeks.'" maxlength="1000" rows="5"></textarea>
     </div>
     <div class="text-input-hint">
       <span class="min-note" id="char-min">Add at least 20 characters to continue</span>
       <div class="char-progress"><div class="char-progress-fill" id="char-fill"></div></div>
-      <span class="count" id="char-count">0 / 500</span>
+      <span class="count" id="char-count">0 / 1000</span>
     </div>
     <div class="prompt-section">
       <div class="prompt-section-header">
@@ -240,6 +240,18 @@
         <button class="prompt-chip" data-chip="Need to modernise our tech stack without breaking what works.">Tech stack modernisation</button>
         <button class="prompt-chip" data-chip="Cyber threats worry me and we don't have formal defences.">Cybersecurity worries</button>
         <button class="prompt-chip" data-chip="Planning a practice sale or succession and need to prep the firm.">Exit &amp; valuation</button>
+        <button class="prompt-chip" data-chip="Late filings and HMRC penalties are eating margin and time.">Late filings &amp; penalties</button>
+        <button class="prompt-chip" data-chip="Partners are overworked and capacity planning is reactive, not proactive.">Partner workload</button>
+        <button class="prompt-chip" data-chip="We haven't reviewed pricing in years and we're underpaid for what we do.">Client pricing reviews</button>
+        <button class="prompt-chip" data-chip="Staff training and CPD is ad-hoc — there's no real development pathway.">Training &amp; CPD pathway</button>
+        <button class="prompt-chip" data-chip="Bank feeds keep breaking and reconciliations take hours every week.">Bank feeds &amp; recs</button>
+        <button class="prompt-chip" data-chip="Clients won't adopt our portal — they still email PDFs and ask us to print.">Portal adoption</button>
+        <button class="prompt-chip" data-chip="GDPR and data security feel like ticking-the-box exercises rather than real protection.">GDPR &amp; data security</button>
+        <button class="prompt-chip" data-chip="ESG and sustainability reporting requests from clients are growing and we're unsure how to deliver.">ESG &amp; sustainability</button>
+        <button class="prompt-chip" data-chip="We have overseas / cross-border clients and the compliance is getting complex.">Cross-border clients</button>
+        <button class="prompt-chip" data-chip="Year-end cycle is chaotic — bottlenecks, late nights, and the same fires every January.">Year-end chaos</button>
+        <button class="prompt-chip" data-chip="Workflow and task management is fragmented across three tools and email.">Workflow fragmentation</button>
+        <button class="prompt-chip" data-chip="Client communication is stuck in email — chasing for documents takes forever.">Client comms &amp; chasing</button>
       </div>
     </div>
     <div class="q-actions">
@@ -262,7 +274,18 @@
       <button class="option" data-cat="tax-mtd"><span class="option-letter">D</span><span class="option-label">Tax / MTD / compliance</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
       <button class="option" data-cat="doc-management"><span class="option-letter">E</span><span class="option-label">Document management / client portals</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
       <button class="option" data-cat="payroll"><span class="option-letter">F</span><span class="option-label">Payroll</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      <button class="option" data-cat="just-looking"><span class="option-letter">G</span><span class="option-label">Just looking / general inspiration</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="esign"><span class="option-letter">G</span><span class="option-label">E-signature &amp; client approvals</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="crm-comms"><span class="option-letter">H</span><span class="option-label">CRM &amp; client communications</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="data-analytics"><span class="option-letter">I</span><span class="option-label">Data analytics &amp; client reporting / dashboards</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="cyber-security"><span class="option-letter">J</span><span class="option-label">Cyber security &amp; MFA</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="aml-kyc"><span class="option-letter">K</span><span class="option-label">AML / KYC &amp; client verification</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="expenses"><span class="option-letter">L</span><span class="option-label">Expense management &amp; receipt capture</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="hr-people"><span class="option-letter">M</span><span class="option-label">HR / people ops &amp; staff management</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="banking-payments"><span class="option-letter">N</span><span class="option-label">Banking, payments &amp; bank feeds</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="doc-automation"><span class="option-letter">O</span><span class="option-label">Document automation / OCR / data extraction</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="outsourcing"><span class="option-letter">P</span><span class="option-label">Outsourcing &amp; offshore support</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="marketing-growth"><span class="option-letter">Q</span><span class="option-label">Marketing, websites &amp; lead generation</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+      <button class="option" data-cat="just-looking"><span class="option-letter">R</span><span class="option-label">Just looking / general inspiration</span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
     </div>
     <div class="q-actions">
       <button class="btn-next" id="cat-next" disabled>Next <span class="keybind">↵</span></button>
@@ -276,12 +299,38 @@
   <div class="q-container">
     <div class="q-number"><span>04 / 05</span><div class="q-number-bar"></div><span>Your day</span></div>
     <h2 class="q-title">When are you <em>there?</em></h2>
-    <p class="q-sub">Time sets the density of your plan. We'll pack as many matched sessions into your window as we can — without double-booking you.</p>
-    <div class="options">
-      <button class="option" data-time="half-day-1"><span class="option-letter">A</span><span class="option-label">Half a day, Wednesday<div class="option-hint">Morning or afternoon of 13 May</div></span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      <button class="option" data-time="full-day-1"><span class="option-letter">B</span><span class="option-label">Full day, Wednesday 13 May<div class="option-hint">9:30 – 18:00, show opens fresh</div></span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      <button class="option" data-time="full-day-2"><span class="option-letter">C</span><span class="option-label">Full day, Thursday 14 May<div class="option-hint">9:30 – 16:30, last chance</div></span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      <button class="option" data-time="both-days"><span class="option-letter">D</span><span class="option-label">Both days — going properly in<div class="option-hint">Up to 16 CPD hours if you want them</div></span><span class="option-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <p class="q-sub">Pick one or more — we'll pack matched sessions into the time you've got.</p>
+    <div class="time-grid">
+      <button class="time-tile" data-time="wed-am">
+        <div class="time-tile-daypill">Wed 13</div>
+        <div class="time-tile-period">Morning</div>
+        <div class="time-tile-hours">9:30 – 13:00</div>
+      </button>
+      <button class="time-tile" data-time="wed-pm">
+        <div class="time-tile-daypill">Wed 13</div>
+        <div class="time-tile-period">Afternoon</div>
+        <div class="time-tile-hours">13:00 – 18:00</div>
+      </button>
+      <button class="time-tile" data-time="wed-full">
+        <div class="time-tile-daypill">Wed 13</div>
+        <div class="time-tile-period">Full day</div>
+        <div class="time-tile-hours">9:30 – 18:00</div>
+      </button>
+      <button class="time-tile" data-time="thu-am">
+        <div class="time-tile-daypill">Thu 14</div>
+        <div class="time-tile-period">Morning</div>
+        <div class="time-tile-hours">9:30 – 13:00</div>
+      </button>
+      <button class="time-tile" data-time="thu-pm">
+        <div class="time-tile-daypill">Thu 14</div>
+        <div class="time-tile-period">Afternoon</div>
+        <div class="time-tile-hours">13:00 – 16:30</div>
+      </button>
+      <button class="time-tile" data-time="thu-full">
+        <div class="time-tile-daypill">Thu 14</div>
+        <div class="time-tile-period">Full day</div>
+        <div class="time-tile-hours">9:30 – 16:30</div>
+      </button>
     </div>
     <div class="q-actions">
       <button class="btn-next" id="time-next" disabled>Next <span class="keybind">↵</span></button>
@@ -295,13 +344,19 @@
   <div class="q-container">
     <div class="q-number"><span>05 / 05</span><div class="q-number-bar"></div><span>Your role</span></div>
     <h2 class="q-title">What's your <em>role?</em></h2>
-    <p class="q-sub">This calibrates the reading level. A founder gets strategic framing, a bookkeeper gets tooling specifics — same sessions, different angles surfaced.</p>
+    <p class="q-sub">So we frame your matches the right way for you.</p>
     <div class="tag-grid">
       <button class="tag-pill" data-role="founder">Practice founder / partner</button>
+      <button class="tag-pill" data-role="director">Director / managing partner</button>
       <button class="tag-pill" data-role="senior">Senior accountant / manager</button>
+      <button class="tag-pill" data-role="industry">FD / CFO (in industry)</button>
+      <button class="tag-pill" data-role="accountant">Trainee / qualified accountant</button>
       <button class="tag-pill" data-role="bookkeeper">Bookkeeper</button>
-      <button class="tag-pill" data-role="industry">FD / CFO / in industry</button>
-      <button class="tag-pill" data-role="junior">Junior / trainee</button>
+      <button class="tag-pill" data-role="advisor">Wealth / tax advisor</button>
+      <button class="tag-pill" data-role="ops-admin">Operations / practice manager</button>
+      <button class="tag-pill" data-role="junior">Junior / apprentice</button>
+      <button class="tag-pill" data-role="student">Student</button>
+      <button class="tag-pill" data-role="vendor">Vendor / supplier (exhibiting or scoping)</button>
       <button class="tag-pill" data-role="other">Something else</button>
     </div>
     <div class="q-actions">

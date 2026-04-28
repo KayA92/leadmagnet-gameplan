@@ -4814,7 +4814,7 @@ button.app-pill.purple.clickable:hover {
 }
 
 /* Hot sessions list — ranked by team rating */
-.debrief-hot-list { display: flex; flex-direction: column; gap: 12px; }
+.debrief-hot-list { display: flex; flex-direction: column; gap: 20px; }
 
 /* Chunk 12: hot cards with inline team notes */
 .debrief-hot-card {

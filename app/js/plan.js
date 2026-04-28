@@ -45,14 +45,13 @@ async function loadLatestPlan(userId) {
 }
 
 async function loadTeamData(teamId) {
-  const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
+  // Fetch members and team row in parallel first — we need member user_ids
+  // before we can fetch their plans, because members may not have team_id
+  // set on their plan (e.g. they joined via invite after plan creation).
+  const [{ data: members }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
       .select('role, joined_at, users(id, first_name, last_name, company)')
-      .eq('team_id', teamId),
-    supabase
-      .from('plans')
-      .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
       .eq('team_id', teamId),
     supabase
       .from('teams')
@@ -61,15 +60,34 @@ async function loadTeamData(teamId) {
       .single(),
   ]);
 
-  const planIds = (teamPlans || []).map(p => p.id);
+  // Fetch the most recent plan for each team member by user_id — this
+  // catches plans that were created before the member joined the team.
+  const memberUserIds = (members || []).map(m => m.users?.id).filter(Boolean);
+  const { data: rawPlans } = memberUserIds.length
+    ? await supabase
+        .from('plans')
+        .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
+        .in('user_id', memberUserIds)
+        .order('created_at', { ascending: false })
+    : { data: [] };
+
+  // Deduplicate: keep only the most recent plan per user
+  const seenUsers = new Set();
+  const teamPlans = (rawPlans || []).filter(p => {
+    if (seenUsers.has(p.user_id)) return false;
+    seenUsers.add(p.user_id);
+    return true;
+  });
+
+  const planIds = teamPlans.map(p => p.id);
   const { data: allNotes } = planIds.length
     ? await supabase.from('notes').select('*').in('plan_id', planIds)
     : { data: [] };
 
   return {
-    members:     members     || [],
-    teamPlans:   teamPlans   || [],
-    allNotes:    allNotes    || [],
+    members:     members   || [],
+    teamPlans:   teamPlans,
+    allNotes:    allNotes  || [],
     inviteToken: teamRow?.invite_token || null,
     company:     teamRow?.company      || null,
   };
@@ -1186,16 +1204,16 @@ function renderDebriefTab() {
         : `<div class="debrief-empty">Sessions appear here as your team rates them.</div>`}
     </div>
 
-    ${boothHeatRanked.length ? `
     <div class="app-section">
       <div class="team-section-eyebrow tone-pink">
         ${flameSvg()}
         Hot booths
       </div>
       <h3 class="team-section-title">Vendors <em>worth a follow-up.</em></h3>
-      <div class="debrief-hot-list">${boothCards}</div>
+      ${boothHeatRanked.length
+        ? `<div class="debrief-hot-list">${boothCards}</div>`
+        : `<div class="debrief-empty">Booths appear here as your team rates them.</div>`}
     </div>
-    ` : ''}
 
     <div class="app-section">
       <div class="workiro-cta workiro-cta-simple">
@@ -1603,20 +1621,36 @@ async function refreshDebriefNotes() {
   if (freshNotes) _plan.notes = freshNotes;
 
   if (_teamData && _plan.team_id) {
-    const [{ data: freshTeamPlans }, { data: freshMembers }] = await Promise.all([
-      supabase.from('plans').select('id, user_id, problem, categories, role, sessions, booths, ai_themes').eq('team_id', _plan.team_id),
-      supabase.from('team_members').select('role, joined_at, users(id, first_name, last_name, company)').eq('team_id', _plan.team_id),
-    ]);
+    // Re-fetch members first so we have current user_ids
+    const { data: freshMembers } = await supabase
+      .from('team_members')
+      .select('role, joined_at, users(id, first_name, last_name, company)')
+      .eq('team_id', _plan.team_id);
+    if (freshMembers) _teamData.members = freshMembers;
 
-    if (freshTeamPlans) {
+    // Fetch plans by user_id — catches members whose plan predates joining the team
+    const memberUserIds = (freshMembers || []).map(m => m.users?.id).filter(Boolean);
+    if (memberUserIds.length) {
+      const { data: rawPlans } = await supabase
+        .from('plans')
+        .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
+        .in('user_id', memberUserIds)
+        .order('created_at', { ascending: false });
+
+      const seenUsers = new Set();
+      const freshTeamPlans = (rawPlans || []).filter(p => {
+        if (seenUsers.has(p.user_id)) return false;
+        seenUsers.add(p.user_id);
+        return true;
+      });
       _teamData.teamPlans = freshTeamPlans;
+
       const planIds = freshTeamPlans.map(p => p.id);
       if (planIds.length) {
         const { data: freshTeamNotes } = await supabase.from('notes').select('*').in('plan_id', planIds);
         if (freshTeamNotes) _teamData.allNotes = freshTeamNotes;
       }
     }
-    if (freshMembers) _teamData.members = freshMembers;
   }
 
   if (_currentTab === 'debrief') renderApp();

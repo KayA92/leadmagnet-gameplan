@@ -16,6 +16,8 @@ let _teamData    = null;
 let _authUser    = null;
 let _currentTab  = 'checklist';
 let _checklistFilter = 'all';
+let _dismissedAlternatives = new Set();
+let _resolvedSlots = new Set();
 
 // ── Supabase data access ──────────────────────────────────────────────────────
 
@@ -100,15 +102,51 @@ function whyMatched(session, plan) {
   return tags.slice(0, 5);
 }
 
-function findAlternatives(session, planSessions, allSessions, categories) {
-  const planIds = new Set(planSessions.map(s => s.session_id));
-  return allSessions.filter(s =>
-    s.session_id !== session.session_id &&
+const PLAN_CATEGORY_MATCH = {
+  'practice-management': ['Practice Management', 'Leadership', 'Sales & Marketing', 'Talent', 'Wellbeing', 'Scaling'],
+  'ai-automation':       ['AI'],
+  'bookkeeping':         ['Bookkeeping', 'Practice Management', 'AI'],
+  'tax-mtd':             ['Tax / VAT / MTD', 'Regulation', 'AML'],
+  'doc-management':      ['Practice Management', 'AI'],
+  'payroll':             ['Payroll'],
+};
+
+function hasSameSlotAlternative(item) {
+  if (!item.day || !item.start_time) return false;
+  if (_resolvedSlots.has(`${item.day}-${item.start_time}`)) return false;
+  const cats = _plan?.categories || [];
+  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
+  if (!wantedCanonicals.size) return false;
+  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  return (_allSessions || []).some(s =>
+    s.session_id !== item.session_id &&
+    s.day === item.day &&
+    s.start_time === item.start_time &&
     !planIds.has(s.session_id) &&
-    s.day === session.day &&
-    s.start_time === session.start_time &&
-    categories.some(cat => s.category === cat),
-  ).slice(0, 1);
+    (s.canonical_categories || []).some(c => wantedCanonicals.has(c)),
+  );
+}
+
+function findStrongAlternatives(item) {
+  if (!item.day || !item.start_time) return [];
+  if (_resolvedSlots.has(`${item.day}-${item.start_time}`)) return [];
+  const cats = _plan?.categories || [];
+  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
+  if (!wantedCanonicals.size) return [];
+  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const candidates = (_allSessions || []).filter(s =>
+    s.session_id !== item.session_id &&
+    s.day === item.day &&
+    s.start_time === item.start_time &&
+    !planIds.has(s.session_id) &&
+    !_dismissedAlternatives.has(`${item.session_id}|${s.session_id}`) &&
+    (s.canonical_categories || []).some(c => wantedCanonicals.has(c)),
+  );
+  candidates.sort((a, b) =>
+    (b.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length -
+    (a.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+  );
+  return candidates.slice(0, 1);
 }
 
 // ── Render helpers ────────────────────────────────────────────────────────────
@@ -173,31 +211,25 @@ function renderTabNav() {
 // ── Checklist tab ─────────────────────────────────────────────────────────────
 
 function renderChecklistTab() {
-  const plan       = _plan;
-  const allSessions = _allSessions;
+  const plan        = _plan;
   if (!plan) return '';
 
-  const sessions   = plan.sessions   || [];
-  const booths     = plan.booths     || [];
-  const themes     = plan.ai_themes  || [];
-  const notes      = plan.notes      || [];
-  const categories = plan.categories || [];
+  const sessions    = plan.sessions   || [];
+  const booths      = plan.booths     || [];
+  const themes      = plan.ai_themes  || [];
+  const notes       = plan.notes      || [];
 
   const notesByItem = {};
   for (const n of notes) {
     const key = `${n.item_type}:${n.item_id}`;
-    // In team mode, show notes from all teammates; keyed by item + user
     if (_teamData && n.created_by && n.created_by !== _authUser?.id) {
       if (!notesByItem[key]) notesByItem[key] = [];
-      if (Array.isArray(notesByItem[key])) {
-        notesByItem[key].push(n);
-      }
+      if (Array.isArray(notesByItem[key])) notesByItem[key].push(n);
     } else if (!_teamData || n.created_by === _authUser?.id || !n.created_by) {
       notesByItem[key] = n.note_text || '';
     }
   }
 
-  // In team mode, also collect notes from teammates' plans
   let teamNotesByItem = {};
   if (_teamData) {
     for (const n of _teamData.allNotes) {
@@ -231,15 +263,29 @@ function renderChecklistTab() {
     visibleSessions = sessions.filter(s => memberSessionIds.has(s.session_id));
   }
 
+  // Sort chronologically
+  const sortedSessions = [...visibleSessions].sort((a, b) => {
+    const da = a.day === 'Day 1' ? 1 : 2;
+    const db = b.day === 'Day 1' ? 1 : 2;
+    return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+  });
+
   const themePills = themes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
 
-  const sessionItems = visibleSessions.map((item, i) => {
+  function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
-    const dayLabel     = item.day === 'Day 1' ? 'Wed 13 May' : item.day === 'Day 2' ? 'Thu 14 May' : '';
     const whyTags      = whyMatched(item, plan);
-    const alts         = findAlternatives(item, sessions, allSessions, categories);
+    const alts         = findStrongAlternatives(item);
+    const showSwap     = hasSameSlotAlternative(item);
     const teamNotes    = teamNotesByItem[noteKey] || [];
+
+    const swapLink = showSwap
+      ? `<button class="checklist-time-swap" onclick="planOpenSlotSwap('${escHtml(item.session_id)}', event)" type="button">
+           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+           Swap
+         </button>`
+      : '';
 
     const whyHtml = whyTags.length ? `
       <div class="checklist-why-header">${STAR_SVG} Why AI picked this</div>
@@ -256,6 +302,13 @@ function renderChecklistTab() {
               <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
               <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
             </div>
+            <div class="checklist-alternative-actions">
+              <button class="checklist-alternative-btn swap" onclick="planSwapSession('${escHtml(item.session_id)}','${escHtml(alt.session_id)}')" type="button">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                Swap
+              </button>
+              <button class="checklist-alternative-btn dismiss" onclick="planDismissAlternative('${escHtml(item.session_id)}','${escHtml(alt.session_id)}',event)" type="button">Not for me</button>
+            </div>
           </div>`).join('')}
       </div>` : '';
 
@@ -269,13 +322,14 @@ function renderChecklistTab() {
       </div>` : '';
 
     return `
-      <div class="checklist-row${item.attended ? ' attended' : ''}" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
+      <div class="checklist-row${item.attended ? ' attended' : ''} is-session" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol">
             <button class="checklist-box" aria-label="Mark as attended">${TICK_SVG}</button>
             <div class="checklist-time-block">
               <div class="checklist-time-main">${escHtml(item.start_time || '')}</div>
-              <div class="checklist-time-sub">${escHtml(dayLabel)}</div>
+              <div class="checklist-time-sub">${escHtml(item.end_time || '')}</div>
+              ${swapLink}
             </div>
           </div>
           <div class="checklist-main">
@@ -296,31 +350,66 @@ function renderChecklistTab() {
           </div>
         </div>
       </div>`;
-  }).join('');
+  }
 
-  const boothItems = booths.map((item, i) => {
+  function renderBoothRow(item, i) {
     const noteKey      = `booth:${item.stand_number}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
-    const products     = (item.normalised_products || []).slice(0, 2).join(', ');
-    const boothMeta    = [`Stand ${escHtml(item.stand_number || '')}`, products ? escHtml(products) : ''].filter(Boolean).join(' · ');
+    const products     = (item.normalised_products || []).slice(0, 3).join(', ');
+    const isWorkiro    = item.company_name === 'Workiro';
+
+    const hostStrip = isWorkiro ? `
+      <div class="checklist-row-host-strip">
+        <span class="checklist-row-host-badge">
+          <svg class="checklist-row-host-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.09 8.26L20.45 8.27L15.27 11.97L17.18 18.24L12 14.53L6.82 18.24L8.73 11.97L3.55 8.27L9.91 8.26L12 2Z"/></svg>
+          We built this app
+        </span>
+        <a class="checklist-row-host-link" href="https://www.workiro.com" target="_blank" rel="noopener">workiro.com</a>
+      </div>` : '';
+
     return `
-      <div class="mini-item plan-mini-item" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
-        <div class="mini-tick">${TICK_SVG}</div>
-        <div class="mini-body">
-          <div class="mini-title">${escHtml(item.company_name)}</div>
-          <div class="mini-meta"><span class="type-pill booth">Booth</span>${boothMeta}</div>
-          ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why visit</span>${escHtml(item.reason)}</p>` : ''}
-          <div class="plan-item-actions">
-            <div class="rating-wrap">${flames(item.rating)}</div>
-            <div class="note-wrap">
-              ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
-              <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
-              <button class="save-note-btn btn-sm">Save note</button>
+      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
+        ${hostStrip}
+        <div class="checklist-row-main">
+          <div class="checklist-row-leftcol">
+            <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
+            <div class="checklist-time-block booth">
+              <div class="checklist-time-top">STAND</div>
+              <div class="checklist-time-main">${escHtml(item.stand_number || '')}</div>
+            </div>
+          </div>
+          <div class="checklist-main">
+            <div class="checklist-main-title">${escHtml(item.company_name)}</div>
+            <div class="checklist-main-meta"><span class="type-pill booth">Booth</span>${products ? ' · ' + escHtml(products) : ''}</div>
+            ${item.reason ? `<p class="plan-item-reason"><span class="plan-item-reason-label">Why visit</span>${escHtml(item.reason)}</p>` : ''}
+            <div class="plan-item-actions">
+              <div class="rating-wrap">${flames(item.rating)}</div>
+              <div class="note-wrap">
+                ${existingNote ? `<p class="note-text">${escHtml(existingNote)}</p>` : ''}
+                <textarea class="note-input" placeholder="Add a note…" rows="2">${escHtml(existingNote)}</textarea>
+                <button class="save-note-btn btn-sm">Save note</button>
+              </div>
             </div>
           </div>
         </div>
       </div>`;
-  }).join('');
+  }
+
+  // Build session HTML with day group labels
+  let currentDay = null;
+  const sessionParts = [];
+  sortedSessions.forEach((item, i) => {
+    if (item.day !== currentDay) {
+      currentDay = item.day;
+      const dayLabel = item.day === 'Day 1' ? 'Day 1 · Wednesday 13 May'
+                     : item.day === 'Day 2' ? 'Day 2 · Thursday 14 May' : '';
+      if (dayLabel) sessionParts.push(`<div class="checklist-day-label">${dayLabel}</div>`);
+    }
+    sessionParts.push(renderSessionRow(item, i));
+  });
+  const sessionItems = sessionParts.join('');
+
+  const boothItems = booths.map((item, i) => renderBoothRow(item, i)).join('');
 
   return `
     ${themes.length ? `<section class="plan-themes-section"><div class="plan-themes">${themePills}</div></section>` : ''}
@@ -332,7 +421,7 @@ function renderChecklistTab() {
     ${booths.length ? `
       <section class="plan-section">
         <h2 class="plan-section-title">Priority stands <span class="count-badge">${booths.length}</span></h2>
-        <div class="mini-item-list">${boothItems}</div>
+        <div class="checklist">${boothItems}</div>
       </section>
     ` : ''}
   `;
@@ -699,10 +788,15 @@ function renderCurrentTab() {
 function attachPlanListeners(planId, sessions, booths) {
   document.querySelectorAll('.checklist-box').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const row    = btn.closest('[data-item-type]');
-      const itemId = row.dataset.itemId;
+      const row      = btn.closest('[data-item-type]');
+      const itemType = row.dataset.itemType;
+      const itemId   = row.dataset.itemId;
       row.classList.toggle('attended');
-      await toggleAttended(planId, itemId, sessions);
+      if (itemType === 'booth') {
+        await toggleBoothAttended(planId, itemId, booths);
+      } else {
+        await toggleAttended(planId, itemId, sessions);
+      }
     });
   });
 
@@ -743,6 +837,19 @@ async function toggleAttended(planId, itemId, sessions) {
   );
   _plan.sessions = updated;
   await supabase.from('plans').update({ sessions: updated }).eq('id', planId);
+}
+
+async function toggleBoothAttended(planId, itemId, booths) {
+  const updated = booths.map(b =>
+    b.stand_number === itemId ? { ...b, attended: !b.attended } : b,
+  );
+  _plan.booths = updated;
+  await supabase.from('plans').update({ booths: updated }).eq('id', planId);
+}
+
+async function savePlanSessions() {
+  if (!_plan?.id) return;
+  await supabase.from('plans').update({ sessions: _plan.sessions }).eq('id', _plan.id);
 }
 
 async function updateRating(planId, itemId, itemType, rating, sessions, booths) {
@@ -970,6 +1077,85 @@ window.planSwitchTab = function(tabId) {
 window.planSetFilter = function(filter) {
   _checklistFilter = filter;
   renderApp();
+};
+
+window.planSwapSession = function(currentId, newId) {
+  if (!_plan) return;
+  const newSession = (_allSessions || []).find(s => s.session_id === newId);
+  if (!newSession) return;
+  _plan.sessions = _plan.sessions.filter(s => s.session_id !== currentId);
+  _plan.sessions.push({ session_id: newId, rank: _plan.sessions.length + 1, reason: '', ...newSession });
+  if (newSession.day && newSession.start_time) {
+    _resolvedSlots.add(`${newSession.day}-${newSession.start_time}`);
+  }
+  savePlanSessions();
+  renderApp();
+};
+
+window.planDismissAlternative = function(currentId, altId, ev) {
+  if (ev) ev.stopPropagation();
+  _dismissedAlternatives.add(`${currentId}|${altId}`);
+  const current = (_plan?.sessions || []).find(s => s.session_id === currentId);
+  if (current?.day && current?.start_time) {
+    _resolvedSlots.add(`${current.day}-${current.start_time}`);
+  }
+  renderApp();
+};
+
+window.planOpenSlotSwap = function(currentId, ev) {
+  if (ev) ev.stopPropagation();
+  const current = (_allSessions || []).find(s => s.session_id === currentId)
+    || (_plan?.sessions || []).find(s => s.session_id === currentId);
+  if (!current) return;
+  const candidates = (_allSessions || []).filter(s =>
+    s.session_id !== currentId &&
+    s.day === current.day &&
+    s.start_time === current.start_time,
+  );
+  const cats = _plan?.categories || [];
+  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
+  const scored = candidates.map(s => ({
+    session: s,
+    score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+  }));
+  scored.sort((a, b) => b.score - a.score || (a.session.title || '').localeCompare(b.session.title || ''));
+  const dayLabel = current.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const candidatesHtml = scored.length === 0
+    ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other sessions at this time slot.</div>'
+    : scored.map(({ session: s, score }) => {
+        const inPlan = planIds.has(s.session_id);
+        return `
+          <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
+            <div class="slot-swap-row-main">
+              <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
+              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${score > 0 && !inPlan ? '<span class="slot-swap-match-tag">Matches your categories</span>' : ''}
+              ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
+            </div>
+            ${inPlan
+              ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
+              : `<button class="slot-swap-row-btn" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Swap to this</button>`
+            }
+          </div>`;
+      }).join('');
+  let modal = document.getElementById('planSlotSwapModal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'planSlotSwapModal';
+  modal.className = 'login-modal slot-swap-modal open';
+  modal.innerHTML = `
+    <div class="login-modal-backdrop" onclick="document.getElementById('planSlotSwapModal')?.remove()"></div>
+    <div class="login-modal-panel slot-swap-panel">
+      <button class="login-modal-close" onclick="document.getElementById('planSlotSwapModal')?.remove()" aria-label="Close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(current.start_time || '')}–${escHtml(current.end_time || '')}</div>
+      <h2 class="login-modal-title">Swap this <em>slot.</em></h2>
+      <p class="login-modal-sub">Currently: <strong>${escHtml(current.title || '')}</strong>. Pick a different session at the same time.</p>
+      <div class="slot-swap-list">${candidatesHtml}</div>
+    </div>`;
+  document.body.appendChild(modal);
 };
 
 window.planCopyInvite = function(url, btn) {

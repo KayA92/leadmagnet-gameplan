@@ -7041,3 +7041,78 @@ button.app-pill.purple.clickable:hover {
   .panellists-host { flex-direction: column; text-align: center; gap: 10px; }
   .panellists-host-text { text-align: center; }
 }
+
+/* Swap button displayed under the session time block */
+.checklist-time-swap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--mint);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+  text-transform: uppercase;
+}
+.checklist-time-swap:hover { opacity: 1; }
+.checklist-time-swap svg { flex-shrink: 0; }
+
+/* Slot-swap modal */
+.slot-swap-modal .login-modal-panel { max-height: 80vh; overflow-y: auto; }
+.slot-swap-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.slot-swap-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ink-3);
+  border-radius: 10px;
+}
+.slot-swap-row.already-in-plan { opacity: 0.45; }
+.slot-swap-row-main { flex: 1; min-width: 0; }
+.slot-swap-row-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+  margin-bottom: 2px;
+}
+.slot-swap-row-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.slot-swap-match-tag, .slot-swap-already-tag {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.slot-swap-match-tag { background: rgba(0,229,178,0.1); color: var(--mint); }
+.slot-swap-already-tag { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+.slot-swap-row-btn {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: var(--mint);
+  color: #0a1a12;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.slot-swap-row-btn:hover { opacity: 0.88; }
+.slot-swap-row-btn.disabled { background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: default; }

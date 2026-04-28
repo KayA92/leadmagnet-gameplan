@@ -7042,6 +7042,82 @@ button.app-pill.purple.clickable:hover {
   .panellists-host-text { text-align: center; }
 }
 
+/* Solo invite nudge chip — appears on checklist when not in a team */
+.solo-nudge-chip {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 14px;
+  border: 1px solid rgba(0,229,178,0.35);
+  border-radius: 8px;
+  background: transparent;
+  transition: all 0.18s;
+  max-width: 100%;
+}
+.solo-nudge-chip:hover {
+  background: rgba(0,229,178,0.06);
+  border-color: rgba(0,229,178,0.5);
+}
+.solo-nudge-chip-body {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.4;
+  transition: transform 0.15s;
+}
+.solo-nudge-chip-body:hover { transform: translateX(2px); }
+.solo-nudge-chip-body strong { color: var(--mint); font-weight: 700; }
+.solo-nudge-chip-body svg { color: var(--mint); flex-shrink: 0; opacity: 0.8; }
+.solo-nudge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mint);
+  flex-shrink: 0;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.solo-nudge-text { flex: 1; min-width: 0; }
+.solo-nudge-chip-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(0,229,178,0.18);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.solo-nudge-chip-dismiss:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+/* Avatar initials chip inside filter pills (team mode) */
+.filter-pill-av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(168,85,247,0.25);
+  font-size: 9px;
+  font-weight: 700;
+  color: #d9b8ff;
+  flex-shrink: 0;
+}
+.checklist-filter-pill.me .filter-pill-av {
+  background: rgba(0,229,178,0.2);
+  color: var(--mint);
+}
+
 /* Swap button displayed under the session time block */
 .checklist-time-swap {
   display: flex;

@@ -18,6 +18,7 @@ let _currentTab  = 'checklist';
 let _checklistFilter = 'all';
 let _dismissedAlternatives = new Set();
 let _resolvedSlots = new Set();
+let _inviteNudgeDismissed = false;
 
 // ── Supabase data access ──────────────────────────────────────────────────────
 
@@ -241,18 +242,21 @@ function renderChecklistTab() {
     }
   }
 
+  const isTeam = !!(_teamData?.members?.length > 1);
+
   // Filter pills (team mode)
   let filterHtml = '';
-  if (_teamData && _teamData.members.length > 1) {
+  if (isTeam) {
     const pills = [
-      `<button class="checklist-filter-pill ${_checklistFilter === 'all' ? 'active' : ''}" onclick="planSetFilter('all')">All sessions</button>`,
+      `<button class="checklist-filter-pill ${_checklistFilter === 'all' ? 'active' : ''}" onclick="planSetFilter('all')">Everyone</button>`,
       ..._teamData.members.map(m => {
         const u = m.users;
         const isMe = u.id === _authUser?.id;
-        return `<button class="checklist-filter-pill ${isMe ? 'me' : ''} ${_checklistFilter === u.id ? 'active' : ''}" onclick="planSetFilter('${u.id}')">${escHtml(u.first_name)}</button>`;
+        const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
+        return `<button class="checklist-filter-pill ${isMe ? 'me' : ''} ${_checklistFilter === u.id ? 'active' : ''}" onclick="planSetFilter('${u.id}')"><span class="filter-pill-av">${escHtml(initials)}</span>${isMe ? 'You' : escHtml(u.first_name)}</button>`;
       }),
     ];
-    filterHtml = `<div class="checklist-controls"><div class="checklist-filter-pills"><span class="checklist-filter-label">Show</span>${pills.join('')}</div></div>`;
+    filterHtml = `<div class="checklist-controls"><div class="checklist-filter-pills" aria-label="Filter by teammate"><span class="checklist-filter-label">Show</span>${pills.join('')}</div></div>`;
   }
 
   // Determine which sessions to show (filter by teammate)
@@ -411,18 +415,61 @@ function renderChecklistTab() {
 
   const boothItems = booths.map((item, i) => renderBoothRow(item, i)).join('');
 
+  const nudgeChip = !isTeam && !_inviteNudgeDismissed ? `
+    <div class="solo-nudge-chip">
+      <button class="solo-nudge-chip-body" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button">
+        <span class="solo-nudge-dot"></span>
+        <span class="solo-nudge-text">Going with colleagues? <strong>Send them your invite link</strong> — see their sessions, ratings, notes, and get an AI team summary.</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <button class="solo-nudge-chip-dismiss" onclick="planDismissInviteNudge(event)" type="button" aria-label="Dismiss">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>` : '';
+
   return `
-    ${themes.length ? `<section class="plan-themes-section"><div class="plan-themes">${themePills}</div></section>` : ''}
+    <div class="app-header">
+      <div class="app-header-top">
+        <div>
+          <h2 class="app-title">${isTeam ? "Your team's <em>Accountex</em> plan." : 'Your <em>Accountex</em> plan.'}</h2>
+          <p class="app-sub" style="margin-top:8px;">Rate sessions as you go and add notes — they roll into your debrief.</p>
+          ${nudgeChip}
+        </div>
+      </div>
+    </div>
+
     ${filterHtml}
-    <section class="plan-section">
-      <h2 class="plan-section-title">Your sessions <span class="count-badge">${visibleSessions.length}</span></h2>
-      <div class="checklist">${sessionItems || '<p class="empty-state">No sessions in your plan yet.</p>'}</div>
-    </section>
+    ${themes.length ? `<section class="plan-themes-section"><div class="plan-themes">${themePills}</div></section>` : ''}
+
+    <div id="sessions-anchor" class="checklist-anchor-section">
+      <div class="checklist-section-head">
+        <h2 class="checklist-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Must-watch sessions
+        </h2>
+        <div class="checklist-section-meta">
+          <span class="checklist-section-count">${visibleSessions.length} ${visibleSessions.length === 1 ? 'session' : 'sessions'}</span>
+        </div>
+      </div>
+      <div class="checklist">
+        ${sessionItems || '<div class="plan-empty">No sessions in your plan yet.</div>'}
+      </div>
+    </div>
+
     ${booths.length ? `
-      <section class="plan-section">
-        <h2 class="plan-section-title">Priority stands <span class="count-badge">${booths.length}</span></h2>
+      <div id="booths-anchor" class="checklist-anchor-section" style="margin-top:48px">
+        <div class="checklist-section-head">
+          <h2 class="checklist-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Must-visit booths
+          </h2>
+          <div class="checklist-section-meta">
+            <span class="checklist-section-count">${booths.length} ${booths.length === 1 ? 'booth' : 'booths'}</span>
+          </div>
+        </div>
+        <p class="checklist-intro">Rate each vendor after a conversation — your notes and scores feed into your debrief.</p>
         <div class="checklist">${boothItems}</div>
-      </section>
+      </div>
     ` : ''}
   `;
 }
@@ -1093,6 +1140,12 @@ window.planSwapSession = function(currentId, newId) {
     _resolvedSlots.add(`${newSession.day}-${newSession.start_time}`);
   }
   savePlanSessions();
+  renderApp();
+};
+
+window.planDismissInviteNudge = function(ev) {
+  if (ev) ev.stopPropagation();
+  _inviteNudgeDismissed = true;
   renderApp();
 };
 

@@ -242,30 +242,8 @@ function renderChecklistTab() {
     }
   }
 
-  const isTeam = !!(_teamData?.members?.length > 1);
-
-  // Filter pills (team mode)
-  let filterHtml = '';
-  if (isTeam) {
-    const pills = [
-      `<button class="checklist-filter-pill ${_checklistFilter === 'all' ? 'active' : ''}" onclick="planSetFilter('all')">Everyone</button>`,
-      ..._teamData.members.map(m => {
-        const u = m.users;
-        const isMe = u.id === _authUser?.id;
-        const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
-        return `<button class="checklist-filter-pill ${isMe ? 'me' : ''} ${_checklistFilter === u.id ? 'active' : ''}" onclick="planSetFilter('${u.id}')"><span class="filter-pill-av">${escHtml(initials)}</span>${isMe ? 'You' : escHtml(u.first_name)}</button>`;
-      }),
-    ];
-    filterHtml = `<div class="checklist-controls"><div class="checklist-filter-pills" aria-label="Filter by teammate"><span class="checklist-filter-label">Show</span>${pills.join('')}</div></div>`;
-  }
-
-  // Determine which sessions to show (filter by teammate)
-  let visibleSessions = sessions;
-  if (_teamData && _checklistFilter !== 'all') {
-    const memberPlan = _teamData.teamPlans.find(p => p.user_id === _checklistFilter);
-    const memberSessionIds = new Set((memberPlan?.sessions || []).map(s => s.session_id));
-    visibleSessions = sessions.filter(s => memberSessionIds.has(s.session_id));
-  }
+  // Determine which sessions to show (always show all — team filtering is on the Team tab)
+  const visibleSessions = sessions;
 
   // Sort chronologically
   const sortedSessions = [...visibleSessions].sort((a, b) => {
@@ -415,7 +393,7 @@ function renderChecklistTab() {
 
   const boothItems = booths.map((item, i) => renderBoothRow(item, i)).join('');
 
-  const nudgeChip = !isTeam && !_inviteNudgeDismissed ? `
+  const nudgeChip = !_inviteNudgeDismissed ? `
     <div class="solo-nudge-chip">
       <button class="solo-nudge-chip-body" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button">
         <span class="solo-nudge-dot"></span>
@@ -431,14 +409,13 @@ function renderChecklistTab() {
     <div class="app-header">
       <div class="app-header-top">
         <div>
-          <h2 class="app-title">${isTeam ? "Your team's <em>Accountex</em> plan." : 'Your <em>Accountex</em> plan.'}</h2>
+          <h2 class="app-title">Your <em>Accountex</em> plan.</h2>
           <p class="app-sub" style="margin-top:8px;">Rate sessions as you go and add notes — they roll into your debrief.</p>
           ${nudgeChip}
         </div>
       </div>
     </div>
 
-    ${filterHtml}
     ${themes.length ? `<section class="plan-themes-section"><div class="plan-themes">${themePills}</div></section>` : ''}
 
     <div id="sessions-anchor" class="checklist-anchor-section">

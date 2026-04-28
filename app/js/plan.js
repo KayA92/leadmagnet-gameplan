@@ -16,6 +16,8 @@ let _teamData    = null;
 let _authUser    = null;
 let _currentTab  = 'checklist';
 
+let _userProfile  = null;
+
 let _dismissedAlternatives = new Set();
 let _resolvedSlots = new Set();
 let _inviteNudgeDismissed = false;
@@ -896,20 +898,322 @@ function renderCpdTab() {
   `;
 }
 
-// ── Debrief stub ──────────────────────────────────────────────────────────────
+// ── Debrief helpers ───────────────────────────────────────────────────────────
+
+function buildHeatRanked() {
+  const sessions  = _plan?.sessions || [];
+  const teamPlans = _teamData?.teamPlans || [];
+
+  // Aggregate ratings across all team members' plans (or just the user's own plan)
+  const scoreMap = {}; // session_id → { total, count }
+  const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
+  for (const p of allPlans) {
+    for (const s of (p.sessions || [])) {
+      if (!s.rating) continue;
+      if (!scoreMap[s.session_id]) scoreMap[s.session_id] = { total: 0, count: 0 };
+      scoreMap[s.session_id].total += s.rating;
+      scoreMap[s.session_id].count += 1;
+    }
+  }
+
+  return sessions
+    .filter(s => scoreMap[s.session_id])
+    .map(s => ({
+      session:    s,
+      avgRating:  scoreMap[s.session_id].total / scoreMap[s.session_id].count,
+      raterCount: scoreMap[s.session_id].count,
+    }))
+    .sort((a, b) => b.avgRating - a.avgRating);
+}
+
+function buildBoothHeatRanked() {
+  const booths    = _plan?.booths || [];
+  const teamPlans = _teamData?.teamPlans || [];
+
+  const scoreMap = {};
+  const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
+  for (const p of allPlans) {
+    for (const b of (p.booths || [])) {
+      if (!b.rating) continue;
+      if (!scoreMap[b.stand_number]) scoreMap[b.stand_number] = { total: 0, count: 0 };
+      scoreMap[b.stand_number].total += b.rating;
+      scoreMap[b.stand_number].count += 1;
+    }
+  }
+
+  return booths
+    .filter(b => scoreMap[b.stand_number])
+    .map(b => ({
+      booth:      b,
+      avgRating:  scoreMap[b.stand_number].total / scoreMap[b.stand_number].count,
+      raterCount: scoreMap[b.stand_number].count,
+    }))
+    .sort((a, b) => b.avgRating - a.avgRating);
+}
+
+function buildSummaryText() {
+  const firstName = _userProfile?.first_name || '';
+  const lastName  = _userProfile?.last_name  || '';
+  const company   = _userProfile?.company    || '';
+  const name      = [firstName, lastName].filter(Boolean).join(' ');
+
+  const allNotes  = _teamData ? _teamData.allNotes : (_plan?.notes || []);
+  const members   = _teamData?.members || [];
+
+  function authorName(createdBy) {
+    if (!createdBy) return null;
+    const m = members.find(m => m.users?.id === createdBy);
+    return m ? m.users.first_name : null;
+  }
+
+  function notesFor(itemType, itemId) {
+    return allNotes.filter(n => n.item_type === itemType && n.item_id === itemId && n.note_text?.trim());
+  }
+
+  const heatRanked      = buildHeatRanked();
+  const boothHeatRanked = buildBoothHeatRanked();
+
+  const lines = [];
+  lines.push(`ACCOUNTEX 2025 — DEBRIEF`);
+  if (name || company) lines.push(`From: ${[name, company].filter(Boolean).join(' · ')}`);
+  lines.push('');
+
+  if (_plan?.problem) {
+    lines.push('YOUR MISSION');
+    lines.push(_plan.problem);
+    lines.push('');
+  }
+
+  if (heatRanked.length) {
+    lines.push('TOP SESSIONS');
+    for (const { session: s, avgRating } of heatRanked) {
+      const flames = '🔥'.repeat(Math.round(avgRating));
+      lines.push(`${flames} ${s.title}`);
+      lines.push(`   ${s.theatre ? s.theatre + ' · ' : ''}Day ${s.day || '?'}${s.start_time ? ' · ' + s.start_time : ''}`);
+      for (const n of notesFor('session', s.session_id)) {
+        const who = authorName(n.created_by);
+        lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
+      }
+    }
+    lines.push('');
+  }
+
+  if (boothHeatRanked.length) {
+    lines.push('VENDORS TO FOLLOW UP');
+    for (const { booth: b, avgRating } of boothHeatRanked) {
+      const flames = '🔥'.repeat(Math.round(avgRating));
+      lines.push(`${flames} ${b.company_name} (Stand ${b.stand_number})`);
+      for (const n of notesFor('booth', b.stand_number)) {
+        const who = authorName(n.created_by);
+        lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
+      }
+    }
+    lines.push('');
+  }
+
+  if (!heatRanked.length && !boothHeatRanked.length) {
+    lines.push('Rate sessions and vendors on the Checklist tab — your summary will build up here.');
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+// ── Debrief tab ───────────────────────────────────────────────────────────────
 
 function renderDebriefTab() {
-  const sessions = _plan?.sessions || [];
-  const rated    = sessions.filter(s => s.rating).length;
+  const firstName   = _userProfile?.first_name || '';
+  const lastName    = _userProfile?.last_name  || '';
+  const company     = _userProfile?.company    || '';
+  const displayName = [firstName, lastName].filter(Boolean).join(' ') || (_authUser?.email || 'You');
+  const fromLine    = [displayName, company].filter(Boolean).join(' · ');
+
+  const summaryText     = buildSummaryText();
+  const heatRanked      = buildHeatRanked();
+  const boothHeatRanked = buildBoothHeatRanked();
+
+  const allNotes = _teamData ? _teamData.allNotes : (_plan?.notes || []);
+  const members  = _teamData?.members || [];
+
+  function memberFor(createdBy) {
+    return members.find(m => m.users?.id === createdBy);
+  }
+
+  function notesFor(itemType, itemId) {
+    return allNotes.filter(n => n.item_type === itemType && n.item_id === itemId && n.note_text?.trim());
+  }
+
+  function initials(u) {
+    return `${u?.first_name?.[0] || ''}${u?.last_name?.[0] || ''}`.toUpperCase() || '?';
+  }
+
+  function renderDebriefFlames(avg) {
+    const rounded = Math.round(avg);
+    return [1, 2, 3].map(n =>
+      `<span class="flame-btn ${n <= rounded ? 'lit' : ''}" style="pointer-events:none;">${flameSvg()}</span>`
+    ).join('');
+  }
+
+  function renderHotCard(rank, title, meta, avgRating, raterCount, itemType, itemId) {
+    const notes = notesFor(itemType, itemId);
+    const noteHtml = notes.length ? `
+      <div class="debrief-hot-notes">
+        ${notes.map(n => {
+          const m    = memberFor(n.created_by);
+          const u    = m?.users;
+          const name = u?.first_name ? `${u.first_name} ${u.last_name || ''}`.trim() : 'Teammate';
+          const ini  = initials(u);
+          return `
+            <div class="debrief-hot-note">
+              <div class="mini-av" style="flex-shrink:0;">${escHtml(ini)}</div>
+              <div class="debrief-hot-note-body">
+                <div class="debrief-hot-note-head"><strong>${escHtml(name)}</strong></div>
+                <div class="debrief-hot-note-text">${escHtml(n.note_text)}</div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>` : '';
+    return `
+      <div class="debrief-hot-card">
+        <div class="debrief-hot-card-head">
+          <div class="debrief-hot-rank">#${rank}</div>
+          <div class="debrief-hot-main">
+            <div class="debrief-hot-title">${escHtml(title)}</div>
+            <div class="debrief-hot-meta">${escHtml(meta)}</div>
+          </div>
+          <div class="debrief-hot-rating">
+            ${renderDebriefFlames(avgRating)}
+            <div class="debrief-hot-count">${raterCount} rated</div>
+          </div>
+        </div>
+        ${noteHtml}
+      </div>`;
+  }
+
+  const sessionCards = heatRanked.map(({ session: s, avgRating, raterCount }, i) => {
+    const meta = [
+      s.day ? `Day ${s.day}` : '',
+      s.theatre || '',
+      s.start_time || '',
+    ].filter(Boolean).join(' · ');
+    return renderHotCard(i + 1, s.title, meta, avgRating, raterCount, 'session', s.session_id);
+  }).join('');
+
+  const boothCards = boothHeatRanked.map(({ booth: b, avgRating, raterCount }, i) => {
+    const meta = `Stand ${b.stand_number}`;
+    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number);
+  }).join('');
+
   return `
-    <div class="app-header">
-      <h2 class="app-title">Your <em>debrief.</em></h2>
-      <p class="app-sub">A full write-up — every note attributed, all sessions rated, vendor conversations, speaker quotes.</p>
+    <div class="app-section">
+      <div class="team-section-eyebrow tone-pink">The summary</div>
+      <h3 class="team-section-title">Your Accountex, <em>distilled.</em></h3>
+      <p class="team-section-lede">Action items first. Copy, email, or save as PDF.</p>
+      <div class="email-draft">
+        <div class="email-draft-header">
+          <div class="email-draft-row">
+            <div class="email-draft-label">From</div>
+            <div class="email-draft-value">${escHtml(fromLine)}</div>
+          </div>
+          <div class="email-draft-row">
+            <div class="email-draft-label">For</div>
+            <div class="email-draft-value">Share with partners, the team, or keep for yourself</div>
+          </div>
+        </div>
+        <textarea class="email-draft-body" id="debrief-textarea" spellcheck="false">${escHtml(summaryText)}</textarea>
+      </div>
+      <div class="debrief-actions">
+        <button class="debrief-btn secondary" onclick="planCopyDebrief(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy to clipboard
+        </button>
+        <button class="debrief-btn secondary" onclick="planEmailDebrief()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Email this
+        </button>
+        <button class="debrief-btn primary" onclick="planDownloadDebrief()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download as PDF
+        </button>
+      </div>
     </div>
-    <div style="padding:32px 0;color:var(--text-muted);font-size:14px;line-height:1.65;">
-      ${rated > 0
-        ? `<p>You've rated <strong style="color:var(--text)">${rated} session${rated !== 1 ? 's' : ''}</strong>. Keep rating and adding notes on the Checklist tab — your summary will build up here.</p>`
-        : `<p>Rate your first session on the Checklist tab to see your debrief start taking shape.</p>`}
+
+    <div class="app-section">
+      <div class="team-section-eyebrow tone-pink">
+        ${flameSvg()}
+        Hot sessions
+      </div>
+      <h3 class="team-section-title">Top-rated <em>by your team.</em></h3>
+      ${heatRanked.length
+        ? `<div class="debrief-hot-list">${sessionCards}</div>`
+        : `<div class="debrief-empty">Sessions appear here as your team rates them.</div>`}
+    </div>
+
+    ${boothHeatRanked.length ? `
+    <div class="app-section">
+      <div class="team-section-eyebrow tone-pink">
+        ${flameSvg()}
+        Hot booths
+      </div>
+      <h3 class="team-section-title">Vendors <em>worth a follow-up.</em></h3>
+      <div class="debrief-hot-list">${boothCards}</div>
+    </div>
+    ` : ''}
+
+    <div class="app-section">
+      <div class="workiro-cta workiro-cta-simple">
+        <div class="workiro-cta-visual">
+          <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="translate(8, 20)">
+              <rect x="0" y="0" width="34" height="44" rx="4" fill="rgba(255,94,132,0.10)" stroke="rgba(255,94,132,0.55)" stroke-width="1.4"/>
+              <line x1="6" y1="12" x2="26" y2="12" stroke="rgba(255,94,132,0.55)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="6" y1="20" x2="22" y2="20" stroke="rgba(255,94,132,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="6" y1="28" x2="26" y2="28" stroke="rgba(255,94,132,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="6" y1="36" x2="18" y2="36" stroke="rgba(255,94,132,0.3)" stroke-width="1.2" stroke-linecap="round"/>
+            </g>
+            <g transform="translate(48, 32)">
+              <rect x="0" y="0" width="34" height="44" rx="4" fill="rgba(168,85,247,0.10)" stroke="rgba(168,85,247,0.55)" stroke-width="1.4"/>
+              <line x1="6" y1="12" x2="26" y2="12" stroke="rgba(168,85,247,0.55)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="6" y1="20" x2="22" y2="20" stroke="rgba(168,85,247,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="6" y1="28" x2="26" y2="28" stroke="rgba(168,85,247,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="6" y1="36" x2="18" y2="36" stroke="rgba(168,85,247,0.3)" stroke-width="1.2" stroke-linecap="round"/>
+            </g>
+            <path d="M 88 40 Q 110 40 130 50" fill="none" stroke="rgba(34,230,168,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 3">
+              <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="2.4s" repeatCount="indefinite"/>
+            </path>
+            <path d="M 88 56 Q 110 60 130 60" fill="none" stroke="rgba(34,230,168,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 3">
+              <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="2.4s" begin="0.6s" repeatCount="indefinite"/>
+            </path>
+            <g transform="translate(130, 24)">
+              <path d="M 0 8 Q 0 4 4 4 L 18 4 L 22 10 L 56 10 Q 60 10 60 14 L 60 50 Q 60 54 56 54 L 4 54 Q 0 54 0 50 Z"
+                    fill="rgba(34,230,168,0.12)" stroke="rgba(34,230,168,0.7)" stroke-width="1.5" stroke-linejoin="round"/>
+              <line x1="8" y1="22" x2="52" y2="22" stroke="rgba(34,230,168,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="8" y1="30" x2="44" y2="30" stroke="rgba(34,230,168,0.55)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="8" y1="38" x2="52" y2="38" stroke="rgba(34,230,168,0.55)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="8" y1="46" x2="38" y2="46" stroke="rgba(34,230,168,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="56" cy="14" r="2.5" fill="rgba(34,230,168,1)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+          </svg>
+        </div>
+        <div class="workiro-cta-content">
+          <div class="workiro-cta-eyebrow">
+            <span class="workiro-cta-eyebrow-dot"></span>
+            About Workiro
+          </div>
+          <div class="workiro-cta-headline">
+            Document management <em>for UK accounting firms.</em>
+          </div>
+          <div class="workiro-cta-actions">
+            <a class="workiro-cta-btn primary" href="https://workiro.com" target="_blank" rel="noopener">
+              Visit workiro.com
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+            <span class="workiro-cta-note">· Or come see us at stand <strong>1144</strong></span>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -1043,6 +1347,13 @@ async function handleSignIn(authUser, teamToken) {
         { onConflict: 'id' },
       );
       if (upsertErr) throw upsertErr;
+
+      const { data: profileRow } = await supabase
+        .from('users')
+        .select('first_name, last_name, company')
+        .eq('id', authUser.id)
+        .single();
+      _userProfile = profileRow;
 
       if (planData) {
         const pendingPlanId = localStorage.getItem('pendingPlanId');
@@ -1211,6 +1522,34 @@ function showLoading(show) {
   if (el) el.style.display = show ? 'flex' : 'none';
 }
 
+// ── Debrief PDF helper ────────────────────────────────────────────────────────
+
+function buildPrintHtml(text, name, company) {
+  const header = [name, company].filter(Boolean).join(' · ') || 'Accountex 2025';
+  const escaped = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Accountex 2025 Debrief</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 13pt; line-height: 1.7; margin: 2cm 2.5cm; color: #111; }
+  h1 { font-size: 18pt; margin: 0 0 4px; }
+  .meta { font-size: 10pt; color: #666; margin-bottom: 28px; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
+  pre { font-family: inherit; white-space: pre-wrap; word-break: break-word; margin: 0; }
+  @media print { body { margin: 1.5cm 2cm; } }
+</style>
+</head>
+<body>
+<h1>Accountex 2025 — Debrief</h1>
+<div class="meta">${header}</div>
+<pre>${escaped}</pre>
+<script>window.onload = function() { window.print(); };<\/script>
+</body>
+</html>`;
+}
+
 // ── Global helpers (called from inline onclick in rendered HTML) ───────────────
 
 window.planSwitchTab = function(tabId) {
@@ -1237,6 +1576,34 @@ window.planDismissInviteNudge = function(ev) {
   if (ev) ev.stopPropagation();
   _inviteNudgeDismissed = true;
   renderApp();
+};
+
+window.planCopyDebrief = function(btn) {
+  const ta = document.getElementById('debrief-textarea');
+  if (!ta) return;
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const orig = btn.textContent.trim();
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> ${orig}`; }, 2000);
+  });
+};
+
+window.planEmailDebrief = function() {
+  const ta      = document.getElementById('debrief-textarea');
+  const subject = encodeURIComponent('Accountex 2025 — My Debrief');
+  const body    = encodeURIComponent(ta ? ta.value : '');
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+};
+
+window.planDownloadDebrief = function() {
+  const ta      = document.getElementById('debrief-textarea');
+  const name    = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ');
+  const company = _userProfile?.company || '';
+  const html = buildPrintHtml(ta ? ta.value : '', name, company);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  if (win) win.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
 };
 
 window.planOpenNote = function(noteId) {

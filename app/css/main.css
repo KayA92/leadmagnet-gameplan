@@ -5389,6 +5389,25 @@ button.app-pill.purple.clickable:hover {
 }
 .workiro-cta-note strong { color: var(--text); font-weight: 600; }
 
+.workiro-cta-simple {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 28px;
+}
+.workiro-cta-simple .workiro-cta-headline {
+  margin-bottom: 18px;
+  font-size: clamp(20px, 2.6vw, 26px);
+}
+.workiro-cta-visual { position: relative; z-index: 1; }
+.workiro-cta-visual svg { width: 100%; height: auto; display: block; }
+.workiro-cta-content { position: relative; z-index: 1; }
+@media (max-width: 700px) {
+  .workiro-cta-simple { grid-template-columns: 1fr; gap: 20px; padding: 24px; }
+  .workiro-cta-visual { max-width: 220px; margin: 0 auto; }
+}
+
 /* TaxReady CTA — subtle teal accent (matching TaxReady brand), not overwrought */
 .taxready-cta {
   margin-top: 8px;

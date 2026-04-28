@@ -1013,6 +1013,7 @@ function buildSummaryText() {
 
   if (allSessionItems.length) {
     lines.push('TOP SESSIONS');
+    lines.push('');
     for (const { session: s, avgRating } of allSessionItems) {
       const flames = avgRating > 0 ? '🔥'.repeat(Math.round(avgRating)) : '';
       lines.push(`${flames ? flames + ' ' : ''}${s.title}`);
@@ -1021,8 +1022,8 @@ function buildSummaryText() {
         const who = authorName(n.created_by);
         lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
       }
+      lines.push('');
     }
-    lines.push('');
   }
 
   // Booths: rated ones first, then noted-but-unrated
@@ -1036,6 +1037,7 @@ function buildSummaryText() {
 
   if (allBoothItems.length) {
     lines.push('VENDORS TO FOLLOW UP');
+    lines.push('');
     for (const { booth: b, avgRating } of allBoothItems) {
       const flames = avgRating > 0 ? '🔥'.repeat(Math.round(avgRating)) : '';
       lines.push(`${flames ? flames + ' ' : ''}${b.company_name} (Stand ${b.stand_number})`);
@@ -1043,8 +1045,8 @@ function buildSummaryText() {
         const who = authorName(n.created_by);
         lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
       }
+      lines.push('');
     }
-    lines.push('');
   }
 
   if (!allSessionItems.length && !allBoothItems.length) {

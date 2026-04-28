@@ -931,27 +931,33 @@ function buildHeatRanked() {
 }
 
 function buildBoothHeatRanked() {
-  const booths    = _plan?.booths || [];
   const teamPlans = _teamData?.teamPlans || [];
+  const allPlans  = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
 
-  const scoreMap = {};
-  const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
+  const scoreMap    = {};
+  const boothMetaMap = {};
+
+  // Current user's plan takes priority for booth metadata
+  for (const b of (_plan?.booths || [])) {
+    boothMetaMap[String(b.stand_number)] = b;
+  }
+
   for (const p of allPlans) {
     for (const b of (p.booths || [])) {
-      if (!b.rating) continue;
       const key = String(b.stand_number);
+      if (!boothMetaMap[key]) boothMetaMap[key] = b;
+      if (!b.rating) continue;
       if (!scoreMap[key]) scoreMap[key] = { total: 0, count: 0 };
       scoreMap[key].total += b.rating;
       scoreMap[key].count += 1;
     }
   }
 
-  return booths
-    .filter(b => scoreMap[String(b.stand_number)])
-    .map(b => ({
-      booth:      b,
-      avgRating:  scoreMap[String(b.stand_number)].total / scoreMap[String(b.stand_number)].count,
-      raterCount: scoreMap[String(b.stand_number)].count,
+  return Object.keys(scoreMap)
+    .map(key => ({
+      booth:      boothMetaMap[key],
+      avgRating:  scoreMap[key].total / scoreMap[key].count,
+      raterCount: scoreMap[key].count,
     }))
     .sort((a, b) => b.avgRating - a.avgRating);
 }
@@ -1026,13 +1032,24 @@ function buildSummaryText() {
     }
   }
 
-  // Booths: rated ones first, then noted-but-unrated
+  // Booths: rated ones first (already covers all team plans via buildBoothHeatRanked),
+  // then noted-but-unrated booths from any team plan
   const ratedBoothIds = new Set(boothHeatRanked.map(h => String(h.booth.stand_number)));
+  const allTeamPlans  = (_teamData?.teamPlans?.length ? _teamData.teamPlans : [_plan].filter(Boolean));
+  const seenBoothIds  = new Set(ratedBoothIds);
+  const notedUnratedBooths = [];
+  for (const p of allTeamPlans) {
+    for (const b of (p.booths || [])) {
+      const key = String(b.stand_number);
+      if (!seenBoothIds.has(key) && boothNoteMap[key]) {
+        seenBoothIds.add(key);
+        notedUnratedBooths.push(b);
+      }
+    }
+  }
   const allBoothItems = [
     ...boothHeatRanked.map(h => ({ booth: h.booth, avgRating: h.avgRating })),
-    ...(_plan?.booths || [])
-      .filter(b => !ratedBoothIds.has(String(b.stand_number)) && boothNoteMap[String(b.stand_number)])
-      .map(b => ({ booth: b, avgRating: 0 })),
+    ...notedUnratedBooths.map(b => ({ booth: b, avgRating: 0 })),
   ];
 
   if (allBoothItems.length) {

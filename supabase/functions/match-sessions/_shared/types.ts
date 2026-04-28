@@ -37,7 +37,7 @@ export interface UserProfile {
   attend_mode: string;
   problem: string;
   categories: string[];
-  time_window: string;
+  time_window: string | string[];
   role: string;
   first_name: string;
 }

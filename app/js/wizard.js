@@ -10,7 +10,7 @@ const state = {
     attendMode: 'team-lead',
     problem: '',
     categories: [],
-    time: null,
+    time: [],
     role: null,
   },
   user: { firstName: '', lastName: '', email: '', company: '' },
@@ -133,14 +133,91 @@ async function animateProgress() {
   bar.style.width = '100%';
 }
 
+// Sessions guaranteed to appear when their trigger fires AND their time slot matches.
+// Injected after AI ranking so they cannot be dropped by the model.
+const PINNED_SESSIONS = [
+  {
+    sessionId: '36304',
+    reason: 'Essential for your MTD priorities — covers the impact on un-represented clients.',
+    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
+  },
+  {
+    sessionId: '36370',
+    reason: 'A must-see MTD session covering the real-world IT challenges firms face right now.',
+    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
+  },
+  {
+    titleMatch: 'MTD Therapy',
+    reason: 'Matched to your MTD priorities — a frank, practitioner-led discussion on what\'s working.',
+    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
+  },
+  {
+    sessionId: '36375',
+    reason: 'Directly relevant to your margin and pricing challenges — a commercial thinking masterclass.',
+    detect: (a) => /margin|pricing|\bprofitab/i.test(a.problem),
+  },
+];
+
+const _TIME_FILTERS = {
+  'wed-am':   { days: ['Day 1'], startBefore: '13:00', startFrom: null },
+  'wed-pm':   { days: ['Day 1'], startBefore: null,    startFrom: '13:00' },
+  'wed-full': { days: ['Day 1'], startBefore: null,    startFrom: null },
+  'thu-am':   { days: ['Day 2'], startBefore: '13:00', startFrom: null },
+  'thu-pm':   { days: ['Day 2'], startBefore: null,    startFrom: '13:00' },
+  'thu-full': { days: ['Day 2'], startBefore: null,    startFrom: null },
+};
+
+function sessionMatchesTime(session, times) {
+  const slots = (Array.isArray(times) ? times : [times]).map(t => _TIME_FILTERS[t]).filter(Boolean);
+  if (slots.length === 0) return true;
+  return slots.some(tf => {
+    if (!tf.days.includes(session.day)) return false;
+    if (tf.startBefore && session.start_time >= tf.startBefore) return false;
+    if (tf.startFrom && session.start_time < tf.startFrom) return false;
+    return true;
+  });
+}
+
+function injectPinnedSessions(rankedItems, allSessions, answers) {
+  const result = [...rankedItems];
+  for (const pin of PINNED_SESSIONS) {
+    if (!pin.detect(answers)) continue;
+    const session = pin.sessionId
+      ? allSessions.find(s => s.session_id === pin.sessionId)
+      : allSessions.find(s => s.title && s.title.includes(pin.titleMatch));
+    if (!session) continue;
+    if (!sessionMatchesTime(session, answers.time)) continue;
+    const alreadyIn = result.some(r => r.session_id === session.session_id);
+    if (!alreadyIn) result.unshift({ session_id: session.session_id, rank: 0, reason: pin.reason });
+  }
+  return result;
+}
+
+function deconflictSessions(rankedItems, allSessions) {
+  const placed = [];
+  for (const item of rankedItems) {
+    const s = allSessions.find(x => x.session_id === item.session_id);
+    if (!s || !s.start_time || !s.end_time) { placed.push(item); continue; }
+    const clashes = placed.some(p => {
+      const ps = allSessions.find(x => x.session_id === p.session_id);
+      if (!ps || ps.day !== s.day) return false;
+      return ps.start_time < s.end_time && ps.end_time > s.start_time;
+    });
+    if (!clashes) placed.push(item);
+  }
+  return placed;
+}
+
 function buildFallbackPlan() {
+  const candidates = state.filteredSessions.slice(0, 20).map((s, i) => ({
+    session_id: s.session_id,
+    rank: i + 1,
+    reason: 'Matched to your event priorities.',
+  }));
+  const withPinned = injectPinnedSessions(candidates, state.allSessions, state.answers);
   return {
     fallback: true,
-    sessions: state.filteredSessions.slice(0, 12).map((s, i) => ({
-      session_id: s.session_id,
-      rank: i + 1,
-      reason: 'Matched to your event priorities.',
-    })),
+    sessions: deconflictSessions(withPinned, state.allSessions).slice(0, 12),
     booths: state.filteredExhibitors.slice(0, 8).map((e, i) => ({
       company_name: e.company_name,
       stand_number: e.stand_number,
@@ -178,9 +255,23 @@ async function startReveal() {
 
   stopTicker();
 
-  state.plan = (!apiResult || apiResult.fallback || !Array.isArray(apiResult.sessions))
-    ? buildFallbackPlan()
-    : apiResult;
+  if (!apiResult || apiResult.fallback || !Array.isArray(apiResult.sessions)) {
+    state.plan = buildFallbackPlan();
+  } else {
+    const withPinned = injectPinnedSessions(apiResult.sessions, state.allSessions, state.answers);
+    const deconflicted = deconflictSessions(withPinned, state.allSessions);
+    const booths = apiResult.booths || [];
+    const workiroEx = state.allExhibitors.find(e => e.company_name === 'Workiro');
+    if (workiroEx && !booths.some(b => b.company_name === 'Workiro')) {
+      booths.push({
+        company_name: 'Workiro',
+        stand_number: workiroEx.stand_number || '1144',
+        rank: booths.length + 1,
+        reason: 'The team behind this game plan — visit Stand 1144 to see how Workiro supports your practice.',
+      });
+    }
+    state.plan = { ...apiResult, sessions: deconflicted, booths };
+  }
 
   await wait(300); // brief pause for bar to reach 100%
   goToStage(7);
@@ -501,18 +592,24 @@ export async function initWizard() {
   });
   $('cat-next') && ($('cat-next').disabled = true);
 
-  // ── Stage 4: availability
+  // ── Stage 4: availability (multi-select)
   document.querySelectorAll('[data-time]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-time]').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state.answers.time = btn.dataset.time;
-      $('time-next').disabled = false;
+      const val = btn.dataset.time;
+      const idx = state.answers.time.indexOf(val);
+      if (idx >= 0) {
+        state.answers.time.splice(idx, 1);
+        btn.classList.remove('selected');
+      } else {
+        state.answers.time.push(val);
+        btn.classList.add('selected');
+      }
+      $('time-next').disabled = state.answers.time.length === 0;
     });
   });
   $('time-back')?.addEventListener('click', () => history.back());
   $('time-next')?.addEventListener('click', () => {
-    if (state.answers.time) goToStage(5);
+    if (state.answers.time.length > 0) goToStage(5);
   });
   $('time-next') && ($('time-next').disabled = true);
 

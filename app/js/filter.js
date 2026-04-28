@@ -54,10 +54,45 @@ const TIME_FILTERS = {
   'thu-full': { days: ['Day 2'], startBefore: null,    startFrom: null },
 };
 
+// Sessions always injected when the user's problem/categories trigger the condition.
+// sessionId: match by session_id; titleMatch: match by title substring (for blank-ID sessions).
+const PINNED_SESSIONS = [
+  {
+    sessionId: '36304',
+    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
+  },
+  {
+    sessionId: '36370',
+    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
+  },
+  {
+    titleMatch: 'MTD Therapy',
+    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
+  },
+  {
+    sessionId: '36375',
+    detect: (a) => /margin|pricing|\bprofit\b|commercial/i.test(a.problem),
+  },
+];
+
 // ── Session pre-filter ────────────────────────────────────────────────────────
 export function preFilterSessions(answers, allSessions) {
   const { categories = [], time, role, problem = '' } = answers;
-  const tf = TIME_FILTERS[time] || TIME_FILTERS['wed-full'];
+
+  // Accept a single string (legacy) or an array of time-slot keys
+  const times = Array.isArray(time) ? time : (time ? [time] : []);
+  const filters = times.map(t => TIME_FILTERS[t]).filter(Boolean);
+  if (filters.length === 0) filters.push(TIME_FILTERS['wed-full']);
+
+  function matchesAnySlot(session) {
+    return filters.some(tf => {
+      if (!tf.days.includes(session.day)) return false;
+      if (tf.startBefore && session.start_time >= tf.startBefore) return false;
+      if (tf.startFrom && session.start_time < tf.startFrom) return false;
+      return true;
+    });
+  }
+
   const problemLower = problem.toLowerCase();
   const boostedTheatres = ROLE_THEATRE[role] || [];
 
@@ -76,13 +111,7 @@ export function preFilterSessions(answers, allSessions) {
     if (seenIds.has(session.session_id)) continue;
     seenIds.add(session.session_id);
 
-    // Day filter
-    if (!tf.days.includes(session.day)) continue;
-
-    // AM cutoff — exclude sessions starting at or after the AM/PM boundary
-    if (tf.startBefore && session.start_time >= tf.startBefore) continue;
-    // PM cutoff — exclude sessions starting before the afternoon boundary
-    if (tf.startFrom && session.start_time < tf.startFrom) continue;
+    if (!matchesAnySlot(session)) continue;
 
     let score = 0;
 
@@ -112,9 +141,23 @@ export function preFilterSessions(answers, allSessions) {
   // Take top 45
   const result = scored.slice(0, 45);
 
+  // Inject pinned sessions at the top (high-priority candidates for the AI)
+  for (const pin of PINNED_SESSIONS) {
+    if (!pin.detect(answers)) continue;
+    const base = pin.sessionId
+      ? allSessions.find(s => s.session_id === pin.sessionId)
+      : allSessions.find(s => s.title && s.title.includes(pin.titleMatch));
+    if (!base) continue;
+    const alreadyIn = pin.sessionId
+      ? result.some(s => s.session_id === pin.sessionId)
+      : result.some(s => s.title && s.title.includes(pin.titleMatch));
+    if (!alreadyIn) result.unshift({ ...base, stage1_score: 99, _pinned: true });
+  }
+
   // Back-fill: ensure ≥5 sessions per available day
   const resultIds = new Set(result.map(s => s.session_id));
-  for (const day of tf.days) {
+  const allDays = [...new Set(filters.flatMap(tf => tf.days))];
+  for (const day of allDays) {
     const dayCount = result.filter(s => s.day === day).length;
     if (dayCount < 5) {
       const extras = scored
@@ -192,5 +235,13 @@ export function preFilterExhibitors(answers, allExhibitors) {
   }
 
   scored.sort((a, b) => b.stage1_score - a.stage1_score);
-  return scored.slice(0, 25);
+  const top25 = scored.slice(0, 25);
+
+  // Workiro is always included regardless of category relevance
+  const workiro = allExhibitors.find(e => e.company_name === 'Workiro');
+  if (workiro && !top25.some(e => e.company_name === 'Workiro')) {
+    top25.push({ ...workiro, stage1_score: 0 });
+  }
+
+  return top25;
 }

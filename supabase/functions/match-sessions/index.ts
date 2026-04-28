@@ -17,10 +17,12 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const TIME_LABELS: Record<string, string> = {
-  "half-day-1": "Wednesday morning only (13 May, 10:20–13:00)",
-  "full-day-1": "Wednesday all day (13 May)",
-  "full-day-2": "Thursday all day (14 May)",
-  "both-days": "Both days (13–14 May)",
+  "wed-am":   "Wednesday morning (13 May, 10:20–13:00)",
+  "wed-pm":   "Wednesday afternoon (13 May, 13:00–18:00)",
+  "wed-full": "Wednesday all day (13 May)",
+  "thu-am":   "Thursday morning (14 May, 10:20–13:00)",
+  "thu-pm":   "Thursday afternoon (14 May, 13:00–18:00)",
+  "thu-full": "Thursday all day (14 May)",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -45,7 +47,7 @@ Ranking priorities (in order):
 
 Output rules — CRITICAL:
 - Return ONLY valid JSON. No markdown, no prose, no preamble, no explanation outside the JSON.
-- sessions: exactly 12 items (or fewer only if fewer than 12 are provided), each with session_id, rank (1-based integer), reason
+- sessions: up to 20 items (ranked best-first), each with session_id, rank (1-based integer), reason
 - booths: up to 8 items, each with company_name, stand_number, rank, reason
 - themes: 3 to 5 short phrases, max 80 characters each, describing the narrative pattern across the top sessions
 - Each reason: 1–2 sentences in second person ("you" / "your firm"), specific to their stated problem, max 200 characters`;
@@ -73,12 +75,17 @@ function buildUserPrompt(req: MatchRequest): string {
     description: e.company_description.slice(0, 200),
   }));
 
+  const tw = user_profile.time_window;
+  const timeDisplay = Array.isArray(tw)
+    ? tw.map((t) => TIME_LABELS[t] ?? t).join(" + ")
+    : (TIME_LABELS[tw as string] ?? tw);
+
   return `Attendee profile:
 - First name: ${user_profile.first_name || "Attendee"}
 - Role: ${ROLE_LABELS[user_profile.role] ?? user_profile.role}
 - Problem statement: "${user_profile.problem}"
 - Categories of interest: ${categoryNames}
-- Attendance window: ${TIME_LABELS[user_profile.time_window] ?? user_profile.time_window}
+- Attendance window: ${timeDisplay}
 
 Pre-filtered sessions (${sessionsCompact.length} total):
 ${JSON.stringify(sessionsCompact, null, 1)}

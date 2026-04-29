@@ -1440,6 +1440,18 @@ function renderPlanEditorResults() {
   else if (_planEditorMode === 'booths') renderPlanEditorBooths(el);
 }
 
+function _updateEditorSub(filteredCount, total) {
+  const sub = document.getElementById('planEditorSub');
+  if (!sub) return;
+  const planCount = _planEditorMode === 'sessions'
+    ? (_plan?.sessions || []).length
+    : (_plan?.booths || []).length;
+  const countText = filteredCount < total
+    ? `${filteredCount} of ${total} shown`
+    : `${total} available`;
+  sub.textContent = `${planCount} in your plan · ${countText}`;
+}
+
 function renderPlanEditorSessions(container) {
   const q         = (_planEditorQuery || '').toLowerCase();
   const planIds   = new Set((_plan?.sessions || []).map(s => s.session_id));
@@ -1468,6 +1480,8 @@ function renderPlanEditorSessions(container) {
     }
     return true;
   });
+
+  _updateEditorSub(filtered.length, (_allSessions || []).length);
 
   const slots = new Map();
   for (const s of filtered) {
@@ -1595,6 +1609,8 @@ function renderPlanEditorBooths(container) {
     return true;
   }).sort((a, b) => (a.company_name || '').localeCompare(b.company_name || ''));
 
+  _updateEditorSub(filtered.length, (_allExhibitors || []).length);
+
   if (!filtered.length) {
     container.innerHTML = '<div class="search-empty">No exhibitors match those filters. Try clearing one.</div>';
     return;
@@ -1656,8 +1672,6 @@ window.togglePlanSession = async function(sessionId) {
     if (full) _plan.sessions = [...(_plan.sessions || []), full];
   }
   renderPlanEditorResults();
-  const sub = document.getElementById('planEditorSub');
-  if (sub) sub.textContent = `${(_plan.sessions || []).length} in your plan · ${(_allSessions || []).length} available`;
   await supabase.from('plans').update({ sessions: _plan.sessions }).eq('id', _plan.id);
 };
 
@@ -1670,8 +1684,6 @@ window.togglePlanBooth = async function(standNumber) {
     if (full) _plan.booths = [...(_plan.booths || []), full];
   }
   renderPlanEditorResults();
-  const sub = document.getElementById('planEditorSub');
-  if (sub) sub.textContent = `${(_plan.booths || []).length} in your plan · ${(_allExhibitors || []).length} available`;
   await supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
 };
 

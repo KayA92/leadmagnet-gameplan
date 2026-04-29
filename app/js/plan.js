@@ -597,16 +597,98 @@ function renderChecklistTab() {
           </h2>
           <div class="checklist-section-meta">
             <span class="checklist-section-count">${booths.length} ${booths.length === 1 ? 'booth' : 'booths'}</span>
-            <button class="checklist-section-edit variant-booths" onclick="openPlanEditor('booths')" type="button">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              Edit
-            </button>
           </div>
         </div>
         <p class="checklist-intro">Rate each vendor after a conversation — your notes and scores feed into your debrief.</p>
         <div class="checklist">${boothItems}</div>
       </div>
     ` : ''}
+
+    <div class="plan-editor-entry">
+      <div class="plan-editor-entry-label">Change your plan</div>
+      <div class="plan-editor-entry-actions">
+        <button class="plan-editor-entry-btn variant-sessions" onclick="openPlanEditor('sessions')" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Edit sessions
+          <span class="plan-editor-entry-count">${sessions.length}</span>
+        </button>
+        <button class="plan-editor-entry-btn variant-booths" onclick="openPlanEditor('booths')" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Edit booths
+          <span class="plan-editor-entry-count">${booths.length}</span>
+        </button>
+      </div>
+    </div>
+
+    ${(() => {
+      const userCats = (plan.categories || []).filter(c => _EDITOR_CATEGORY_LABELS[c] && c !== 'other');
+      if (!userCats.length) return '';
+      const boxes = userCats.map(cat => {
+        const label     = _EDITOR_CATEGORY_LABELS[cat] || cat;
+        const sessCount = (_allSessions  || []).filter(s => (s.canonical_categories  || []).includes(cat)).length;
+        const boothCount= (_allExhibitors|| []).filter(e => (e.canonical_categories  || []).includes(cat)).length;
+        return `
+          <button class="theme-box" onclick="openPlanEditorWithProblem('${escHtml(cat)}')" type="button">
+            <div class="theme-box-head">
+              <div class="theme-box-label">${escHtml(label)}</div>
+              <svg class="theme-box-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="theme-box-stats">
+              <span><strong>${sessCount}</strong> session${sessCount === 1 ? '' : 's'}</span>
+              <span class="theme-box-dot">·</span>
+              <span><strong>${boothCount}</strong> booth${boothCount === 1 ? '' : 's'}</span>
+            </div>
+          </button>`;
+      }).join('');
+      return `
+        <div class="theme-browse">
+          <div class="theme-browse-head">
+            <div class="theme-browse-eyebrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg>
+              AI-matched to your answers
+            </div>
+            <div class="theme-browse-label">Browse by your <em>top problems.</em></div>
+            <div class="theme-browse-sub">The AI pulled these from what you told us in onboarding. Tap one to see every session and booth that matches.</div>
+          </div>
+          <div class="theme-browse-grid">${boxes}</div>
+        </div>`;
+    })()}
+
+    <div class="checklist-webinar-card">
+      <div class="checklist-webinar-card-inner">
+        <div class="checklist-webinar-card-left">
+          <div class="checklist-webinar-card-eyebrow">
+            <span class="checklist-webinar-card-dot"></span>
+            30-min webinar · Free recording
+          </div>
+          <h3 class="checklist-webinar-card-title">See how top UK firms <em>use this at the show.</em></h3>
+          <p class="checklist-webinar-card-body">
+            Francesca McClory, Robyn Milstead and Rachel Gregory walk through the before / during / after flow — with Alex Hayter demoing every tab. <strong>Watch once, plan better.</strong>
+          </p>
+          <a class="checklist-webinar-card-btn" href="https://workiro.com/accountex-webinar" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Watch the recording
+          </a>
+        </div>
+        <div class="checklist-webinar-card-right">
+          <div class="checklist-webinar-panellists">
+            <div class="checklist-webinar-panellist" title="Francesca McClory FMAAT">
+              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff8069dfe318081038_Francesca%20McClory.png" alt="Francesca" onerror="this.style.display='none'">
+            </div>
+            <div class="checklist-webinar-panellist" title="Robyn Milstead CTA">
+              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff0849ce880aa86e8e_Robyn%20Milstead.png" alt="Robyn" onerror="this.style.display='none'">
+            </div>
+            <div class="checklist-webinar-panellist" title="Rachel Gregory — Accountex">
+              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff51082b60b60d479e_Rachel%20Gregory.png" alt="Rachel" onerror="this.style.display='none'">
+            </div>
+            <div class="checklist-webinar-panellist" title="Alex Hayter — Workiro">
+              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ffb5c8083dfb2e619e_Alexandra%20Hayter.png" alt="Alex" onerror="this.style.display='none'">
+            </div>
+          </div>
+          <div class="checklist-webinar-panellists-label">With Francesca, Robyn, Rachel &amp; Alex</div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -1310,6 +1392,34 @@ window.openPlanEditor = function(mode) {
   document.addEventListener('keydown', _planEditorEscHandler);
 };
 
+window.openPlanEditorWithProblem = function(cat) {
+  _ensurePlanEditorOverlay();
+  _planEditorMode       = 'sessions';
+  _planEditorQuery      = '';
+  _planEditorDay        = 'all';
+  _planEditorTime       = 'all';
+  _planEditorCategories = new Set([cat]);
+  _planEditorShowMore   = false;
+
+  const overlay = document.getElementById('planEditorOverlay');
+  const title   = document.getElementById('planEditorTitle');
+  const sub     = document.getElementById('planEditorSub');
+  const search  = document.getElementById('planEditorSearch');
+
+  title.innerHTML = 'Edit <em>your sessions</em>';
+  sub.textContent = `${(_plan?.sessions || []).length} in your plan · ${(_allSessions || []).length} available`;
+  if (search) search.value = '';
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  renderPlanEditorFilters();
+  renderPlanEditorResults();
+
+  _planEditorEscHandler = e => { if (e.key === 'Escape') closePlanEditor(); };
+  document.addEventListener('keydown', _planEditorEscHandler);
+};
+
 window.closePlanEditor = function() {
   const overlay = document.getElementById('planEditorOverlay');
   if (overlay) overlay.classList.remove('open');
@@ -1786,11 +1896,11 @@ const _teamFooterHtml = `
 function renderCurrentTab() {
   const footer = sponsorsFooterHtml();
   switch (_currentTab) {
-    case 'checklist': return renderChecklistTab() + footer;
+    case 'checklist': return renderChecklistTab();
     case 'team':      return renderTeamTab() + _teamFooterHtml;
     case 'cpd':       return renderCpdTab() + footer;
     case 'debrief':   return renderDebriefTab() + footer;
-    default:          return renderChecklistTab() + footer;
+    default:          return renderChecklistTab();
   }
 }
 

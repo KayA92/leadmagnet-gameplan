@@ -20,7 +20,7 @@ let _currentTab  = 'checklist';
 let _planEditorMode      = null;
 let _planEditorDay       = 'all';
 let _planEditorTime      = 'all';
-let _planEditorCategory  = 'all';
+let _planEditorCategories = new Set();
 let _planEditorQuery     = '';
 let _planEditorShowMore  = false;
 
@@ -131,6 +131,7 @@ const PLAN_CATEGORY_MATCH = {
   'doc-automation':      ['doc-automation'],
   'outsourcing':         ['outsourcing'],
   'marketing-growth':    ['marketing-growth'],
+  'other':               [],
 };
 
 function hasSameSlotAlternative(item) {
@@ -1278,12 +1279,12 @@ let _planEditorEscHandler = null;
 
 window.openPlanEditor = function(mode) {
   _ensurePlanEditorOverlay();
-  _planEditorMode     = mode;
-  _planEditorQuery    = '';
-  _planEditorDay      = 'all';
-  _planEditorTime     = 'all';
-  _planEditorCategory = 'all';
-  _planEditorShowMore = false;
+  _planEditorMode       = mode;
+  _planEditorQuery      = '';
+  _planEditorDay        = 'all';
+  _planEditorTime       = 'all';
+  _planEditorCategories = new Set(_plan?.categories || []);
+  _planEditorShowMore   = false;
 
   const overlay = document.getElementById('planEditorOverlay');
   const title   = document.getElementById('planEditorTitle');
@@ -1327,9 +1328,18 @@ window.planEditorOnSearch = function(value) {
 };
 
 window.setPlanEditorFilter = function(type, value) {
-  if (type === 'day')      _planEditorDay      = value;
-  if (type === 'time')     _planEditorTime     = value;
-  if (type === 'category') _planEditorCategory = value;
+  if (type === 'day')  _planEditorDay  = value;
+  if (type === 'time') _planEditorTime = value;
+  if (type === 'category') {
+    if (_planEditorCategories.has(value)) _planEditorCategories.delete(value);
+    else _planEditorCategories.add(value);
+  }
+  renderPlanEditorFilters();
+  renderPlanEditorResults();
+};
+
+window.clearPlanEditorCategories = function() {
+  _planEditorCategories.clear();
   renderPlanEditorFilters();
   renderPlanEditorResults();
 };
@@ -1352,6 +1362,7 @@ const _EDITOR_CATEGORY_LABELS = {
   'doc-automation':      'Doc Automation',
   'outsourcing':         'Outsourcing',
   'marketing-growth':    'Marketing & Growth',
+  'other':               'Other / Uncategorised',
 };
 
 function renderPlanEditorFilters() {
@@ -1360,19 +1371,23 @@ function renderPlanEditorFilters() {
 
   const userCats    = _plan?.categories || [];
   const unpicked    = Object.keys(_EDITOR_CATEGORY_LABELS).filter(c => !userCats.includes(c));
-  const activecat   = _planEditorCategory !== 'all' ? _planEditorCategory : null;
+  const hasActive   = _planEditorCategories.size > 0;
 
-  const problemChips = userCats.map(c => `
-    <button class="editor-filter-chip${activecat === c ? ' active' : ''}"
+  const problemChips = userCats.map(c => {
+    const on = _planEditorCategories.has(c);
+    return `<button class="editor-filter-chip${on ? ' active' : ''}"
       onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">
-      ${activecat === c ? '✓ ' : ''}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
-    </button>`).join('');
+      ${on ? '✓ ' : ''}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
+    </button>`;
+  }).join('');
 
-  const moreChips = unpicked.map(c => `
-    <button class="editor-filter-chip variant-more${activecat === c ? ' active' : ''}"
+  const moreChips = unpicked.map(c => {
+    const on = _planEditorCategories.has(c);
+    return `<button class="editor-filter-chip variant-more${on ? ' active' : ''}"
       onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">
-      ${activecat === c ? '✓ ' : '+ '}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
-    </button>`).join('');
+      ${on ? '✓ ' : '+ '}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
+    </button>`;
+  }).join('');
 
   let html = '';
 
@@ -1383,7 +1398,7 @@ function renderPlanEditorFilters() {
         Your top problems
       </span>
       ${problemChips}
-      ${activecat ? `<button class="editor-filter-clear" onclick="setPlanEditorFilter('category','all')" type="button">Clear</button>` : ''}
+      ${hasActive ? `<button class="editor-filter-clear" onclick="clearPlanEditorCategories()" type="button">Clear</button>` : ''}
       ${unpicked.length && !_planEditorShowMore ? `<button class="editor-filter-more-btn" onclick="togglePlanEditorMoreFilters()" type="button">+ ${unpicked.length} more filter${unpicked.length === 1 ? '' : 's'}</button>` : ''}
     </div>
     ${_planEditorShowMore && unpicked.length ? `
@@ -1428,8 +1443,9 @@ function renderPlanEditorResults() {
 function renderPlanEditorSessions(container) {
   const q         = (_planEditorQuery || '').toLowerCase();
   const planIds   = new Set((_plan?.sessions || []).map(s => s.session_id));
-  const wantedCats = _planEditorCategory !== 'all'
-    ? new Set(PLAN_CATEGORY_MATCH[_planEditorCategory] || [])
+  const wantOther  = _planEditorCategories.has('other');
+  const wantedCats = [..._planEditorCategories].filter(c => c !== 'other').length > 0
+    ? new Set([..._planEditorCategories].filter(c => c !== 'other').flatMap(c => PLAN_CATEGORY_MATCH[c] || []))
     : null;
 
   const filtered = (_allSessions || []).filter(s => {
@@ -1439,7 +1455,12 @@ function renderPlanEditorSessions(container) {
       if (_planEditorTime === 'morning'   && mins >= 13 * 60) return false;
       if (_planEditorTime === 'afternoon' && mins <  13 * 60) return false;
     }
-    if (wantedCats && !(s.canonical_categories || []).some(c => wantedCats.has(c))) return false;
+    if (wantedCats || wantOther) {
+      const hasCats    = (s.canonical_categories || []).length > 0;
+      const matchesCat = wantedCats && (s.canonical_categories || []).some(c => wantedCats.has(c));
+      const matchesOther = wantOther && !hasCats;
+      if (!matchesCat && !matchesOther) return false;
+    }
     if (q) {
       const speakers = (s.speakers || []).map(sp => `${sp.name || ''} ${sp.company || ''}`).join(' ');
       const hay = `${s.title || ''} ${s.theatre || ''} ${s.description || ''} ${speakers}`.toLowerCase();
@@ -1502,8 +1523,22 @@ function renderPlanEditorSessions(container) {
           ? [_EDITOR_CATEGORY_LABELS[cat] || cat]
           : [];
       }).slice(0, 3);
-      const whyHtml = whyTags.length
-        ? `<div class="editor-row-tags">${whyTags.map(t => `<span class="checklist-why-tag why-category">Your problem: &ldquo;${escHtml(t)}&rdquo;</span>`).join('')}</div>`
+      const filterTags = [..._planEditorCategories]
+        .filter(c => c !== 'other' && !planCats.includes(c))
+        .filter(c => {
+          const canonicals = PLAN_CATEGORY_MATCH[c] || [];
+          return (s.canonical_categories || []).some(cat => canonicals.includes(cat));
+        })
+        .map(c => _EDITOR_CATEGORY_LABELS[c] || c)
+        .slice(0, 3);
+      const isOther = _planEditorCategories.has('other') && !(s.canonical_categories || []).length;
+      const allTagSpans = [
+        ...whyTags.map(t => `<span class="checklist-why-tag why-category">Your problem: &ldquo;${escHtml(t)}&rdquo;</span>`),
+        ...filterTags.map(t => `<span class="checklist-why-tag why-category">Filtered: ${escHtml(t)}</span>`),
+        ...(isOther ? [`<span class="checklist-why-tag why-category">Uncategorised</span>`] : []),
+      ];
+      const whyHtml = allTagSpans.length
+        ? `<div class="editor-row-tags">${allTagSpans.join('')}</div>`
         : '';
       html += `
         <div class="editor-row${inPlan ? ' in-plan' : ''}">

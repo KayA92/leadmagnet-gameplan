@@ -1569,38 +1569,82 @@ function renderPlanEditorSessions(container) {
 function renderPlanEditorBooths(container) {
   const q        = (_planEditorQuery || '').toLowerCase();
   const planNums = new Set((_plan?.booths || []).map(b => b.stand_number));
+  const planCats = _plan?.categories || [];
+
+  const wantOther  = _planEditorCategories.has('other');
+  const wantedCats = [..._planEditorCategories].filter(c => c !== 'other').length > 0
+    ? new Set([..._planEditorCategories].filter(c => c !== 'other').flatMap(c => PLAN_CATEGORY_MATCH[c] || []))
+    : null;
 
   const filtered = (_allExhibitors || []).filter(e => {
-    if (!q) return true;
-    const hay = `${e.company_name || ''} ${(e.normalised_products || []).join(' ')} ${e.stand_number || ''}`.toLowerCase();
-    return hay.includes(q);
+    if (wantedCats || wantOther) {
+      const hasCats      = (e.canonical_categories || []).length > 0;
+      const matchesCat   = wantedCats && (e.canonical_categories || []).some(c => wantedCats.has(c));
+      const matchesOther = wantOther && !hasCats;
+      if (!matchesCat && !matchesOther) return false;
+    }
+    if (q) {
+      const hay = [
+        e.company_name || '',
+        e.company_description || '',
+        (e.canonical_categories || []).map(c => _EDITOR_CATEGORY_LABELS[c] || c).join(' '),
+        e.stand_number || '',
+      ].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
   }).sort((a, b) => (a.company_name || '').localeCompare(b.company_name || ''));
 
   if (!filtered.length) {
-    container.innerHTML = '<div class="search-empty">No exhibitors match your search.</div>';
+    container.innerHTML = '<div class="search-empty">No exhibitors match those filters. Try clearing one.</div>';
     return;
   }
 
-  const html = filtered.map(e => {
+  const rows = filtered.map(e => {
     const inPlan = planNums.has(e.stand_number);
-    const products = (e.normalised_products || []).slice(0, 3).map(p => escHtml(p)).join(' · ');
+    const isOther = _planEditorCategories.has('other') && !(e.canonical_categories || []).length;
+
+    const whyTags = planCats.flatMap(cat => {
+      const canonicals = PLAN_CATEGORY_MATCH[cat] || [];
+      return (e.canonical_categories || []).some(c => canonicals.includes(c))
+        ? [_EDITOR_CATEGORY_LABELS[cat] || cat]
+        : [];
+    }).slice(0, 3);
+
+    const filterTags = [..._planEditorCategories]
+      .filter(c => c !== 'other' && !planCats.includes(c))
+      .filter(c => {
+        const canonicals = PLAN_CATEGORY_MATCH[c] || [];
+        return (e.canonical_categories || []).some(cat => canonicals.includes(cat));
+      })
+      .map(c => _EDITOR_CATEGORY_LABELS[c] || c)
+      .slice(0, 3);
+
+    const allTagSpans = [
+      ...whyTags.map(t => `<span class="checklist-why-tag why-category">Your problem: &ldquo;${escHtml(t)}&rdquo;</span>`),
+      ...filterTags.map(t => `<span class="checklist-why-tag why-category">Filtered: ${escHtml(t)}</span>`),
+      ...(isOther ? [`<span class="checklist-why-tag why-category">Uncategorised</span>`] : []),
+    ];
+    const tagsHtml = allTagSpans.length ? `<div class="editor-row-tags">${allTagSpans.join('')}</div>` : '';
+
     return `
       <div class="editor-row${inPlan ? ' in-plan' : ''}">
         <div class="editor-row-main">
           <div class="editor-row-title">${escHtml(e.company_name || '')}</div>
-          <div class="editor-row-meta">Stand ${escHtml(String(e.stand_number || ''))}${products ? ' · ' + products : ''}</div>
+          <div class="editor-row-meta"><span>Stand ${escHtml(String(e.stand_number || ''))}</span></div>
+          ${e.company_description ? `<div class="editor-row-blurb">${escHtml(e.company_description)}</div>` : ''}
+          ${tagsHtml}
         </div>
-        <div class="editor-row-actions">
-          <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
-            onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
-            ${inPlan
-              ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
-              : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add`}
-          </button>
-        </div>
+        <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
+          onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
+          ${inPlan
+            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
+            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add to plan`}
+        </button>
       </div>`;
   }).join('');
-  container.innerHTML = html;
+
+  container.innerHTML = `<div class="editor-booth-list">${rows}</div>`;
 }
 
 window.togglePlanSession = async function(sessionId) {

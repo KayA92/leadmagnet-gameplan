@@ -548,7 +548,6 @@ function renderChecklistTab() {
       </div>
     </div>
 
-    ${themes.length ? `<section class="plan-themes-section"><div class="plan-themes">${themePills}</div></section>` : ''}
 
     <div id="sessions-anchor" class="checklist-anchor-section">
       <div class="checklist-section-head">
@@ -998,7 +997,7 @@ function buildSummaryText() {
   }
 
   const lines = [];
-  lines.push(`ACCOUNTEX 2025 — DEBRIEF`);
+  lines.push(`ACCOUNTEX 2026 — DEBRIEF`);
   if (name || company) lines.push(`From: ${[name, company].filter(Boolean).join(' · ')}`);
   lines.push('');
 
@@ -1023,7 +1022,7 @@ function buildSummaryText() {
     for (const { session: s, avgRating } of allSessionItems) {
       const flames = avgRating > 0 ? '🔥'.repeat(Math.round(avgRating)) : '';
       lines.push(`${flames ? flames + ' ' : ''}${s.title}`);
-      lines.push(`   ${s.theatre ? s.theatre + ' · ' : ''}Day ${s.day || '?'}${s.start_time ? ' · ' + s.start_time : ''}`);
+      lines.push(`   ${s.theatre ? s.theatre + ' · ' : ''}${s.day || '?'}${s.start_time ? ' · ' + s.start_time : ''}`);
       for (const n of (sessionNoteMap[String(s.session_id)] || [])) {
         const who = authorName(n.created_by);
         lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
@@ -1148,7 +1147,7 @@ function renderDebriefTab() {
 
   const sessionCards = heatRanked.map(({ session: s, avgRating, raterCount }, i) => {
     const meta = [
-      s.day ? `Day ${s.day}` : '',
+      s.day || '',
       s.theatre || '',
       s.start_time || '',
     ].filter(Boolean).join(' · ');
@@ -1610,14 +1609,14 @@ function showLoading(show) {
 // ── Debrief PDF helper ────────────────────────────────────────────────────────
 
 function buildPrintHtml(text, name, company) {
-  const header = [name, company].filter(Boolean).join(' · ') || 'Accountex 2025';
+  const header = [name, company].filter(Boolean).join(' · ') || 'Accountex 2026';
   const escaped = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Accountex 2025 Debrief</title>
+<title>Accountex 2026 Debrief</title>
 <style>
   body { font-family: Georgia, serif; font-size: 13pt; line-height: 1.7; margin: 2cm 2.5cm; color: #111; }
   h1 { font-size: 18pt; margin: 0 0 4px; }
@@ -1627,7 +1626,7 @@ function buildPrintHtml(text, name, company) {
 </style>
 </head>
 <body>
-<h1>Accountex 2025 — Debrief</h1>
+<h1>Accountex 2026 — Debrief</h1>
 <div class="meta">${header}</div>
 <pre>${escaped}</pre>
 <script>window.onload = function() { window.print(); };<\/script>
@@ -1702,7 +1701,7 @@ window.planCopyDebrief = function(btn) {
 
 window.planEmailDebrief = function() {
   const ta      = document.getElementById('debrief-textarea');
-  const subject = encodeURIComponent('Accountex 2025 — My Debrief');
+  const subject = encodeURIComponent('Accountex 2026 — My Debrief');
   const body    = encodeURIComponent(ta ? ta.value : '');
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 };

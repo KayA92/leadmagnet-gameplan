@@ -12,9 +12,15 @@ function escHtml(s) {
 // ── Module-level state ────────────────────────────────────────────────────────
 let _plan        = null;
 let _allSessions = [];
+let _allExhibitors = [];
 let _teamData    = null;
 let _authUser    = null;
 let _currentTab  = 'checklist';
+
+let _planEditorMode  = null;
+let _planEditorDay   = 'all';
+let _planEditorTime  = 'all';
+let _planEditorQuery = '';
 
 let _userProfile  = null;
 
@@ -224,17 +230,20 @@ function parseTimeToMinutes(hhmm) {
   return h * 60 + (m || 0);
 }
 
-function suggestBoothsForGap() {
-  return (_plan?.booths || []).slice(0, 2).map(b => ({ name: b.company_name }));
+function suggestBoothsForGap(gapIndex) {
+  const booths = _plan?.booths || [];
+  if (!booths.length) return [];
+  const start = (gapIndex * 2) % booths.length;
+  return [0, 1].map(i => ({ name: booths[(start + i) % booths.length].company_name }));
 }
 
-function renderGapCard(startTime, endTime) {
+function renderGapCard(startTime, endTime, gapIndex) {
   const diffMin = parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
   if (diffMin < 20) return '';
   const hours    = Math.floor(diffMin / 60);
   const mins     = diffMin % 60;
   const duration = hours > 0 ? `${hours}h${mins > 0 ? ` ${mins}m` : ''}` : `${mins} min`;
-  const suggested = suggestBoothsForGap();
+  const suggested = suggestBoothsForGap(gapIndex);
   const boothLine = suggested.length
     ? suggested.map(b => `<strong>${escHtml(b.name)}</strong>`).join(' · ')
     : 'your priority booths';
@@ -506,6 +515,7 @@ function renderChecklistTab() {
 
   // Build session HTML with day group labels and gap cards
   let currentDay = null;
+  let gapIndex = 0;
   const sessionParts = [];
   sortedSessions.forEach((item, i) => {
     if (item.day !== currentDay) {
@@ -518,7 +528,7 @@ function renderChecklistTab() {
     const next = sortedSessions[i + 1];
     if (next && next.day === item.day && item.end_time && next.start_time) {
       const gap = parseTimeToMinutes(next.start_time) - parseTimeToMinutes(item.end_time);
-      if (gap >= 20) sessionParts.push(renderGapCard(item.end_time, next.start_time));
+      if (gap >= 20) sessionParts.push(renderGapCard(item.end_time, next.start_time, gapIndex++));
     }
   });
   const sessionItems = sessionParts.join('');
@@ -557,6 +567,10 @@ function renderChecklistTab() {
         </h2>
         <div class="checklist-section-meta">
           <span class="checklist-section-count">${visibleSessions.length} ${visibleSessions.length === 1 ? 'session' : 'sessions'}</span>
+          <button class="checklist-section-edit variant-sessions" onclick="openPlanEditor('sessions')" type="button">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Edit
+          </button>
         </div>
       </div>
       <div class="checklist">
@@ -573,6 +587,10 @@ function renderChecklistTab() {
           </h2>
           <div class="checklist-section-meta">
             <span class="checklist-section-count">${booths.length} ${booths.length === 1 ? 'booth' : 'booths'}</span>
+            <button class="checklist-section-edit variant-booths" onclick="openPlanEditor('booths')" type="button">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Edit
+            </button>
           </div>
         </div>
         <p class="checklist-intro">Rate each vendor after a conversation — your notes and scores feed into your debrief.</p>
@@ -1218,6 +1236,267 @@ function renderDebriefTab() {
   `;
 }
 
+// ── Plan editor overlay ───────────────────────────────────────────────────────
+
+function _ensurePlanEditorOverlay() {
+  if (document.getElementById('planEditorOverlay')) return;
+  const el = document.createElement('div');
+  el.innerHTML = `
+    <div class="search-overlay plan-editor-overlay" id="planEditorOverlay">
+      <div class="search-overlay-inner" style="max-width:900px;">
+        <div class="search-overlay-header">
+          <div>
+            <h2 class="search-overlay-title" id="planEditorTitle">Edit <em>your schedule</em></h2>
+            <div class="plan-editor-sub" id="planEditorSub"></div>
+          </div>
+          <button class="search-close" onclick="closePlanEditor()" aria-label="Close editor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="plan-editor-filters" id="planEditorFilters"></div>
+        <div class="search-input-wrap" style="margin-top:14px;">
+          <svg class="search-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" id="planEditorSearch" maxlength="100"
+            placeholder="Search by title, speaker, stand…" oninput="planEditorOnSearch(this.value)">
+        </div>
+        <div class="plan-editor-results" id="planEditorResults"></div>
+      </div>
+    </div>`;
+  document.body.appendChild(el.firstElementChild);
+}
+
+let _planEditorEscHandler = null;
+
+window.openPlanEditor = function(mode) {
+  _ensurePlanEditorOverlay();
+  _planEditorMode  = mode;
+  _planEditorQuery = '';
+  _planEditorDay   = 'all';
+  _planEditorTime  = 'all';
+
+  const overlay = document.getElementById('planEditorOverlay');
+  const title   = document.getElementById('planEditorTitle');
+  const sub     = document.getElementById('planEditorSub');
+  const search  = document.getElementById('planEditorSearch');
+
+  if (mode === 'sessions') {
+    title.innerHTML = 'Edit <em>your sessions</em>';
+    sub.textContent = `${(_plan?.sessions || []).length} in your plan · ${(_allSessions || []).length} available`;
+  } else {
+    title.innerHTML = 'Edit <em>your booths</em>';
+    sub.textContent = `${(_plan?.booths || []).length} in your plan · ${(_allExhibitors || []).length} available`;
+  }
+  if (search) search.value = '';
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  renderPlanEditorFilters();
+  renderPlanEditorResults();
+
+  _planEditorEscHandler = e => { if (e.key === 'Escape') closePlanEditor(); };
+  document.addEventListener('keydown', _planEditorEscHandler);
+};
+
+window.closePlanEditor = function() {
+  const overlay = document.getElementById('planEditorOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  _planEditorMode = null;
+  if (_planEditorEscHandler) {
+    document.removeEventListener('keydown', _planEditorEscHandler);
+    _planEditorEscHandler = null;
+  }
+  renderApp();
+};
+
+window.planEditorOnSearch = function(value) {
+  _planEditorQuery = value;
+  renderPlanEditorResults();
+};
+
+window.setPlanEditorFilter = function(type, value) {
+  if (type === 'day')  _planEditorDay  = value;
+  if (type === 'time') _planEditorTime = value;
+  renderPlanEditorFilters();
+  renderPlanEditorResults();
+};
+
+function renderPlanEditorFilters() {
+  const el = document.getElementById('planEditorFilters');
+  if (!el) return;
+  if (_planEditorMode !== 'sessions') { el.innerHTML = ''; return; }
+
+  const dayChips  = ['all', 'Day 1', 'Day 2'];
+  const timeChips = [['all', 'All day'], ['morning', 'Morning'], ['afternoon', 'Afternoon']];
+
+  el.innerHTML = `
+    <div class="plan-editor-filter-row">
+      ${dayChips.map(d => `
+        <button class="plan-editor-chip${_planEditorDay === d ? ' active' : ''}"
+          onclick="setPlanEditorFilter('day','${d}')" type="button">
+          ${d === 'all' ? 'All days' : d}
+        </button>`).join('')}
+      <span class="plan-editor-chip-sep">·</span>
+      ${timeChips.map(([v, l]) => `
+        <button class="plan-editor-chip${_planEditorTime === v ? ' active' : ''}"
+          onclick="setPlanEditorFilter('time','${v}')" type="button">
+          ${l}
+        </button>`).join('')}
+    </div>`;
+}
+
+function renderPlanEditorResults() {
+  const el = document.getElementById('planEditorResults');
+  if (!el) return;
+  if (_planEditorMode === 'sessions') renderPlanEditorSessions(el);
+  else if (_planEditorMode === 'booths') renderPlanEditorBooths(el);
+}
+
+function renderPlanEditorSessions(container) {
+  const q       = (_planEditorQuery || '').toLowerCase();
+  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+
+  let filtered = (_allSessions || []).filter(s => {
+    if (_planEditorDay !== 'all' && s.day !== _planEditorDay) return false;
+    if (_planEditorTime !== 'all') {
+      const mins = parseTimeToMinutes(s.start_time);
+      if (_planEditorTime === 'morning'   && mins >= 13 * 60) return false;
+      if (_planEditorTime === 'afternoon' && mins <  13 * 60) return false;
+    }
+    if (q) {
+      const hay = `${s.title || ''} ${s.theatre || ''} ${s.description || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Group by day + start_time slot
+  const slots = new Map();
+  for (const s of filtered) {
+    const key = `${s.day}||${s.start_time}`;
+    if (!slots.has(key)) slots.set(key, []);
+    slots.get(key).push(s);
+  }
+
+  if (!slots.size) {
+    container.innerHTML = '<div class="plan-editor-empty">No sessions match your search.</div>';
+    return;
+  }
+
+  const sortedKeys = [...slots.keys()].sort((a, b) => {
+    const [da, ta] = a.split('||');
+    const [db, tb] = b.split('||');
+    const dayA = da === 'Day 1' ? 1 : 2;
+    const dayB = db === 'Day 1' ? 1 : 2;
+    return dayA - dayB || (ta || '').localeCompare(tb || '');
+  });
+
+  let html = '';
+  let lastDay = null;
+  for (const key of sortedKeys) {
+    const sessions = slots.get(key);
+    const [day, time] = key.split('||');
+    if (day !== lastDay) {
+      lastDay = day;
+      html += `<div class="editor-day-divider">${escHtml(day === 'Day 1' ? 'Day 1 · Wednesday 13 May' : 'Day 2 · Thursday 14 May')}</div>`;
+    }
+    const slotPlanCount = sessions.filter(s => planIds.has(s.session_id)).length;
+    const hasClash = slotPlanCount >= 2;
+    html += `<div class="editor-slot${hasClash ? ' has-clash' : ''}">
+      <div class="editor-slot-head">
+        <div class="editor-slot-time">${escHtml(time || '')}</div>
+        ${hasClash ? `<div class="editor-clash-warning">⚠ You have ${slotPlanCount} sessions at this time</div>` : ''}
+      </div>
+      <div class="editor-slot-rows">`;
+    for (const s of sessions) {
+      const inPlan = planIds.has(s.session_id);
+      html += `
+        <div class="editor-row${inPlan ? ' in-plan' : ''}">
+          <div class="editor-row-main">
+            <div class="editor-row-title">${escHtml(s.title || s.session_id)}</div>
+            <div class="editor-row-meta">${s.theatre ? escHtml(s.theatre) + (s.start_time ? ' · ' : '') : ''}${s.start_time ? escHtml(s.start_time) + (s.end_time ? '–' + escHtml(s.end_time) : '') : ''}</div>
+          </div>
+          <div class="editor-row-actions">
+            <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
+              onclick="togglePlanSession('${escHtml(String(s.session_id))}')" type="button">
+              ${inPlan
+                ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
+                : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add`}
+            </button>
+          </div>
+        </div>`;
+    }
+    html += '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderPlanEditorBooths(container) {
+  const q        = (_planEditorQuery || '').toLowerCase();
+  const planNums = new Set((_plan?.booths || []).map(b => b.stand_number));
+
+  const filtered = (_allExhibitors || []).filter(e => {
+    if (!q) return true;
+    const hay = `${e.company_name || ''} ${(e.normalised_products || []).join(' ')} ${e.stand_number || ''}`.toLowerCase();
+    return hay.includes(q);
+  }).sort((a, b) => (a.company_name || '').localeCompare(b.company_name || ''));
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="plan-editor-empty">No exhibitors match your search.</div>';
+    return;
+  }
+
+  const html = filtered.map(e => {
+    const inPlan = planNums.has(e.stand_number);
+    const products = (e.normalised_products || []).slice(0, 3).map(p => escHtml(p)).join(' · ');
+    return `
+      <div class="editor-row${inPlan ? ' in-plan' : ''}">
+        <div class="editor-row-main">
+          <div class="editor-row-title">${escHtml(e.company_name || '')}</div>
+          <div class="editor-row-meta">Stand ${escHtml(String(e.stand_number || ''))}${products ? ' · ' + products : ''}</div>
+        </div>
+        <div class="editor-row-actions">
+          <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
+            onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
+            ${inPlan
+              ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
+              : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add`}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+  container.innerHTML = html;
+}
+
+window.togglePlanSession = async function(sessionId) {
+  const inPlan = (_plan.sessions || []).some(s => String(s.session_id) === String(sessionId));
+  if (inPlan) {
+    _plan.sessions = (_plan.sessions || []).filter(s => String(s.session_id) !== String(sessionId));
+  } else {
+    const full = (_allSessions || []).find(s => String(s.session_id) === String(sessionId));
+    if (full) _plan.sessions = [...(_plan.sessions || []), full];
+  }
+  renderPlanEditorResults();
+  const sub = document.getElementById('planEditorSub');
+  if (sub) sub.textContent = `${(_plan.sessions || []).length} in your plan · ${(_allSessions || []).length} available`;
+  await supabase.from('plans').update({ sessions: _plan.sessions }).eq('id', _plan.id);
+};
+
+window.togglePlanBooth = async function(standNumber) {
+  const inPlan = (_plan.booths || []).some(b => String(b.stand_number) === String(standNumber));
+  if (inPlan) {
+    _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
+  } else {
+    const full = (_allExhibitors || []).find(e => String(e.stand_number) === String(standNumber));
+    if (full) _plan.booths = [...(_plan.booths || []), full];
+  }
+  renderPlanEditorResults();
+  const sub = document.getElementById('planEditorSub');
+  if (sub) sub.textContent = `${(_plan.booths || []).length} in your plan · ${(_allExhibitors || []).length} available`;
+  await supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
+};
+
 // ── Sponsors footer ───────────────────────────────────────────────────────────
 
 function sponsorsFooterHtml() {
@@ -1489,9 +1768,10 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
-    const [full, allSessions] = await Promise.all([
+    const [full, allSessions, allExhibitors] = await Promise.all([
       loadLatestPlan(authUser.id),
       fetch('/data/programme.json').then(r => r.json()).catch(() => []),
+      fetch('/data/exhibitors.json').then(r => r.json()).catch(() => []),
     ]);
 
     if (!full) { showNoPlanState(); return; }
@@ -1537,8 +1817,9 @@ async function handleSignIn(authUser, teamToken) {
       teamData = await loadTeamData(full.team_id);
     }
 
-    _plan        = full;
-    _allSessions = allSessions;
+    _plan          = full;
+    _allSessions   = allSessions;
+    _allExhibitors = allExhibitors;
     _teamData    = teamData;
     _authUser    = authUser;
 

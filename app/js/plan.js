@@ -17,10 +17,12 @@ let _teamData    = null;
 let _authUser    = null;
 let _currentTab  = 'checklist';
 
-let _planEditorMode  = null;
-let _planEditorDay   = 'all';
-let _planEditorTime  = 'all';
-let _planEditorQuery = '';
+let _planEditorMode      = null;
+let _planEditorDay       = 'all';
+let _planEditorTime      = 'all';
+let _planEditorCategory  = 'all';
+let _planEditorQuery     = '';
+let _planEditorShowMore  = false;
 
 let _userProfile  = null;
 
@@ -112,12 +114,23 @@ function whyMatched(session, plan) {
 }
 
 const PLAN_CATEGORY_MATCH = {
-  'practice-management': ['Practice Management', 'Leadership', 'Sales & Marketing', 'Talent', 'Wellbeing', 'Scaling'],
-  'ai-automation':       ['AI'],
-  'bookkeeping':         ['Bookkeeping', 'Practice Management', 'AI'],
-  'tax-mtd':             ['Tax / VAT / MTD', 'Regulation', 'AML'],
-  'doc-management':      ['Practice Management', 'AI'],
-  'payroll':             ['Payroll'],
+  'practice-management': ['practice-management'],
+  'ai-automation':       ['ai-automation'],
+  'bookkeeping':         ['bookkeeping'],
+  'tax-mtd':             ['tax-mtd'],
+  'doc-management':      ['doc-management'],
+  'payroll':             ['payroll'],
+  'esign':               ['esign'],
+  'crm-comms':           ['crm-comms'],
+  'data-analytics':      ['data-analytics'],
+  'cyber-security':      ['cyber-security'],
+  'aml-kyc':             ['aml-kyc'],
+  'expenses':            ['expenses'],
+  'hr-people':           ['hr-people'],
+  'banking-payments':    ['banking-payments'],
+  'doc-automation':      ['doc-automation'],
+  'outsourcing':         ['outsourcing'],
+  'marketing-growth':    ['marketing-growth'],
 };
 
 function hasSameSlotAlternative(item) {
@@ -299,7 +312,6 @@ function renderChecklistTab() {
 
   const sessions    = plan.sessions   || [];
   const booths      = plan.booths     || [];
-  const themes      = plan.ai_themes  || [];
   const notes       = plan.notes      || [];
 
   const notesByItem = {};
@@ -333,9 +345,6 @@ function renderChecklistTab() {
     const db = b.day === 'Day 1' ? 1 : 2;
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
-
-  const filteredThemes = themes.filter(t => !t.toLowerCase().includes('matched to your priorities'));
-  const themePills = filteredThemes.map(t => `<span class="theme-pill">${escHtml(t)}</span>`).join('');
 
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
@@ -1243,7 +1252,7 @@ function _ensurePlanEditorOverlay() {
   const el = document.createElement('div');
   el.innerHTML = `
     <div class="search-overlay plan-editor-overlay" id="planEditorOverlay">
-      <div class="search-overlay-inner" style="max-width:900px;">
+      <div class="search-overlay-inner" style="max-width:980px;">
         <div class="search-overlay-header">
           <div>
             <h2 class="search-overlay-title" id="planEditorTitle">Edit <em>your schedule</em></h2>
@@ -1269,10 +1278,12 @@ let _planEditorEscHandler = null;
 
 window.openPlanEditor = function(mode) {
   _ensurePlanEditorOverlay();
-  _planEditorMode  = mode;
-  _planEditorQuery = '';
-  _planEditorDay   = 'all';
-  _planEditorTime  = 'all';
+  _planEditorMode     = mode;
+  _planEditorQuery    = '';
+  _planEditorDay      = 'all';
+  _planEditorTime     = 'all';
+  _planEditorCategory = 'all';
+  _planEditorShowMore = false;
 
   const overlay = document.getElementById('planEditorOverlay');
   const title   = document.getElementById('planEditorTitle');
@@ -1316,35 +1327,96 @@ window.planEditorOnSearch = function(value) {
 };
 
 window.setPlanEditorFilter = function(type, value) {
-  if (type === 'day')  _planEditorDay  = value;
-  if (type === 'time') _planEditorTime = value;
+  if (type === 'day')      _planEditorDay      = value;
+  if (type === 'time')     _planEditorTime     = value;
+  if (type === 'category') _planEditorCategory = value;
   renderPlanEditorFilters();
   renderPlanEditorResults();
+};
+
+const _EDITOR_CATEGORY_LABELS = {
+  'practice-management': 'Practice Management',
+  'ai-automation':       'AI & Automation',
+  'bookkeeping':         'Bookkeeping',
+  'tax-mtd':             'Tax & MTD',
+  'doc-management':      'Document Management',
+  'payroll':             'Payroll',
+  'esign':               'eSign',
+  'crm-comms':           'CRM & Comms',
+  'data-analytics':      'Data & Analytics',
+  'cyber-security':      'Cyber Security',
+  'aml-kyc':             'AML / KYC',
+  'expenses':            'Expenses',
+  'hr-people':           'HR & People',
+  'banking-payments':    'Banking & Payments',
+  'doc-automation':      'Doc Automation',
+  'outsourcing':         'Outsourcing',
+  'marketing-growth':    'Marketing & Growth',
 };
 
 function renderPlanEditorFilters() {
   const el = document.getElementById('planEditorFilters');
   if (!el) return;
-  if (_planEditorMode !== 'sessions') { el.innerHTML = ''; return; }
 
-  const dayChips  = ['all', 'Day 1', 'Day 2'];
-  const timeChips = [['all', 'All day'], ['morning', 'Morning'], ['afternoon', 'Afternoon']];
+  const userCats    = _plan?.categories || [];
+  const unpicked    = Object.keys(_EDITOR_CATEGORY_LABELS).filter(c => !userCats.includes(c));
+  const activecat   = _planEditorCategory !== 'all' ? _planEditorCategory : null;
 
-  el.innerHTML = `
-    <div class="plan-editor-filter-row">
-      ${dayChips.map(d => `
-        <button class="plan-editor-chip${_planEditorDay === d ? ' active' : ''}"
-          onclick="setPlanEditorFilter('day','${d}')" type="button">
-          ${d === 'all' ? 'All days' : d}
-        </button>`).join('')}
-      <span class="plan-editor-chip-sep">·</span>
-      ${timeChips.map(([v, l]) => `
-        <button class="plan-editor-chip${_planEditorTime === v ? ' active' : ''}"
-          onclick="setPlanEditorFilter('time','${v}')" type="button">
-          ${l}
-        </button>`).join('')}
+  const problemChips = userCats.map(c => `
+    <button class="editor-filter-chip${activecat === c ? ' active' : ''}"
+      onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">
+      ${activecat === c ? '✓ ' : ''}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
+    </button>`).join('');
+
+  const moreChips = unpicked.map(c => `
+    <button class="editor-filter-chip variant-more${activecat === c ? ' active' : ''}"
+      onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">
+      ${activecat === c ? '✓ ' : '+ '}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
+    </button>`).join('');
+
+  let html = '';
+
+  if (userCats.length) {
+    html += `<div class="editor-filter-group">
+      <span class="editor-filter-label editor-filter-label-ai">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg>
+        Your top problems
+      </span>
+      ${problemChips}
+      ${activecat ? `<button class="editor-filter-clear" onclick="setPlanEditorFilter('category','all')" type="button">Clear</button>` : ''}
+      ${unpicked.length && !_planEditorShowMore ? `<button class="editor-filter-more-btn" onclick="togglePlanEditorMoreFilters()" type="button">+ ${unpicked.length} more filter${unpicked.length === 1 ? '' : 's'}</button>` : ''}
+    </div>
+    ${_planEditorShowMore && unpicked.length ? `
+      <div class="editor-filter-group editor-filter-more-row">
+        <span class="editor-filter-label">Also filter by</span>
+        ${moreChips}
+        <button class="editor-filter-more-hide" onclick="togglePlanEditorMoreFilters()" type="button">Hide</button>
+      </div>` : ''}`;
+  }
+
+  if (_planEditorMode === 'sessions') {
+    html += `
+    <div class="editor-filter-group">
+      <span class="editor-filter-label">Day</span>
+      ${[['all','All days'],['Day 1','Day 1'],['Day 2','Day 2']].map(([v,l]) => `
+        <button class="editor-filter-chip${_planEditorDay === v ? ' active' : ''}"
+          onclick="setPlanEditorFilter('day','${v}')" type="button">${l}</button>`).join('')}
+    </div>
+    <div class="editor-filter-group">
+      <span class="editor-filter-label">Time</span>
+      ${[['all','All day'],['morning','Morning'],['afternoon','Afternoon']].map(([v,l]) => `
+        <button class="editor-filter-chip${_planEditorTime === v ? ' active' : ''}"
+          onclick="setPlanEditorFilter('time','${v}')" type="button">${l}</button>`).join('')}
     </div>`;
+  }
+
+  el.innerHTML = html;
 }
+
+window.togglePlanEditorMoreFilters = function() {
+  _planEditorShowMore = !_planEditorShowMore;
+  renderPlanEditorFilters();
+};
 
 function renderPlanEditorResults() {
   const el = document.getElementById('planEditorResults');
@@ -1354,24 +1426,28 @@ function renderPlanEditorResults() {
 }
 
 function renderPlanEditorSessions(container) {
-  const q       = (_planEditorQuery || '').toLowerCase();
-  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const q         = (_planEditorQuery || '').toLowerCase();
+  const planIds   = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const wantedCats = _planEditorCategory !== 'all'
+    ? new Set(PLAN_CATEGORY_MATCH[_planEditorCategory] || [])
+    : null;
 
-  let filtered = (_allSessions || []).filter(s => {
+  const filtered = (_allSessions || []).filter(s => {
     if (_planEditorDay !== 'all' && s.day !== _planEditorDay) return false;
     if (_planEditorTime !== 'all') {
       const mins = parseTimeToMinutes(s.start_time);
       if (_planEditorTime === 'morning'   && mins >= 13 * 60) return false;
       if (_planEditorTime === 'afternoon' && mins <  13 * 60) return false;
     }
+    if (wantedCats && !(s.canonical_categories || []).some(c => wantedCats.has(c))) return false;
     if (q) {
-      const hay = `${s.title || ''} ${s.theatre || ''} ${s.description || ''}`.toLowerCase();
+      const speakers = (s.speakers || []).map(sp => `${sp.name || ''} ${sp.company || ''}`).join(' ');
+      const hay = `${s.title || ''} ${s.theatre || ''} ${s.description || ''} ${speakers}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
   });
 
-  // Group by day + start_time slot
   const slots = new Map();
   for (const s of filtered) {
     const key = `${s.day}||${s.start_time}`;
@@ -1380,16 +1456,14 @@ function renderPlanEditorSessions(container) {
   }
 
   if (!slots.size) {
-    container.innerHTML = '<div class="plan-editor-empty">No sessions match your search.</div>';
+    container.innerHTML = '<div class="search-empty">No sessions match your filters.</div>';
     return;
   }
 
   const sortedKeys = [...slots.keys()].sort((a, b) => {
     const [da, ta] = a.split('||');
     const [db, tb] = b.split('||');
-    const dayA = da === 'Day 1' ? 1 : 2;
-    const dayB = db === 'Day 1' ? 1 : 2;
-    return dayA - dayB || (ta || '').localeCompare(tb || '');
+    return (da === 'Day 1' ? 1 : 2) - (db === 'Day 1' ? 1 : 2) || (ta || '').localeCompare(tb || '');
   });
 
   let html = '';
@@ -1399,30 +1473,55 @@ function renderPlanEditorSessions(container) {
     const [day, time] = key.split('||');
     if (day !== lastDay) {
       lastDay = day;
-      html += `<div class="editor-day-divider">${escHtml(day === 'Day 1' ? 'Day 1 · Wednesday 13 May' : 'Day 2 · Thursday 14 May')}</div>`;
+      const dayNum  = day;
+      const dayName = day === 'Day 1' ? 'Wednesday 13 May' : 'Thursday 14 May';
+      html += `<div class="editor-day-divider">
+        <span class="editor-day-divider-num">${dayNum}</span>
+        <span class="editor-day-divider-name">${dayName}</span>
+        <span class="editor-day-divider-line"></span>
+      </div>`;
     }
     const slotPlanCount = sessions.filter(s => planIds.has(s.session_id)).length;
     const hasClash = slotPlanCount >= 2;
     html += `<div class="editor-slot${hasClash ? ' has-clash' : ''}">
       <div class="editor-slot-head">
-        <div class="editor-slot-time">${escHtml(time || '')}</div>
-        ${hasClash ? `<div class="editor-clash-warning">⚠ You have ${slotPlanCount} sessions at this time</div>` : ''}
+        <div class="editor-slot-time"><strong>${escHtml(time || '')}</strong></div>
+        ${hasClash ? `<div class="editor-clash-warning">⚠ ${slotPlanCount} sessions selected at this time</div>` : ''}
       </div>
       <div class="editor-slot-rows">`;
     for (const s of sessions) {
-      const inPlan = planIds.has(s.session_id);
+      const inPlan     = planIds.has(s.session_id);
+      const speaker    = (s.speakers || [])[0];
+      const speakerLine = speaker
+        ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>`
+        : '';
+      const planCats  = _plan?.categories || [];
+      const whyTags   = planCats.flatMap(cat => {
+        const canonicals = PLAN_CATEGORY_MATCH[cat] || [];
+        return (s.canonical_categories || []).some(c => canonicals.includes(c))
+          ? [_EDITOR_CATEGORY_LABELS[cat] || cat]
+          : [];
+      }).slice(0, 3);
+      const whyHtml = whyTags.length
+        ? `<div class="editor-row-tags">${whyTags.map(t => `<span class="checklist-why-tag why-category">Your problem: &ldquo;${escHtml(t)}&rdquo;</span>`).join('')}</div>`
+        : '';
       html += `
         <div class="editor-row${inPlan ? ' in-plan' : ''}">
           <div class="editor-row-main">
             <div class="editor-row-title">${escHtml(s.title || s.session_id)}</div>
-            <div class="editor-row-meta">${s.theatre ? escHtml(s.theatre) + (s.start_time ? ' · ' : '') : ''}${s.start_time ? escHtml(s.start_time) + (s.end_time ? '–' + escHtml(s.end_time) : '') : ''}</div>
+            <div class="editor-row-meta">
+              ${s.theatre ? `<span>${escHtml(s.theatre)}</span>` : ''}
+              ${speakerLine}
+            </div>
+            ${s.description ? `<div class="editor-row-blurb">${escHtml(s.description)}</div>` : ''}
+            ${whyHtml}
           </div>
           <div class="editor-row-actions">
             <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
               onclick="togglePlanSession('${escHtml(String(s.session_id))}')" type="button">
               ${inPlan
                 ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
-                : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add`}
+                : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add to plan`}
             </button>
           </div>
         </div>`;
@@ -1443,7 +1542,7 @@ function renderPlanEditorBooths(container) {
   }).sort((a, b) => (a.company_name || '').localeCompare(b.company_name || ''));
 
   if (!filtered.length) {
-    container.innerHTML = '<div class="plan-editor-empty">No exhibitors match your search.</div>';
+    container.innerHTML = '<div class="search-empty">No exhibitors match your search.</div>';
     return;
   }
 

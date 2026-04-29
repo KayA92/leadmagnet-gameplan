@@ -1222,35 +1222,12 @@ function renderDebriefTab() {
 // ── Sponsors footer ───────────────────────────────────────────────────────────
 
 function sponsorsFooterHtml() {
-  const arrowSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
   return `
     <div class="sponsors-footer">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
-      <div class="sponsors-grid">
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <div class="xu-logo">
-              <div class="xu-logo-circle">XU</div>
-              <span class="xu-logo-word">magazine</span>
-            </div>
-          </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com ${arrowSvg}
-          </a>
-        </div>
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <div class="workiro-wm">
-              <div class="workiro-wm-row">W<span class="workiro-wm-accent">O</span>RKIRO</div>
-              <div class="workiro-wm-sub">Virtual Cabinet 2.0</div>
-            </div>
-          </div>
-          <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants.</p>
-          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com ${arrowSvg}
-          </a>
-        </div>
+      <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
+        <img class="sponsor-img xu-img" src="/app/images/XU%20Magazine.webp" alt="XU Magazine">
+        <img class="sponsor-img workiro-img" src="/app/images/workiro-logo.svg" alt="Workiro">
       </div>
     </div>
   `;

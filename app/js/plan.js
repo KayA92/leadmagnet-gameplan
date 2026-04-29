@@ -419,8 +419,24 @@ function renderChecklistTab() {
            <div class="note-add-hint">What stood out · Who to follow up with</div>
          </div>`;
 
-    const userInitial = (_authUser?.email || 'Y')[0].toUpperCase();
+    const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
+
+    const avatarColors = ['t1', 't2', 't4'];
+    let avatarColorIdx = 0;
+    const teamAvatarHtml = _teamData
+      ? _teamData.teamPlans
+          .filter(tp => tp.user_id !== _authUser?.id)
+          .filter(tp => (tp.sessions || []).some(s => String(s.session_id) === String(item.session_id)))
+          .map(tp => {
+            const member  = _teamData.members.find(m => m.users?.id === tp.user_id);
+            const initial = member?.users?.first_name?.[0]?.toUpperCase()
+                          || member?.users?.last_name?.[0]?.toUpperCase() || '?';
+            const name    = [member?.users?.first_name, member?.users?.last_name].filter(Boolean).join(' ') || 'Teammate';
+            return `<div class="mini-av ${avatarColors[avatarColorIdx++ % avatarColors.length]}" title="${escHtml(name)}">${escHtml(initial)}</div>`;
+          })
+          .join('')
+      : '';
 
     return `
       <div class="checklist-row${item.attended ? ' attended' : ''} is-session" data-item-type="session" data-item-id="${escHtml(item.session_id)}" data-rating="${item.rating || 0}" style="animation-delay:${i * 40}ms">
@@ -450,6 +466,7 @@ function renderChecklistTab() {
               <div class="row-rate-caption">Going</div>
               <div class="checklist-avatars">
                 <div class="mini-av t3" title="You">${userInitial}</div>
+                ${teamAvatarHtml}
               </div>
             </div>
           </div>
@@ -460,7 +477,8 @@ function renderChecklistTab() {
   function renderBoothRow(item, i) {
     const noteKey      = `booth:${item.stand_number}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
-    const products     = (item.normalised_products || []).slice(0, 3).join(', ');
+    const desc         = item.company_description || '';
+    const reason       = item.reason || '';
     const isWorkiro    = item.company_name === 'Workiro';
 
     const hostStrip = isWorkiro ? `
@@ -510,7 +528,11 @@ function renderChecklistTab() {
           </div>
           <div class="checklist-main">
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
-            <div class="checklist-main-meta"><span class="type-pill booth">Booth</span>${products ? ' · ' + escHtml(products) : ''}</div>
+            <div class="checklist-main-meta"><span class="type-pill booth">Booth</span></div>
+            ${desc ? `<p class="checklist-main-sub" style="font-size:13px;color:var(--text-muted);margin:4px 0 0;line-height:1.5;">${escHtml(desc)}</p>` : ''}
+            ${reason ? `
+              <div class="checklist-why-header">${STAR_SVG} Why AI picked this</div>
+              <div class="checklist-why-tags"><span class="checklist-why-tag why-ai">${escHtml(reason)}</span></div>` : ''}
             ${notePanel}
           </div>
           <div class="checklist-row-right">
@@ -1014,27 +1036,33 @@ function _allNotesNow() {
 }
 
 function buildHeatRanked() {
-  const sessions  = _plan?.sessions || [];
   const teamPlans = _teamData?.teamPlans || [];
+  const allPlans  = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
 
-  const scoreMap = {};
-  const allPlans = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
+  const scoreMap      = {};
+  const sessionMetaMap = {};
+
+  // Current user's plan takes priority for session metadata
+  for (const s of (_plan?.sessions || [])) {
+    sessionMetaMap[String(s.session_id)] = s;
+  }
+
   for (const p of allPlans) {
     for (const s of (p.sessions || [])) {
-      if (!s.rating) continue;
       const key = String(s.session_id);
+      if (!sessionMetaMap[key]) sessionMetaMap[key] = s;
+      if (!s.rating) continue;
       if (!scoreMap[key]) scoreMap[key] = { total: 0, count: 0 };
       scoreMap[key].total += s.rating;
       scoreMap[key].count += 1;
     }
   }
 
-  return sessions
-    .filter(s => scoreMap[String(s.session_id)])
-    .map(s => ({
-      session:    s,
-      avgRating:  scoreMap[String(s.session_id)].total / scoreMap[String(s.session_id)].count,
-      raterCount: scoreMap[String(s.session_id)].count,
+  return Object.keys(scoreMap)
+    .map(key => ({
+      session:    sessionMetaMap[key],
+      avgRating:  scoreMap[key].total / scoreMap[key].count,
+      raterCount: scoreMap[key].count,
     }))
     .sort((a, b) => b.avgRating - a.avgRating);
 }
@@ -1117,11 +1145,23 @@ function buildSummaryText() {
     lines.push('');
   }
 
-  // Sessions: rated ones first (from heatRanked), then any noted-but-unrated sessions
+  // Sessions: rated ones first (from heatRanked, covers all team plans),
+  // then any noted-but-unrated sessions from any team plan
+  const teamPlansForSummary = _teamData?.teamPlans?.length ? _teamData.teamPlans : [_plan].filter(Boolean);
+  const allTeamSessionsMap  = {};
+  for (const p of teamPlansForSummary) {
+    for (const s of (p.sessions || [])) {
+      if (!allTeamSessionsMap[String(s.session_id)]) allTeamSessionsMap[String(s.session_id)] = s;
+    }
+  }
+  // Current user's versions take priority for metadata
+  for (const s of (_plan?.sessions || [])) {
+    allTeamSessionsMap[String(s.session_id)] = s;
+  }
   const ratedSessionIds = new Set(heatRanked.map(h => String(h.session.session_id)));
   const allSessionItems = [
     ...heatRanked.map(h => ({ session: h.session, avgRating: h.avgRating })),
-    ...(_plan?.sessions || [])
+    ...Object.values(allTeamSessionsMap)
       .filter(s => !ratedSessionIds.has(String(s.session_id)) && sessionNoteMap[String(s.session_id)])
       .map(s => ({ session: s, avgRating: 0 })),
   ];
@@ -1308,10 +1348,10 @@ function renderDebriefTab() {
         ${flameSvg()}
         Hot sessions
       </div>
-      <h3 class="team-section-title">Top-rated <em>by your team.</em></h3>
+      <h3 class="team-section-title">Top-rated <em>by you and your team.</em></h3>
       ${heatRanked.length
         ? `<div class="debrief-hot-list">${sessionCards}</div>`
-        : `<div class="debrief-empty">Sessions appear here as your team rates them.</div>`}
+        : `<div class="debrief-empty">Sessions appear here once you rate them during the show.</div>`}
     </div>
 
     <div class="app-section">
@@ -1322,7 +1362,7 @@ function renderDebriefTab() {
       <h3 class="team-section-title">Vendors <em>worth a follow-up.</em></h3>
       ${boothHeatRanked.length
         ? `<div class="debrief-hot-list">${boothCards}</div>`
-        : `<div class="debrief-empty">Booths appear here as your team rates them.</div>`}
+        : `<div class="debrief-empty">Booths appear here once you rate them during the show.</div>`}
     </div>
 
   `;
@@ -2117,11 +2157,33 @@ async function handleSignIn(authUser, teamToken) {
       teamData = await loadTeamData(full.team_id);
     }
 
+    // Re-hydrate booth metadata from current exhibitors data so name/description
+    // changes in the CSV are reflected without needing a plan rebuild
+    const exhibitorsByStand = Object.fromEntries(
+      allExhibitors.map(e => [String(e.stand_number), e])
+    );
+    full.booths = (full.booths || []).map(b => {
+      const fresh = exhibitorsByStand[String(b.stand_number)];
+      return fresh ? { ...fresh, rating: b.rating, attended: b.attended, reason: b.reason } : b;
+    });
+
     _plan          = full;
     _allSessions   = allSessions;
     _allExhibitors = allExhibitors;
     _teamData    = teamData;
     _authUser    = authUser;
+
+    // Guarantee Workiro always appears in the booths list
+    if (!(_plan.booths || []).some(b => b.company_name === 'Workiro')) {
+      const workiro = allExhibitors.find(e => e.company_name === 'Workiro');
+      if (workiro) {
+        _plan.booths = [
+          ...(_plan.booths || []),
+          { ...workiro, reason: 'The team behind this Game Plan — come see us at Stand 1144.' },
+        ];
+        await supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
+      }
+    }
 
     renderApp();
   } catch (err) {

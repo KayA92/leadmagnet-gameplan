@@ -391,6 +391,34 @@ function renderPlanPreview() {
   `;
 }
 
+// ── Keyword → category auto-selection ────────────────────────────────────────
+const KEYWORD_CATEGORY_MAP = [
+  { pattern: /\b(mtd|making tax digital|vat|digital tax)\b/i,           cat: 'tax-mtd' },
+  { pattern: /\b(ai|artificial intelligence|automation|automat)\b/i,     cat: 'ai-automation' },
+  { pattern: /\b(bookkeeping|bookkeeper)\b/i,                            cat: 'bookkeeping' },
+  { pattern: /\b(payroll)\b/i,                                           cat: 'payroll' },
+  { pattern: /\b(document management|doc management|file management)\b/i, cat: 'doc-management' },
+  { pattern: /\b(hr|people management|recruitment|staff)\b/i,            cat: 'hr-people' },
+  { pattern: /\b(banking|payments?|open banking)\b/i,                    cat: 'banking-payments' },
+  { pattern: /\b(expenses?|spend management)\b/i,                        cat: 'expenses' },
+  { pattern: /\b(practice management|workflow)\b/i,                      cat: 'practice-management' },
+  { pattern: /\b(crm|client relationship)\b/i,                           cat: 'crm-comms' },
+  { pattern: /\b(data|analytics?|reporting)\b/i,                         cat: 'data-analytics' },
+  { pattern: /\b(cyber|security|cyber-?security)\b/i,                    cat: 'cyber-security' },
+  { pattern: /\b(e-?sign|e-?signature|digital signature)\b/i,            cat: 'esign' },
+  { pattern: /\b(aml|kyc|anti.money.laundering)\b/i,                     cat: 'aml-kyc' },
+  { pattern: /\b(outsourc)\b/i,                                          cat: 'outsourcing' },
+  { pattern: /\b(marketing|growth|leads?)\b/i,                           cat: 'marketing-growth' },
+];
+
+function applyKeywordCategories(text) {
+  for (const { pattern, cat } of KEYWORD_CATEGORY_MAP) {
+    if (pattern.test(text) && !state.answers.categories.includes(cat)) {
+      state.answers.categories.push(cat);
+    }
+  }
+}
+
 // ── Stage 3: category toggle ──────────────────────────────────────────────────
 function toggleCategory(cat) {
   const idx = state.answers.categories.indexOf(cat);
@@ -579,7 +607,10 @@ export async function initWizard() {
   });
   $('problem-back')?.addEventListener('click', () => history.back());
   $('problem-next')?.addEventListener('click', () => {
-    if (state.answers.problem.length >= 20) goToStage(3);
+    if (state.answers.problem.length >= 20) {
+      applyKeywordCategories(state.answers.problem);
+      goToStage(3);
+    }
   });
 
   // ── Stage 3: categories
@@ -592,15 +623,17 @@ export async function initWizard() {
   });
   $('cat-next') && ($('cat-next').disabled = true);
 
-  // ── Stage 4: availability (multi-select)
+  // ── Stage 4: availability (radio-per-day — one slot per day, both days independent)
   document.querySelectorAll('[data-time]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const val = btn.dataset.time;
-      const idx = state.answers.time.indexOf(val);
-      if (idx >= 0) {
-        state.answers.time.splice(idx, 1);
-        btn.classList.remove('selected');
-      } else {
+      const val    = btn.dataset.time;
+      const prefix = val.startsWith('wed') ? 'wed' : 'thu';
+      const wasSelected = btn.classList.contains('selected');
+      // Deselect all slots for the same day
+      state.answers.time = state.answers.time.filter(t => !t.startsWith(prefix));
+      document.querySelectorAll(`[data-time^="${prefix}"]`).forEach(b => b.classList.remove('selected'));
+      // If it wasn't already selected, select it now (clicking same slot again deselects)
+      if (!wasSelected) {
         state.answers.time.push(val);
         btn.classList.add('selected');
       }

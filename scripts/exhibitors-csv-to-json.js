@@ -54,6 +54,14 @@ const CAT_MAP = {
   'Association / Professional Body':                      [],
 };
 
+function fixEncoding(s) {
+  return (s || '')
+    .replace(/â€™/g, "'").replace(/â€œ/g, '"').replace(/â€/g, '"')
+    .replace(/â€"/g, '–').replace(/â€"/g, '—')
+    .replace(/Ã©/g, 'é').replace(/Ã¨/g, 'è').replace(/Ã /g, 'à')
+    .trim();
+}
+
 function parseCSV(text) {
   const rows = [];
   let row = [], field = '', inQuote = false;
@@ -98,7 +106,7 @@ const H = {
 const exhibitors = rows.slice(1)
   .filter(r => r[H.name] && r[H.name].trim())
   .map(r => {
-    const get = i => (r[i] || '').trim();
+    const get = i => fixEncoding(r[i] || '');
 
     const rawCats = get(H.cats).split(',').map(c => c.trim()).filter(Boolean);
     const canonicalSet = new Set();

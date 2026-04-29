@@ -7362,6 +7362,28 @@ button.app-pill.purple.clickable:hover {
   .sponsors-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Page footer (Free · Built by Workiro · Privacy & terms) ────── */
+.hero-page-footer {
+  margin-top: 60px;
+  padding: 28px 24px 36px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border-top: 1px solid var(--ink-3);
+  width: 100%;
+  max-width: 1100px;
+  box-sizing: border-box;
+}
+.hero-page-footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.hero-page-footer a:hover { color: var(--mint); }
+
 /* ── Compact sponsors strip (above hero banner) ─────────────────── */
 .sponsors-strip {
   display: flex;

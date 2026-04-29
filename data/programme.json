@@ -100,7 +100,7 @@
       "crm-comms",
       "data-analytics"
     ],
-    "description": "Clients don't judge you on tax jargon; they remember how simple, timely and personal you make things feel. In this fast”‘paced session I'll share a practical framework for five”‘star client care in a modern accountancy practice, balancing automation and AI with a distinctly human touch. Drawing on network”‘wide examples with clients, expect usable wins: service standards, proactive client touchpoints, smart portals, complaint”‘to”‘champion recovery, and the metrics that drive loyalty and referrals.",
+    "description": "Clients don't judge you on tax jargon; they remember how simple, timely and personal you make things feel. In this fast‑paced session I'll share a practical framework for five‑star client care in a modern accountancy practice, balancing automation and AI with a distinctly human touch. Drawing on network‑wide examples with clients, expect usable wins: service standards, proactive client touchpoints, smart portals, complaint‑to‑champion recovery, and the metrics that drive loyalty and referrals.",
     "speakers": [
       {
         "name": "Samantha Skyring",
@@ -785,7 +785,7 @@
         "profile_url": "https://www.accountex.co.uk/london/speakers/stuart-mcleod/"
       },
       {
-        "name": "Des O'Neill",
+        "name": "Des O’Neill",
         "job_title": "Founder and OmniPro Group CEO",
         "company": "ProfitPro",
         "profile_url": "https://www.accountex.co.uk/london/speakers/des-oneill/"
@@ -1168,7 +1168,7 @@
         "profile_url": "https://www.accountex.co.uk/london/speakers/samantha-skyring/"
       },
       {
-        "name": "Fredrik BostrÃ¶m",
+        "name": "Fredrik Boström",
         "job_title": "Customer Success Manager",
         "company": "Mentimeter",
         "profile_url": "https://www.accountex.co.uk/london/speakers/fredrik-bostrom/"
@@ -1597,7 +1597,7 @@
     "canonical_categories": [
       "practice-management"
     ],
-    "description": "The UK is approaching a major exit crunch. Baby Boomers own 37% of UK businesses, rising to 66% when including owners aged 50+, many of whom will seek to exit at the same time. For CFOs, the risk is clear: without early value creation, most businesses will fail to attract buyers and face costly solvent liquidation. As organic growth is unlikely to deliver £1m+ EBITDA and an attractive multiplier, this session explores how CFO and Accountants should take the lead to help owners execute a successful buy”‘and”‘build strategy to build value and enjoy a successful exit in a buyer's market.",
+    "description": "The UK is approaching a major exit crunch. Baby Boomers own 37% of UK businesses, rising to 66% when including owners aged 50+, many of whom will seek to exit at the same time. For CFOs, the risk is clear: without early value creation, most businesses will fail to attract buyers and face costly solvent liquidation. As organic growth is unlikely to deliver £1m+ EBITDA and an attractive multiplier, this session explores how CFO and Accountants should take the lead to help owners execute a successful buy‑and‑build strategy to build value and enjoy a successful exit in a buyer's market.",
     "speakers": [
       {
         "name": "Steve Darnell",
@@ -1859,7 +1859,7 @@
       },
       {
         "name": "Danielle Cheek",
-        "job_title": "SeniorÂ ViceÂ President,Â AI,Â AnalyticsÂ andÂ Assurance",
+        "job_title": "Senior Vice President, AI, Analytics and Assurance",
         "company": "Caseware",
         "profile_url": "https://www.accountex.co.uk/london/speakers/danielle-cheek/"
       }
@@ -3212,7 +3212,7 @@
       {
         "name": "Robyn Riedlinger",
         "job_title": "Motivational Speaker",
-        "company": "Your Signature TalkÂ®",
+        "company": "Your Signature Talk®",
         "profile_url": "https://www.accountex.co.uk/london/speakers/robyn-riedlinger/"
       }
     ],
@@ -3287,7 +3287,7 @@
       {
         "name": "Richard Clarke",
         "job_title": "",
-        "company": "ScienceÂ of Happiness at Work",
+        "company": "Science of Happiness at Work",
         "profile_url": "https://www.accountex.co.uk/london/speakers/richard-clarke/"
       }
     ],
@@ -3314,7 +3314,7 @@
         "profile_url": "https://www.accountex.co.uk/london/speakers/marie-claire-mcgreevy/"
       },
       {
-        "name": "Oonagh O'Reilly",
+        "name": "Oonagh O’Reilly",
         "job_title": "Co-Founder",
         "company": "MCO Performance",
         "profile_url": "https://www.accountex.co.uk/london/speakers/oonagh-oreilly/"
@@ -3439,52 +3439,6 @@
     "session_url": ""
   },
   {
-    "session_id": "auto-building-a-connected-firm-moving-from-fragmented-tools-to-en",
-    "title": "Building a connected firm: Moving from fragmented tools to end-to-end workflows",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "12:20",
-    "end_time": "13:00",
-    "categories": "Practice Management / Scaling, Practice Management",
-    "canonical_categories": [
-      "practice-management"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Lara Manton",
-        "job_title": "Director",
-        "company": "LJM Bookkeeping Ltd",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
-    "session_id": "auto-building-a-connected-firm-moving-from-fragmented-tools-to-en",
-    "title": "Building a connected firm: Moving from fragmented tools to end-to-end workflows",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "12:20",
-    "end_time": "13:00",
-    "categories": "Practice Management / Scaling, Practice Management",
-    "canonical_categories": [
-      "practice-management"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Gavin Fell",
-        "job_title": "Sales Leader",
-        "company": "Apron",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
     "session_id": "auto-growing-through-adversity-to-achieve-your-success",
     "title": "Growing through adversity to achieve your success",
     "day": "Day 1",
@@ -3602,29 +3556,6 @@
     "session_url": ""
   },
   {
-    "session_id": "auto-a-no-nonsense-marketing-masterclass-for-accountants-bookkeep",
-    "title": "A no-nonsense marketing masterclass for accountants & bookkeepers",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "15:20",
-    "end_time": "16:00",
-    "categories": "Sales & Marketing / Branding, Marketing & Growth",
-    "canonical_categories": [
-      "marketing-growth"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Callum Macrae",
-        "job_title": "Marketing Director",
-        "company": "JE Consulting",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
     "session_id": "auto-break-it-and-rebuild-it-how-bookkeepers-become-trusted-advis",
     "title": "Break It and Rebuild It: How Bookkeepers Become Trusted Advisers in the Age of AI",
     "day": "Day 1",
@@ -3688,52 +3619,6 @@
         "name": "Gill Russel",
         "job_title": "Owner",
         "company": "The Gill Russel Consultancy",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
-    "session_id": "auto-the-power-of-networking-turning-connections-into-opportuniti",
-    "title": "The power of networking: Turning connections into opportunities",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "17:20",
-    "end_time": "18:00",
-    "categories": "Sales & Marketing / Networking, Marketing & Growth",
-    "canonical_categories": [
-      "marketing-growth"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Stephanie Nicolson",
-        "job_title": "Director",
-        "company": "Books & Balance Ltd and Kent Kinnections Ltd",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
-    "session_id": "auto-the-power-of-networking-turning-connections-into-opportuniti",
-    "title": "The power of networking: Turning connections into opportunities",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "17:20",
-    "end_time": "18:00",
-    "categories": "Sales & Marketing / Networking, Marketing & Growth",
-    "canonical_categories": [
-      "marketing-growth"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Lisa Pirie",
-        "job_title": "Director",
-        "company": "Acey Bookkeeping Ltd and Kent Kinnections Ltd",
         "profile_url": ""
       }
     ],
@@ -3850,52 +3735,6 @@
         "name": "Zoe Whitman",
         "job_title": "Co-founder",
         "company": "6 Figure Bookkeeper",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
-    "session_id": "auto-the-rise-of-the-ai-bookkeeper-how-practices-can-prepare-for-",
-    "title": "The rise of the AI bookkeeper: How practices can prepare for what comes next",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "12:20",
-    "end_time": "13:00",
-    "categories": "AI, AI & Automation",
-    "canonical_categories": [
-      "ai-automation"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Jo Wood",
-        "job_title": "Director",
-        "company": "6 Figure Bookkeeper",
-        "profile_url": ""
-      }
-    ],
-    "session_url": ""
-  },
-  {
-    "session_id": "auto-the-rise-of-the-ai-bookkeeper-how-practices-can-prepare-for-",
-    "title": "The rise of the AI bookkeeper: How practices can prepare for what comes next",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Theatre 6 – Bookkeepers",
-    "start_time": "12:20",
-    "end_time": "13:00",
-    "categories": "AI, AI & Automation",
-    "canonical_categories": [
-      "ai-automation"
-    ],
-    "description": "",
-    "speakers": [
-      {
-        "name": "Gavin Fell",
-        "job_title": "Sales Leader",
-        "company": "Apron",
         "profile_url": ""
       }
     ],
@@ -4711,7 +4550,7 @@
     "description": "Many firm owners and their teams are white-knuckling it, masking struggles just to survive the day. We talk tax and tech, but ignore the neurodivergent (ND) brain—the engine that drives success but can lead to burnout, isolation, or addiction. I'm pulling back the curtain on the ND reality in our profession. We'll explore the tactical edge of the 'different' brain, the traps of high-pressure leadership, and how to build a team where ND talent thrives. No clinical fluff—just a raw look at staying sane while scaling, and how to harness the unique abilities of your team while protecting them from the ND risks they face.",
     "speakers": [
       {
-        "name": "Des O'Neill",
+        "name": "Des O’Neill",
         "job_title": "Founder and OmniPro Group CEO",
         "company": "ProfitPro",
         "profile_url": "https://www.accountex.co.uk/london/speakers/des-oneill/"
@@ -5493,7 +5332,7 @@
       {
         "name": "Donna Beddis",
         "job_title": "Founder & Director",
-        "company": "The Accountant's Best Friend Ltd",
+        "company": "The Accountant’s Best Friend Ltd",
         "profile_url": "https://www.accountex.co.uk/london/speakers/donna-beddis/"
       },
       {
@@ -7162,29 +7001,6 @@
     "session_url": "https://www.accountex.co.uk/london/sessions/mtd-built-for-practices-automations-permissions-approvals-and-bulk-actions/"
   },
   {
-    "session_id": "auto-easy-to-onboard-easy-to-use-why-practices-choose-freeagent",
-    "title": "Easy to onboard, easy to use: why practices choose FreeAgent",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "FreeAgent Theatre - Stand 180",
-    "start_time": "13:30",
-    "end_time": "13:50",
-    "categories": "Practice Management",
-    "canonical_categories": [
-      "practice-management"
-    ],
-    "description": "Discover the practical reasons practices choose FreeAgent, from onboarding clients smoothly to making day-to-day work simpler for teams and small businesses.",
-    "speakers": [
-      {
-        "name": "Team FreeAgent",
-        "job_title": "Product & Sales",
-        "company": "FreeAgent",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/easy-to-onboard-easy-to-use-why-practices-choose-freeagent-2/"
-  },
-  {
     "session_id": "auto-freeagent-for-cis-keeping-contractors-and-subcontractors-on-",
     "title": "FreeAgent for CIS: keeping contractors and subcontractors on track",
     "day": "Day 1",
@@ -7206,50 +7022,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/freeagent-for-cis-keeping-contractors-and-subcontractors-on-track/"
-  },
-  {
-    "session_id": "auto-better-together-natwest-mettle-and-freeagent",
-    "title": "Better together: NatWest, Mettle and FreeAgent",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "FreeAgent Theatre - Stand 180",
-    "start_time": "15:00",
-    "end_time": "15:20",
-    "categories": "Banking & Payments",
-    "canonical_categories": [
-      "banking-payments"
-    ],
-    "description": "How NatWest, Mettle and FreeAgent work together to give small businesses and their advisers better visibility, smoother money management and less admin.",
-    "speakers": [
-      {
-        "name": "Team FreeAgent",
-        "job_title": "Product & Sales",
-        "company": "FreeAgent",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/better-together-natwest-mettle-and-freeagent-2/"
-  },
-  {
-    "session_id": "auto-what-s-new-in-freeagent-for-accountants-and-bookkeepers",
-    "title": "What’s new in FreeAgent for accountants and bookkeepers",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "FreeAgent Theatre - Stand 180",
-    "start_time": "16:00",
-    "end_time": "16:20",
-    "categories": "",
-    "canonical_categories": [],
-    "description": "A high-level product update covering the latest improvements in FreeAgent, what they mean for practices, and where the product is heading next.",
-    "speakers": [
-      {
-        "name": "Team FreeAgent",
-        "job_title": "Product & Sales",
-        "company": "FreeAgent",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/whats-new-in-freeagent-for-accountants-and-bookkeepers/"
   },
   {
     "session_id": "auto-modernising-finance-consolidation-and-automation-with-netsui",
@@ -7917,58 +7689,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/the-next-generation-of-practice-management-in-cch-ifirm/"
-  },
-  {
-    "session_id": "auto-the-next-generation-of-practice-management-in-cch-ifirm",
-    "title": "The next generation of practice management in CCH iFirm",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Wolters Kluwer Tax & Accounting UK Theatre - Stand 1760",
-    "start_time": "12:30",
-    "end_time": "13:00",
-    "categories": "AI & Automation, Data & Analytics, HR & People, Practice Management",
-    "canonical_categories": [
-      "ai-automation",
-      "data-analytics",
-      "hr-people",
-      "practice-management"
-    ],
-    "description": "This session explores how CCH iFirm brings together jobs, documents, time, billing, and reporting into a single, connected experience, reducing fragmentation and manual effort. We’ll look ahead to how intelligent automation and AI are being embedded across workflows to improve visibility, capacity planning, and decision-making.",
-    "speakers": [
-      {
-        "name": "Matt Routledge",
-        "job_title": "Lead Technology Product Manager",
-        "company": "Wolters Kluwer",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/the-next-generation-of-practice-management-in-cch-ifirm/"
-  },
-  {
-    "session_id": "auto-simplifying-cloud-compliance-with-cch-ifirm-accounts-product",
-    "title": "Simplifying cloud compliance with CCH iFirm Accounts Production",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Wolters Kluwer Tax & Accounting UK Theatre - Stand 1760",
-    "start_time": "11:30",
-    "end_time": "12:00",
-    "categories": "Tax & MTD, Data & Analytics, Doc Automation, Practice Management",
-    "canonical_categories": [
-      "tax-mtd",
-      "data-analytics",
-      "doc-automation",
-      "practice-management"
-    ],
-    "description": "This session will demonstrate the complete workflow for migrating an FRS 102 client from desktop to cloud. Attendees will see practical steps including importing a trial balance from a CSV file, adding year-end journals, updating disclosures, customising financial statements, linking to Corporation Tax, and generating iXBRL outputs. The session is designed to showcase how each stage can be efficiently managed to streamline compliance and reporting processes for modern accountancy firms.",
-    "speakers": [
-      {
-        "name": "Lamorna Harris",
-        "job_title": "Senior Technology Product Manager",
-        "company": "Wolters Kluwer",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/simplifying-cloud-compliance-with-cch-ifirm-accounts-production-2/"
   },
   {
     "session_id": "auto-faster-tax-returns-with-cch-ifirm-personal-tax",
@@ -8728,32 +8448,6 @@
     "session_url": "https://www.accountex.co.uk/london/sessions/brights-hmrc-recognised-mtd-solution-4/"
   },
   {
-    "session_id": "auto-bright-s-hmrc-recognised-mtd-solution",
-    "title": "Bright’s HMRC-recognised MTD Solution",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Bright Theatre - Stand 1160",
-    "start_time": "15:00",
-    "end_time": "15:30",
-    "categories": "Tax & MTD, AI & Automation, CRM & Comms, Document Management",
-    "canonical_categories": [
-      "tax-mtd",
-      "ai-automation",
-      "crm-comms",
-      "doc-management"
-    ],
-    "description": "Join this in-person session to see how Bright’s software simplifies MTD for ITSA ahead of the 2026 rollout, with BrightBooks for easy quarterly filing, BrightTax for accurate annual submissions, and BrightManager to automate tasks and client communications while keeping you HMRC-compliant.",
-    "speakers": [
-      {
-        "name": "Paul Onions",
-        "job_title": "VP of Product – Accounting",
-        "company": "Bright",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/brights-hmrc-recognised-mtd-solution-3/"
-  },
-  {
     "session_id": "auto-how-inform-direct-makes-eccta-easy",
     "title": "How Inform Direct makes ECCTA easy!",
     "day": "Day 1",
@@ -8802,32 +8496,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/whos-bright-the-brand-the-strategy-the-impact/"
-  },
-  {
-    "session_id": "auto-how-to-produce-file-accounts-faster-with-brightaccountsprodu",
-    "title": "How to produce & file accounts faster with BrightAccountsProduction and BrightTax",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Bright Theatre - Stand 1160",
-    "start_time": "16:00",
-    "end_time": "16:30",
-    "categories": "Tax & MTD, AI & Automation, Document Management, Practice Management",
-    "canonical_categories": [
-      "tax-mtd",
-      "ai-automation",
-      "doc-management",
-      "practice-management"
-    ],
-    "description": "Join this in-person walkthrough of BrightAccountsProduction and BrightTax to see how they help automate accounts preparation and streamline statutory accounts and tax filing in one integrated solution. Discover how to access templates, track workflows, create final accounts from any device, and seamlessly transfer data between accounts and corporation tax to improve speed, accuracy, and compliance.",
-    "speakers": [
-      {
-        "name": "The Bright Team",
-        "job_title": "Sales",
-        "company": "Bright Software Group",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/how-to-produce-file-accounts-faster-with-brightaccountsproduction-and-brighttax/"
   },
   {
     "session_id": "auto-bright-s-hmrc-recognised-mtd-solution",
@@ -9344,47 +9012,6 @@
     "session_url": "https://www.accountex.co.uk/london/sessions/taxcalc-engager-practice-suite-demonstration-5/"
   },
   {
-    "session_id": "auto-mtd-therapy-accountex",
-    "title": "MTD Therapy @ Accountex",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "TaxCalc Theatre - Stand 750",
-    "start_time": "13:30",
-    "end_time": "14:00",
-    "categories": "Tax & MTD",
-    "canonical_categories": [
-      "tax-mtd"
-    ],
-    "description": "A panel session with MTD Therapy’s Robyn Milstead and Tom Bickle exploring how the profession is faring six weeks after mandation.",
-    "speakers": [
-      {
-        "name": "Andy North (Chief Community and Engagement Officer at TaxCalc",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Engager)",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Robyn Milstead",
-        "job_title": "Director",
-        "company": "Accountants Therapy Ltd",
-        "profile_url": ""
-      },
-      {
-        "name": "Tom Bickle",
-        "job_title": "Director",
-        "company": "JP Blackmoor Ltd",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/mtd-therapy-accountex/"
-  },
-  {
     "session_id": "auto-employment-hero-payroll",
     "title": "Employment Hero – Payroll",
     "day": "Day 1",
@@ -9741,35 +9368,6 @@
     "day": "Day 1",
     "date": "13-May-26",
     "theatre": "TaxCalc Theatre - Stand 750",
-    "start_time": "11:00",
-    "end_time": "11:30",
-    "categories": "Practice Management",
-    "canonical_categories": [
-      "practice-management"
-    ],
-    "description": "A live walkthrough of TaxCalc and Engager, illustrating essential tools for efficient accounting and client engagement.",
-    "speakers": [
-      {
-        "name": "Jason Raynes (Professional Services Consultant at TaxCalc",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Engager)",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/taxcalc-engager-practice-suite-demonstration-10/"
-  },
-  {
-    "session_id": "auto-taxcalc-engager-practice-suite-demonstration",
-    "title": "TaxCalc | Engager Practice Suite Demonstration",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "TaxCalc Theatre - Stand 750",
     "start_time": "10:00",
     "end_time": "10:30",
     "categories": "Practice Management",
@@ -9792,35 +9390,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/taxcalc-engager-practice-suite-demonstration-11/"
-  },
-  {
-    "session_id": "auto-taxcalc-engager-practice-suite-demonstration",
-    "title": "TaxCalc | Engager Practice Suite Demonstration",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "TaxCalc Theatre - Stand 750",
-    "start_time": "13:00",
-    "end_time": "13:30",
-    "categories": "Practice Management",
-    "canonical_categories": [
-      "practice-management"
-    ],
-    "description": "A live walkthrough of TaxCalc and Engager, illustrating essential tools for efficient accounting and client engagement.",
-    "speakers": [
-      {
-        "name": "Esther Voss (Professional Services Accountant at TaxCalc",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Engager)",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/taxcalc-engager-practice-suite-demonstration-12/"
   },
   {
     "session_id": "auto-taxcalc-engager-practice-suite-demonstration",
@@ -9881,50 +9450,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/proposals-and-pricing-mastered-with-engager/"
-  },
-  {
-    "session_id": "auto-mtd-the-complete-solution-delivered-by-taxcalc-engager",
-    "title": "MTD – the complete solution delivered by TaxCalc | Engager",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "TaxCalc Theatre - Stand 750",
-    "start_time": "14:30",
-    "end_time": "15:00",
-    "categories": "Tax & MTD, AI & Automation, Document Management, Practice Management",
-    "canonical_categories": [
-      "tax-mtd",
-      "ai-automation",
-      "doc-management",
-      "practice-management"
-    ],
-    "description": "Take a tour of how the combination of TaxCalc and Engager offer a complete wrap around solution for your MTD clients. From rapid, easy client onboarding, automated email reminders and alerts to simple quarterly filings and final submissions.",
-    "speakers": [
-      {
-        "name": "Esther Voss (Professional Services Accountant at TaxCalc",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Engager)",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Jason Raynes (Professional Services Consultant at TaxCalc",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      },
-      {
-        "name": "Engager)",
-        "job_title": "",
-        "company": "",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/mtd-the-complete-solution-delivered-by-taxcalc-engager-2/"
   },
   {
     "session_id": "auto-mtd-the-complete-solution-delivered-by-taxcalc-engager",
@@ -10214,30 +9739,6 @@
     "session_url": "https://www.accountex.co.uk/london/sessions/making-sustainability-measurable-what-really-matters/"
   },
   {
-    "session_id": "auto-delivering-the-outsourced-cfo-experience",
-    "title": "Delivering the Outsourced CFO Experience",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Sage Theatre - Stand 1220",
-    "start_time": "14:00",
-    "end_time": "14:30",
-    "categories": "Data & Analytics, Outsourcing",
-    "canonical_categories": [
-      "data-analytics",
-      "outsourcing"
-    ],
-    "description": "More firms are offering outsourced finance and CFO services to growing businesses. Discover how modern finance systems help accountants deliver deeper insight, reporting and strategic support to ambitious clients.",
-    "speakers": [
-      {
-        "name": "Katie Cornish",
-        "job_title": "Director of Growth for Accountants UKI",
-        "company": "Sage",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/delivering-the-outsourced-cfo-experience-2/"
-  },
-  {
     "session_id": "auto-more-than-you-think-what-sage-can-really-do-today",
     "title": "More Than You Think: What Sage Can Really Do Today",
     "day": "Day 1",
@@ -10331,30 +9832,6 @@
     "session_url": "https://www.accountex.co.uk/london/sessions/monetising-ai-turning-efficiency-into-value/"
   },
   {
-    "session_id": "auto-making-ai-work-in-your-firm",
-    "title": "Making AI Work in Your Firm",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Sage Theatre - Stand 1220",
-    "start_time": "12:30",
-    "end_time": "13:00",
-    "categories": "AI & Automation, Practice Management",
-    "canonical_categories": [
-      "ai-automation",
-      "practice-management"
-    ],
-    "description": "AI adoption isn’t just about tools. Discover how firms can build the right foundations for AI – from training and governance to policy, workflows and pricing – to introduce AI with confidence.",
-    "speakers": [
-      {
-        "name": "Chris Downing",
-        "job_title": "Director of Accountants & Bookkeepers",
-        "company": "Sage",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/making-ai-work-in-your-firm/"
-  },
-  {
     "session_id": "auto-combinely-ai",
     "title": "Combinely – AI",
     "day": "Day 2",
@@ -10430,35 +9907,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/from-transactions-to-insight-making-spend-data-work-harder/"
-  },
-  {
-    "session_id": "auto-from-esg-reporting-to-esg-enforcement-why-sustainability-dat",
-    "title": "From ESG Reporting to ESG Enforcement – Why Sustainability Data Must Be Audit-Ready, Verifiable and Legally Defensible",
-    "day": "Day 1",
-    "date": "13-May-26",
-    "theatre": "Case Study Stage",
-    "start_time": "13:20",
-    "end_time": "13:40",
-    "categories": "Data & Analytics",
-    "canonical_categories": [
-      "data-analytics"
-    ],
-    "description": "ESG is shifting from narrative reporting to enforceable compliance. With CSRD expansion, mandatory Scope 1, 2 and 3 emissions disclosures, and heightened anti-greenwashing enforcement, sustainability data is now scrutinised with financial-grade rigour. Boards and finance leaders must ensure their ESG disclosures can withstand audit and regulatory review. This session explores how organisations can transition from spreadsheet-based reporting to structured, machine-readable, taxonomy-aligned disclosures. FinTags demonstrates how iXBRL-enabled ESG reporting enables compliance-ready and audit-ready submissions.",
-    "speakers": [
-      {
-        "name": "Santhosh Wilson",
-        "job_title": "CEO and Founder",
-        "company": "FinTags LTD",
-        "profile_url": ""
-      },
-      {
-        "name": "Joice Wilson",
-        "job_title": "Head of Customer Success",
-        "company": "FinTags LTD",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/from-esg-reporting-to-esg-enforcement-why-sustainability-data-must-be-audit-ready-verifiable-and-legally-defensible/"
   },
   {
     "session_id": "auto-ambition-confidence-experience-lessons-from-15-years-in-prac",
@@ -11087,29 +10535,6 @@
     "session_url": "https://www.accountex.co.uk/london/sessions/landlord-studio-tax-vat-mtd/"
   },
   {
-    "session_id": "auto-eagl-technology-software",
-    "title": "EAGL – Technology & Software",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Showcase Stage",
-    "start_time": "12:35",
-    "end_time": "12:45",
-    "categories": "AI & Automation",
-    "canonical_categories": [
-      "ai-automation"
-    ],
-    "description": "EAGL’s AI agents automate month-end close: accrual management, account reconciliation, and financial controlling. Connected to your general ledger, EAGL catches errors, reduces close time, and gives finance teams back hours every month.",
-    "speakers": [
-      {
-        "name": "Samuel Van Innis",
-        "job_title": "Co-founder & CEO",
-        "company": "EAGL",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/eagl-technology-software/"
-  },
-  {
     "session_id": "auto-zoho-corporation-technology-software",
     "title": "Zoho Corporation – Technology & Software",
     "day": "Day 2",
@@ -11133,77 +10558,6 @@
       }
     ],
     "session_url": "https://www.accountex.co.uk/london/sessions/zoho-corporation-technology-software/"
-  },
-  {
-    "session_id": "auto-spreadsheetsoftware-technology-software",
-    "title": "Spreadsheetsoftware – Technology & Software",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Showcase Stage",
-    "start_time": "14:35",
-    "end_time": "14:45",
-    "categories": "",
-    "canonical_categories": [],
-    "description": "A last-minute spreadsheet change can create risk when deadlines are near. Are you fully confident explaining every key formula to a client, partner or auditor? ExcelAnalyzer is used by 5,000+ users worldwide to review and build spreadsheets fast.",
-    "speakers": [
-      {
-        "name": "Maarten Bessems",
-        "job_title": "Director Spreadsheetsoftware",
-        "company": "Spreadsheetsoftware",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/spreadsheetsoftware-technology-software/"
-  },
-  {
-    "session_id": "auto-generational-planning-group-advisory",
-    "title": "Generational Planning Group – Advisory",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Showcase Stage",
-    "start_time": "10:50",
-    "end_time": "11:00",
-    "categories": "Tax & MTD, Payroll, HR & People",
-    "canonical_categories": [
-      "tax-mtd",
-      "payroll",
-      "hr-people"
-    ],
-    "description": "HMRC’s April 2027 pension IHT changes and their focus on wealth transfers are coming. We will show how careful planning with trusts and IHT-exempt assets can protect your wealth and pass more on to your family.",
-    "speakers": [
-      {
-        "name": "Tim Henderson",
-        "job_title": "Chairman & Principal IFA",
-        "company": "Generational Planning Group",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/generational-planning-group-advisory/"
-  },
-  {
-    "session_id": "auto-swoop-for-advisors-ai-and-advisory",
-    "title": "Swoop for Advisors – AI and Advisory",
-    "day": "Day 2",
-    "date": "14-May-26",
-    "theatre": "Showcase Stage",
-    "start_time": "14:20",
-    "end_time": "14:30",
-    "categories": "AI & Automation, CRM & Comms, Data & Analytics",
-    "canonical_categories": [
-      "ai-automation",
-      "crm-comms",
-      "data-analytics"
-    ],
-    "description": "Swoop for Advisors’ AI backed platform matches clients with tailored funding and deliver real time insights. Combined with expert support, the AI platform helps advisors work smarter, deepen client relationships, and unlock new revenue opportunities.",
-    "speakers": [
-      {
-        "name": "Andrea Reynolds",
-        "job_title": "CEO",
-        "company": "Swoop Funding",
-        "profile_url": ""
-      }
-    ],
-    "session_url": "https://www.accountex.co.uk/london/sessions/swoop-for-advisors-ai-and-advisory/"
   },
   {
     "session_id": "auto-swoop-for-advisors-ai-and-advisory",
@@ -11358,7 +10712,7 @@
     "title": "Carbon accounting: A new revenue streams for Accountants and Bookkeepers",
     "day": "Day 1",
     "date": "5/13/2026",
-    "theatre": "Sage Theatre ”“ Stand 1220",
+    "theatre": "Sage Theatre – Stand 1220",
     "start_time": "10:30",
     "end_time": "11:00",
     "categories": "Carbon accounting / Sustainability / ESG",
@@ -11379,7 +10733,7 @@
     "title": "Introducing ACT by the Payroll Centre",
     "day": "Day 1",
     "date": "5/13/2026",
-    "theatre": "Bright Theatre ”“ Stand 1160",
+    "theatre": "Bright Theatre – Stand 1160",
     "start_time": "12:00",
     "end_time": "12:30",
     "categories": "Payroll",
@@ -11402,7 +10756,7 @@
     "title": "How to' and what to avoid – data migrations to TaxCalc",
     "day": "Day 1",
     "date": "5/13/2026",
-    "theatre": "TaxCalc Theatre ”“ Stand 750",
+    "theatre": "TaxCalc Theatre – Stand 750",
     "start_time": "13:30",
     "end_time": "14:00",
     "categories": "Technology & Software",
@@ -11423,7 +10777,7 @@
     "title": "Carbon accounting: A new revenue streams for Accountants and Bookkeepers",
     "day": "Day 2",
     "date": "5/14/2026",
-    "theatre": "Sage Theatre ”“ Stand 1220",
+    "theatre": "Sage Theatre – Stand 1220",
     "start_time": "15:00",
     "end_time": "15:30",
     "categories": "Carbon accounting / Sustainability / ESG",

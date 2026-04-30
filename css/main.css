@@ -29,8 +29,6 @@ html, body {
 body.flow-active { overflow-y: auto; }
 /* Hide the top-bar's brand on the app stage — brand moves into the tab nav */
 body.app-active .top-bar { display: none; }
-/* Hero shows the top-bar but hides the progress dots */
-body.hero-active .progress-indicator { display: none; }
 /* App stage has no top padding — tab bar IS the top chrome */
 body.app-active .stage.flow-mode { padding-top: 0; padding-left: 0; padding-right: 0; }
 body.app-active .app-shell { padding: 0 24px 40px; }
@@ -96,8 +94,7 @@ body::before {
 .brand-mark::before { content: ''; position: absolute; inset: 8px; background: var(--grad); border-radius: 2px; z-index: 1; }
 .brand-text { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
 .brand-text em { font-style: italic; font-variation-settings: 'SOFT' 60; color: var(--text-muted); }
-.top-bar-right { display: flex; align-items: center; gap: 18px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
-.progress-indicator { display: flex; gap: 6px; align-items: center; }
+.progress-indicator { display: none; gap: 6px; align-items: center; }
 .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); transition: all 0.4s cubic-bezier(.4,0,.2,1); }
 .progress-dot.done { background: var(--mint); box-shadow: 0 0 8px rgba(34,230,168,0.6); }
 .progress-dot.current { background: var(--pink); box-shadow: 0 0 10px rgba(255,94,132,0.7); width: 24px; border-radius: 3px; }

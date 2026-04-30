@@ -387,7 +387,7 @@ function renderPlanPreview() {
       </div>
     </div>
 
-    <div style="height:120px;"></div>
+    <div style="height:20px;"></div>
   `;
 }
 

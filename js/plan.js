@@ -29,6 +29,8 @@ let _userProfile  = null;
 let _dismissedAlternatives = new Set();
 let _resolvedSlots = new Set();
 let _inviteNudgeDismissed = false;
+let _pendingJoinToken     = null;
+let _pendingJoinCompany   = null;
 
 // ── Supabase data access ──────────────────────────────────────────────────────
 
@@ -80,6 +82,7 @@ async function loadTeamData(teamId) {
     allNotes:    allNotes    || [],
     inviteToken: teamRow?.invite_token || null,
     company:     teamRow?.company      || null,
+    teamId,
   };
 }
 
@@ -380,7 +383,7 @@ function renderChecklistTab() {
         ${whyTags.map(t => `<span class="checklist-why-tag why-${t.type}">${escHtml(t.text)}</span>`).join('')}
       </div>` : '';
 
-    const altsHtml = alts.length ? `
+    const altsHtml = showSwap && alts.length ? `
       <div class="checklist-alternatives">
         <div class="checklist-alternatives-label">${ALT_SVG} Also strong at ${escHtml(item.start_time || '')}</div>
         ${alts.map(alt => `
@@ -745,7 +748,7 @@ function buildIntelBlocks() {
     return `
       <div class="intel-block tone-purple">
         <div class="intel-block-label">Waiting for your team</div>
-        <div class="intel-block-headline">Share the invite link.</div>
+        <div class="intel-block-headline">Your team intel will appear here.</div>
         <div class="intel-block-body">Once teammates join, we'll surface patterns across everyone's stated problems and priorities.</div>
       </div>
     `;
@@ -854,51 +857,27 @@ function renderTeamTab() {
   const myMembership = _teamData.members.find(m => m.users?.id === _authUser?.id);
   const isLead = myMembership?.role === 'lead';
 
-  // Derive invite URL display components
-  const firmSlug = (_teamData.company || 'your-team')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '') || 'your-team';
-  const shortToken = (_teamData.inviteToken || '').slice(0, 8);
-  const fullInviteUrl = `${window.location.origin}/?team=${_teamData.inviteToken || ''}`;
-
-  const inviteHeroHtml = isLead ? `
+  const inviteFormHtml = `
     <div class="team-invite-hero">
       <div class="team-invite-hero-inner">
-        <div class="team-invite-hero-label">Invite your team</div>
-        <div class="team-invite-hero-title">One link, <em>everyone in.</em></div>
-        <div class="team-invite-hero-sub">Send this to each person you're bringing. They answer the same onboarding, get their own plan, and land in this workspace — where you'll see <strong>who's at which session</strong>, whose notes are flowing in live, and the <strong>team debrief</strong> writing itself. No passwords, no sign-up fuss.</div>
-        <div class="team-invite-url-row">
-          <div class="team-invite-url" title="${escHtml(fullInviteUrl)}">
-            <strong>workiro-ai.com/?team=</strong>${escHtml(firmSlug)}-${escHtml(shortToken)}
+        <div class="team-invite-hero-label">${isLead ? 'Invite your team' : 'Invite a colleague'}</div>
+        <div class="team-invite-hero-title">${isLead ? 'Grow your <em>team workspace.</em>' : `You're in <em>${escHtml(_teamData.company || 'the team')}.</em>`}</div>
+        <div class="team-invite-hero-sub">${isLead
+          ? 'Enter a colleague\'s email and we\'ll send them a magic link. They answer the same onboarding, get their own plan, and land in this shared workspace.'
+          : 'Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Invite more colleagues below.'
+        }</div>
+        <div class="team-invite-form" id="team-invite-form">
+          <div class="team-invite-input-row">
+            <input type="email" class="team-invite-email-input" id="team-invite-email"
+              placeholder="colleague@firm.com" autocomplete="email"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
+            <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
+              Send invite
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
           </div>
-          <button class="team-invite-copy-btn" onclick="planCopyInvite('${escHtml(fullInviteUrl)}', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy link
-          </button>
+          <div class="team-invite-status" id="team-invite-status"></div>
         </div>
-        <div class="team-invite-secondary">
-          <button class="team-invite-secondary-btn" onclick="planShareEmail('${escHtml(fullInviteUrl)}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Send via email
-          </button>
-          <button class="team-invite-secondary-btn" onclick="planShareSlack('${escHtml(fullInviteUrl)}', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-            Share in Slack
-          </button>
-          <button class="team-invite-secondary-btn" onclick="planShowQr('${escHtml(fullInviteUrl)}', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Show QR code
-          </button>
-        </div>
-      </div>
-    </div>
-  ` : `
-    <div class="team-invite-hero">
-      <div class="team-invite-hero-inner">
-        <div class="team-invite-hero-label">You're in</div>
-        <div class="team-invite-hero-title">Joined <em>${escHtml(_teamData.company || 'the team')}</em> workspace.</div>
-        <div class="team-invite-hero-sub">Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Any teammate can see who's going to what.</div>
       </div>
     </div>
   `;
@@ -915,7 +894,7 @@ function renderTeamTab() {
       </div>
     </div>
 
-    ${inviteHeroHtml}
+    ${inviteFormHtml}
 
     <div class="team-synthesis">
       <div class="team-synthesis-label">
@@ -1946,6 +1925,43 @@ function renderApp() {
   if (_currentTab === 'checklist') {
     attachPlanListeners(_plan.id, _plan.sessions, _plan.booths);
   }
+
+  if (_pendingJoinToken) {
+    const banner = document.createElement('div');
+    banner.className = 'team-join-prompt';
+    banner.innerHTML = `
+      <div class="team-join-prompt-inner">
+        <div class="team-join-prompt-text">
+          <strong>You've been invited to join${_pendingJoinCompany ? ` <em>${escHtml(_pendingJoinCompany)}</em>'s` : ' a'} team.</strong>
+          Your existing plan stays unchanged.
+        </div>
+        <div class="team-join-prompt-actions">
+          <button class="team-join-accept-btn" type="button">Join team</button>
+          <button class="team-join-decline-btn" type="button">Not now</button>
+        </div>
+      </div>`;
+    const acceptBtn = banner.querySelector('.team-join-accept-btn');
+    const declineBtn = banner.querySelector('.team-join-decline-btn');
+    acceptBtn.addEventListener('click', async () => {
+      acceptBtn.disabled = true; acceptBtn.textContent = 'Joining…';
+      const { data, error } = await supabase.rpc('accept_team_invite', { p_invite_token: _pendingJoinToken });
+      if (error || data?.error) {
+        console.error('accept_team_invite error:', error || data?.error);
+        acceptBtn.disabled = false; acceptBtn.textContent = 'Join team';
+        showError('Could not join team. Please try again.');
+        return;
+      }
+      _pendingJoinToken   = null;
+      _pendingJoinCompany = null;
+      window.location.reload();
+    });
+    declineBtn.addEventListener('click', () => {
+      _pendingJoinToken   = null;
+      _pendingJoinCompany = null;
+      renderApp();
+    });
+    root.prepend(banner);
+  }
 }
 
 const _teamFooterHtml = `
@@ -2126,12 +2142,25 @@ async function handleSignIn(authUser, teamToken) {
 
       // Join team if invite token present
       if (teamToken) {
-        const { data: joinResult, error: joinErr } = await supabase.rpc('join_team', { p_invite_token: teamToken });
-        localStorage.removeItem('pendingTeamToken');
-        if (joinErr) throw joinErr;
-        if (joinResult?.error) {
-          showError(`Could not join team: ${joinResult.error}`);
-          return;
+        const isNewUser = !!planData;
+        if (isNewUser) {
+          // New user arriving via wizard → auto-join immediately via the new RPC
+          // which handles plan.team_id update and old-team cleanup atomically.
+          const { data: joinResult, error: joinErr } = await supabase.rpc('accept_team_invite', { p_invite_token: teamToken });
+          localStorage.removeItem('pendingTeamToken');
+          if (joinErr) throw joinErr;
+          if (joinResult?.error) { showError(`Could not join team: ${joinResult.error}`); return; }
+        } else {
+          // Existing user → show join prompt after plan renders
+          _pendingJoinToken = teamToken;
+          localStorage.removeItem('pendingTeamToken');
+          // Remove ?team= from URL now so a reload after joining doesn't re-trigger the prompt
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete('team');
+          history.replaceState(null, '', cleanUrl.toString());
+          // Fetch team company name for the banner (best-effort display only)
+          const { data: inviteInfo } = await supabase.rpc('get_invite_info', { p_invite_token: teamToken });
+          if (inviteInfo?.company) _pendingJoinCompany = inviteInfo.company;
         }
       }
     }
@@ -2142,42 +2171,55 @@ async function handleSignIn(authUser, teamToken) {
       fetch('/data/exhibitors.json').then(r => r.json()).catch(() => []),
     ]);
 
-    if (!full) { showNoPlanState(); return; }
+    if (!full) {
+      if (teamToken) {
+        window.location.href = `/?team=${teamToken}`;
+        return;
+      }
+      showNoPlanState();
+      return;
+    }
 
     // Auto-create team for team leads whose plan doesn't yet have a team_id.
     // This defers team creation to the first authenticated load, since the teams
     // table requires a non-anonymous session (RLS blocks wizard-time creation).
+    // Skip for users who just joined an existing team via invite.
     if (!full.team_id && !authUser.is_anonymous) {
-      const { data: userRow } = await supabase
-        .from('users')
-        .select('company')
-        .eq('id', authUser.id)
-        .single();
+      if (_pendingJoinToken) {
+        // Existing user who will be shown the join prompt — do NOT create a solo team.
+        // plan.team_id will be set when they accept the prompt.
+      } else {
+        const { data: userRow } = await supabase
+          .from('users')
+          .select('company')
+          .eq('id', authUser.id)
+          .single();
 
-      const { data: team, error: teamErr } = await supabase
-        .from('teams')
-        .insert({
-          lead_user_id: authUser.id,
-          company:      userRow?.company || null,
-          invite_token: crypto.randomUUID(),
-          max_members:  5,
-        })
-        .select('id, invite_token')
-        .single();
-      if (teamErr) throw teamErr;
+        const { data: team, error: teamErr } = await supabase
+          .from('teams')
+          .insert({
+            lead_user_id: authUser.id,
+            company:      userRow?.company || null,
+            invite_token: crypto.randomUUID(),
+            max_members:  5,
+          })
+          .select('id, invite_token')
+          .single();
+        if (teamErr) throw teamErr;
 
-      const { error: planUpdateErr } = await supabase
-        .from('plans')
-        .update({ team_id: team.id })
-        .eq('id', full.id);
-      if (planUpdateErr) throw planUpdateErr;
+        const { error: planUpdateErr } = await supabase
+          .from('plans')
+          .update({ team_id: team.id })
+          .eq('id', full.id);
+        if (planUpdateErr) throw planUpdateErr;
 
-      const { error: memberErr } = await supabase
-        .from('team_members')
-        .insert({ team_id: team.id, user_id: authUser.id, role: 'lead' });
-      if (memberErr) throw memberErr;
+        const { error: memberErr } = await supabase
+          .from('team_members')
+          .insert({ team_id: team.id, user_id: authUser.id, role: 'lead' });
+        if (memberErr) throw memberErr;
 
-      full.team_id = team.id;
+        full.team_id = team.id;
+      }
     }
 
     let teamData = null;
@@ -2531,34 +2573,43 @@ window.planOpenSlotSwap = function(currentId, ev) {
   document.body.appendChild(modal);
 };
 
-window.planCopyInvite = function(url, btn) {
-  navigator.clipboard.writeText(url).then(() => {
-    const orig = btn.innerHTML;
-    btn.textContent = 'Copied ✓';
-    setTimeout(() => { btn.innerHTML = orig; }, 2000);
-  });
-};
+window.planSendInvite = async function() {
+  const input  = document.getElementById('team-invite-email');
+  const status = document.getElementById('team-invite-status');
+  const btn    = document.querySelector('.team-invite-send-btn');
+  const email  = (input?.value || '').trim().toLowerCase();
 
-window.planShareEmail = function(url) {
-  const subject = encodeURIComponent('Join my Accountex Game Plan team');
-  const body = encodeURIComponent(`I've built our team's Accountex plan using the Workiro Game Plan tool.\n\nClick this link to complete your own quick wizard and join our shared workspace:\n\n${url}\n\nTakes about 2 minutes.`);
-  window.open(`mailto:?subject=${subject}&body=${body}`);
-};
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    if (status) { status.textContent = 'Please enter a valid email address.'; status.className = 'team-invite-status error'; }
+    return;
+  }
+  if (email === _authUser?.email) {
+    if (status) { status.textContent = 'That\'s your own email address.'; status.className = 'team-invite-status error'; }
+    return;
+  }
+  if (!_teamData?.inviteToken) {
+    if (status) { status.textContent = 'Team not ready yet — please try again.'; status.className = 'team-invite-status error'; }
+    return;
+  }
 
-window.planShareSlack = function(url, btn) {
-  navigator.clipboard.writeText(url).then(() => {
-    const orig = btn.innerHTML;
-    btn.textContent = 'Copied — paste in Slack ✓';
-    setTimeout(() => { btn.innerHTML = orig; }, 2000);
-  });
-};
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
-window.planShowQr = function(url, btn) {
-  navigator.clipboard.writeText(url).then(() => {
-    const orig = btn.innerHTML;
-    btn.textContent = 'Link copied — show to scan ✓';
-    setTimeout(() => { btn.innerHTML = orig; }, 2000);
-  });
+  const redirectTo = `${window.location.origin}/plan/?team=${_teamData.inviteToken}`;
+  const { error } = await sendMagicLink(email, redirectTo);
+
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = 'Send invite <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+  }
+
+  if (error) {
+    if (status) { status.textContent = `Could not send invite: ${error.message}`; status.className = 'team-invite-status error'; }
+    return;
+  }
+
+  if (input) input.value = '';
+  if (status) { status.textContent = `Invite sent to ${email}`; status.className = 'team-invite-status success'; }
+  setTimeout(() => { if (status) status.textContent = ''; }, 5000);
 };
 
 // ── Entry point ───────────────────────────────────────────────────────────────

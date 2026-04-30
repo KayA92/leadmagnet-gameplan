@@ -6634,32 +6634,28 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 14px;
   max-width: 600px;
 }
-.team-invite-url-row {
+/* Email invite form */
+.team-invite-form { margin-top: 18px; }
+.team-invite-input-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
   align-items: stretch;
 }
-.team-invite-url {
+.team-invite-email-input {
   background: rgba(0,0,0,0.35);
   border: 1px solid var(--ink-3);
   border-radius: 10px;
   padding: 12px 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  min-width: 0;
+  width: 100%;
+  transition: border-color 0.2s;
 }
-.team-invite-url strong {
-  color: var(--mint);
-  font-weight: 600;
-}
-.team-invite-copy-btn {
+.team-invite-email-input::placeholder { color: var(--text-faint); }
+.team-invite-email-input:focus { outline: none; border-color: var(--pink); }
+.team-invite-send-btn {
   padding: 12px 18px;
   background: var(--grad);
   color: white;
@@ -6676,36 +6672,71 @@ button.app-pill.purple.clickable:hover {
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(255,94,132,0.3);
 }
-.team-invite-copy-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(255,94,132,0.4);
+.team-invite-send-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,94,132,0.4); }
+.team-invite-send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.team-invite-status {
+  margin-top: 10px;
+  font-size: 13px;
+  min-height: 20px;
 }
-.team-invite-copy-btn svg { width: 14px; height: 14px; }
-.team-invite-secondary {
-  margin-top: 14px;
+.team-invite-status.success { color: var(--mint); }
+.team-invite-status.error   { color: var(--pink); }
+
+/* Join team prompt banner */
+.team-join-prompt {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: linear-gradient(135deg, rgba(168,85,247,0.18) 0%, rgba(255,94,132,0.14) 100%);
+  border-bottom: 1px solid rgba(168,85,247,0.35);
+  backdrop-filter: blur(10px);
+  padding: 14px 28px;
+}
+.team-join-prompt-inner {
+  max-width: 784px;
+  margin: 0 auto;
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   flex-wrap: wrap;
 }
-.team-invite-secondary-btn {
-  padding: 8px 14px;
-  background: transparent;
-  border: 1px solid var(--ink-3);
+.team-join-prompt-text {
+  font-size: 14px;
   color: var(--text);
-  font-family: inherit;
-  font-size: 12.5px;
+  line-height: 1.45;
+}
+.team-join-prompt-text strong { font-weight: 600; }
+.team-join-prompt-text em { font-style: italic; color: #d9b8ff; }
+.team-join-prompt-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.team-join-accept-btn {
+  padding: 9px 18px;
+  background: var(--grad);
+  color: white;
+  border: none;
   border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
   transition: all 0.15s;
+  white-space: nowrap;
 }
-.team-invite-secondary-btn:hover {
-  border-color: var(--text-muted);
-  background: rgba(255,255,255,0.03);
+.team-join-accept-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,94,132,0.35); }
+.team-join-accept-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.team-join-decline-btn {
+  padding: 9px 14px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-muted);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
-.team-invite-secondary-btn svg { width: 13px; height: 13px; color: var(--text-muted); }
+.team-join-decline-btn:hover { border-color: var(--text-muted); color: var(--text); }
 
 /* ═══════════════════════════════════════════════════════════════
    CHUNK 4c: How-it-works strip + Panellists strip + complementarity line
@@ -7092,8 +7123,10 @@ button.app-pill.purple.clickable:hover {
   .plan-tab-content { padding: 0 16px 80px; }
   .intel-grid { grid-template-columns: 1fr; }
   .team-invite-hero { padding: 18px 20px; }
-  .team-invite-url-row { grid-template-columns: 1fr; }
-  .team-invite-copy-btn { justify-content: center; }
+  .team-invite-input-row { grid-template-columns: 1fr; }
+  .team-invite-send-btn { justify-content: center; }
+  .team-join-prompt { padding: 12px 16px; }
+  .team-join-prompt-inner { flex-direction: column; align-items: flex-start; }
   .confirm-fixed-cta { padding: 12px 16px 16px; }
   /* Chunk 4c mobile tweaks */
   .hiw-cards { grid-template-columns: 1fr; gap: 14px; }

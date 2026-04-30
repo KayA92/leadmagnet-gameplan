@@ -798,7 +798,7 @@ function buildIntelBlocks() {
   `;
 }
 
-function renderTeammateCard(m, index) {
+function renderTeammateCard(m, index, isLead) {
   const u         = m.users;
   const isMe      = u.id === _authUser?.id;
   const initials  = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
@@ -847,6 +847,11 @@ function renderTeammateCard(m, index) {
         </div>
         <div class="teammate-footer-joined">${escHtml(joinedStr)}</div>
       </div>
+      ${isLead && !isMe ? `
+        <button class="teammate-remove-btn" onclick="planRemoveTeamMember('${escHtml(u.id)}')" type="button">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Remove from team
+        </button>` : ''}
     </div>
   `;
 }
@@ -913,7 +918,7 @@ function renderTeamTab() {
         <div class="app-section-title">Who's going &amp; why <span class="app-section-count">${memberCount} ${memberCount === 1 ? 'mission' : 'missions'}</span></div>
       </div>
       <div class="teammate-grid">
-        ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+        ${_teamData.members.map((m, i) => renderTeammateCard(m, i, isLead)).join('')}
       </div>
     </div>
 
@@ -2571,6 +2576,20 @@ window.planOpenSlotSwap = function(currentId, ev) {
       <div class="slot-swap-list">${candidatesHtml}</div>
     </div>`;
   document.body.appendChild(modal);
+};
+
+window.planRemoveTeamMember = async function(userId) {
+  const { data, error } = await supabase.rpc('remove_team_member', { p_user_id: userId });
+  if (error || data?.error) {
+    console.error('remove_team_member error:', error || data?.error);
+    showError('Could not remove team member. Please try again.');
+    return;
+  }
+  if (_teamData) {
+    _teamData.members   = _teamData.members.filter(m => m.users?.id !== userId);
+    _teamData.teamPlans = _teamData.teamPlans.filter(p => p.user_id !== userId);
+  }
+  renderApp();
 };
 
 window.planSendInvite = async function() {

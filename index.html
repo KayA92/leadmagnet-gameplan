@@ -37,8 +37,22 @@
       <span class="progress-dot" title="Your availability"></span>
       <span class="progress-dot" title="Your role"></span>
     </div>
+    <button class="login-btn" id="login-btn">Return to my plan</button>
   </div>
 </nav>
+
+<div class="login-overlay" id="login-overlay" hidden>
+  <div class="login-card">
+    <p class="login-card-title">Return to your plan</p>
+    <p class="login-card-sub">Enter your email and we'll send a new magic link — no password needed.</p>
+    <input class="login-card-input" type="email" id="login-email" placeholder="you@yourfirm.co.uk" maxlength="120">
+    <div class="login-card-actions">
+      <button class="login-card-submit" id="login-submit">Send link</button>
+      <button class="login-card-cancel" id="login-cancel">Cancel</button>
+    </div>
+    <p class="login-card-msg" id="login-msg" style="display:none;"></p>
+  </div>
+</div>
 
 <!-- Stage 0: Hero (flow-mode so how-it-works + panellists extend below fold) -->
 <section class="stage active flow-mode" id="stage-0" data-stage="0">
@@ -536,7 +550,50 @@
 
 <script type="module">
   import { initWizard } from './js/wizard.js';
-  document.addEventListener('DOMContentLoaded', initWizard);
+  import { sendMagicLink } from './js/auth.js';
+  document.addEventListener('DOMContentLoaded', () => {
+    initWizard();
+
+    const overlay = document.getElementById('login-overlay');
+    const emailInput = document.getElementById('login-email');
+    const submitBtn = document.getElementById('login-submit');
+    const msg = document.getElementById('login-msg');
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      overlay.hidden = false;
+      emailInput.value = '';
+      msg.style.display = 'none';
+      emailInput.focus();
+    });
+
+    document.getElementById('login-cancel').addEventListener('click', () => {
+      overlay.hidden = true;
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.hidden = true;
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      if (!email) { emailInput.focus(); return; }
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending…';
+      msg.style.display = 'none';
+      const { error } = await sendMagicLink(email, `${window.location.origin}/plan/`);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send link';
+      msg.style.display = 'block';
+      if (error) {
+        msg.className = 'login-card-msg error';
+        msg.textContent = 'Something went wrong — please try again.';
+      } else {
+        msg.className = 'login-card-msg success';
+        msg.textContent = `Magic link sent to ${email} — check your inbox.`;
+        emailInput.value = '';
+      }
+    });
+  });
 </script>
 </body>
 </html>

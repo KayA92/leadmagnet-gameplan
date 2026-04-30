@@ -29,13 +29,8 @@ html, body {
 body.flow-active { overflow-y: auto; }
 /* Hide the top-bar's brand on the app stage — brand moves into the tab nav */
 body.app-active .top-bar { display: none; }
-/* Hide the whole top-bar on the hero — we have a centred brand lockup instead */
-body.hero-active .top-bar { display: none; }
-/* Hero has no top-bar, so pull content up — don't need 96px of clearance */
-body.hero-active .stage.flow-mode { padding-top: 56px; }
-@media (max-width: 600px) {
-  body.hero-active .stage.flow-mode { padding-top: 40px; }
-}
+/* Hero shows the top-bar but hides the progress dots */
+body.hero-active .progress-indicator { display: none; }
 /* App stage has no top padding — tab bar IS the top chrome */
 body.app-active .stage.flow-mode { padding-top: 0; padding-left: 0; padding-right: 0; }
 body.app-active .app-shell { padding: 0 24px 40px; }
@@ -106,6 +101,22 @@ body::before {
 .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); transition: all 0.4s cubic-bezier(.4,0,.2,1); }
 .progress-dot.done { background: var(--mint); box-shadow: 0 0 8px rgba(34,230,168,0.6); }
 .progress-dot.current { background: var(--pink); box-shadow: 0 0 10px rgba(255,94,132,0.7); width: 24px; border-radius: 3px; }
+.login-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); background: none; border: 1px solid var(--ink-3); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: color 0.2s, border-color 0.2s; white-space: nowrap; }
+.login-btn:hover { color: var(--mint); border-color: var(--mint); }
+.login-overlay { position: fixed; inset: 0; background: rgba(10,10,18,0.7); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: flex-start; justify-content: flex-end; padding: 72px 24px 0; }
+.login-overlay[hidden] { display: none; }
+.login-card { background: var(--surface); border: 1px solid var(--ink-3); border-radius: 14px; padding: 28px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; }
+.login-card-title { font-family: 'Fraunces', serif; font-size: 20px; color: var(--text); font-weight: 600; margin: 0; }
+.login-card-sub { font-size: 13.5px; color: var(--text-muted); margin: 0; line-height: 1.5; }
+.login-card-input { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 8px; padding: 11px 14px; font-size: 14px; color: var(--text); font-family: inherit; width: 100%; box-sizing: border-box; }
+.login-card-input:focus { outline: none; border-color: var(--mint); }
+.login-card-actions { display: flex; gap: 10px; align-items: center; }
+.login-card-submit { background: var(--grad); border: none; border-radius: 8px; padding: 11px 20px; font-size: 14px; font-weight: 600; color: #fff; font-family: inherit; cursor: pointer; flex: 1; }
+.login-card-cancel { background: none; border: none; font-size: 13px; color: var(--text-muted); cursor: pointer; font-family: inherit; padding: 0; }
+.login-card-cancel:hover { color: var(--text); }
+.login-card-msg { font-size: 13px; line-height: 1.5; margin: 0; }
+.login-card-msg.success { color: var(--mint); }
+.login-card-msg.error { color: var(--pink); }
 
 /* Hero */
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 28px; padding: 8px 16px; border: 1px solid var(--ink-3); border-radius: 100px; background: rgba(255,255,255,0.02); backdrop-filter: blur(10px); }

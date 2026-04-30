@@ -218,7 +218,7 @@ function renderTabNav() {
   return `<nav class="app-tabs">
     <div class="app-tabs-inner">
       <div class="app-tabs-brand-row">
-        <a class="app-tabs-brand" href="/app/">
+        <a class="app-tabs-brand" href="/">
           <div class="brand-mark"></div>
           <div class="app-tabs-brand-text">The Accountex <em>Game Plan</em></div>
         </a>
@@ -836,7 +836,7 @@ function renderTeamTab() {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '') || 'your-team';
   const shortToken = (_teamData.inviteToken || '').slice(0, 8);
-  const fullInviteUrl = `${window.location.origin}/app/?team=${_teamData.inviteToken || ''}`;
+  const fullInviteUrl = `${window.location.origin}/?team=${_teamData.inviteToken || ''}`;
 
   const inviteHeroHtml = isLead ? `
     <div class="team-invite-hero">
@@ -846,7 +846,7 @@ function renderTeamTab() {
         <div class="team-invite-hero-sub">Send this to each person you're bringing. They answer the same onboarding, get their own plan, and land in this workspace — where you'll see <strong>who's at which session</strong>, whose notes are flowing in live, and the <strong>team debrief</strong> writing itself. No passwords, no sign-up fuss.</div>
         <div class="team-invite-url-row">
           <div class="team-invite-url" title="${escHtml(fullInviteUrl)}">
-            <strong>workiro-ai.com/app/?team=</strong>${escHtml(firmSlug)}-${escHtml(shortToken)}
+            <strong>workiro-ai.com/?team=</strong>${escHtml(firmSlug)}-${escHtml(shortToken)}
           </div>
           <button class="team-invite-copy-btn" onclick="planCopyInvite('${escHtml(fullInviteUrl)}', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -1900,8 +1900,8 @@ function sponsorsFooterHtml() {
     <div class="sponsors-footer" style="border-top:none;">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
       <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img xu-img" src="/app/images/XU%20Magazine.webp" alt="XU Magazine">
-        <img class="sponsor-img workiro-img" src="/app/images/workiro-logo.svg" alt="Workiro">
+        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
+        <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
       </div>
     </div>
   `;
@@ -1927,8 +1927,8 @@ const _teamFooterHtml = `
     <div class="sponsors-footer" style="border-top:none;">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
       <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img xu-img" src="/app/images/XU%20Magazine.webp" alt="XU Magazine">
-        <img class="sponsor-img workiro-img" src="/app/images/workiro-logo.svg" alt="Workiro">
+        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
+        <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
       </div>
     </div>
   `;
@@ -2188,7 +2188,7 @@ async function handleSignIn(authUser, teamToken) {
     renderApp();
   } catch (err) {
     const detail = err?.message || err?.details || String(err);
-    showError(`Could not load your plan: ${detail} — <a href="/app/" style="color:var(--mint)">Start again →</a>`);
+    showError(`Could not load your plan: ${detail} — <a href="/" style="color:var(--mint)">Start again →</a>`);
   }
 }
 
@@ -2196,7 +2196,7 @@ function showNoPlanState() {
   const root = $('plan-root');
   if (root) root.innerHTML = `
     <div class="empty-plan">
-      <p>No plan found. <a href="/app/">Create yours →</a></p>
+      <p>No plan found. <a href="/">Create yours →</a></p>
     </div>`;
 }
 
@@ -2222,7 +2222,7 @@ function showReauthForm(headlineMsg = '') {
         </button>
         <p id="reauth-msg" style="display:none;font-size:13px;text-align:center;margin:0;"></p>
       </form>
-      <p style="margin-top:20px;font-size:13px;color:var(--text-faint);">No plan yet? <a href="/app/" style="color:var(--mint);">Create one →</a></p>
+      <p style="margin-top:20px;font-size:13px;color:var(--text-faint);">No plan yet? <a href="/" style="color:var(--mint);">Create one →</a></p>
     </div>`;
 
   $('reauth-form').addEventListener('submit', async (e) => {

@@ -161,7 +161,7 @@ const sessions = rows.slice(1)
 
     const rawId = get(H.id);
     return {
-      session_id:           rawId || slugId(get(H.title)),
+      session_id:           rawId || slugId(get(H.title) + '-' + get(H.day) + '-' + get(H.start)),
       title:                get(H.title),
       day:                  get(H.day),
       date:                 get(H.date),

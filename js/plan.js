@@ -134,20 +134,22 @@ const PLAN_CATEGORY_MATCH = {
   'other':               [],
 };
 
-function hasSameSlotAlternative(item) {
-  if (!item.day || !item.start_time) return false;
-  if (_resolvedSlots.has(`${item.day}-${item.start_time}`)) return false;
+function bestAlternativeScore(item) {
+  if (!item.day || !item.start_time) return 0;
+  if (_resolvedSlots.has(`${item.day}-${item.start_time}`)) return 0;
   const cats = _plan?.categories || [];
   const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
-  if (!wantedCanonicals.size) return false;
-  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
-  return (_allSessions || []).some(s =>
-    s.session_id !== item.session_id &&
-    s.day === item.day &&
-    s.start_time === item.start_time &&
-    !planIds.has(s.session_id) &&
-    (s.canonical_categories || []).some(c => wantedCanonicals.has(c)),
-  );
+  if (!wantedCanonicals.size) return 0;
+  const planKeys = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
+  let best = 0;
+  for (const s of (_allSessions || [])) {
+    if (s.session_id === item.session_id && s.day === item.day && s.start_time === item.start_time) continue;
+    if (s.day !== item.day || s.start_time !== item.start_time) continue;
+    if (planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)) continue;
+    const matches = (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length;
+    if (matches > best) best = matches;
+  }
+  return best;
 }
 
 function findStrongAlternatives(item) {
@@ -156,12 +158,12 @@ function findStrongAlternatives(item) {
   const cats = _plan?.categories || [];
   const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
   if (!wantedCanonicals.size) return [];
-  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const planKeys = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
   const candidates = (_allSessions || []).filter(s =>
-    s.session_id !== item.session_id &&
+    !(s.session_id === item.session_id && s.day === item.day && s.start_time === item.start_time) &&
     s.day === item.day &&
     s.start_time === item.start_time &&
-    !planIds.has(s.session_id) &&
+    !planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`) &&
     !_dismissedAlternatives.has(`${item.session_id}|${s.session_id}`) &&
     (s.canonical_categories || []).some(c => wantedCanonicals.has(c)),
   );
@@ -347,12 +349,22 @@ function renderChecklistTab() {
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
 
+  // Only show swap on the top 3 sessions by best-alternative score (quality gate)
+  const swapEligibleIds = new Set(
+    sortedSessions
+      .map(s => ({ id: s.session_id, score: bestAlternativeScore(s) }))
+      .filter(s => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map(s => s.id),
+  );
+
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
     const whyTags      = whyMatched(item, plan);
     const alts         = findStrongAlternatives(item);
-    const showSwap     = hasSameSlotAlternative(item);
+    const showSwap     = swapEligibleIds.has(item.session_id);
     const teamNotes    = teamNotesByItem[noteKey] || [];
 
     const swapLink = showSwap
@@ -469,6 +481,10 @@ function renderChecklistTab() {
                 ${teamAvatarHtml}
               </div>
             </div>
+            <button class="checklist-remove-btn" onclick="planRemoveSession('${escHtml(item.session_id)}','${escHtml(item.day||'')}','${escHtml(item.start_time||'')}')" type="button" aria-label="Remove from checklist">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Remove
+            </button>
           </div>
         </div>
       </div>`;
@@ -1464,6 +1480,7 @@ window.closePlanEditor = function() {
   const overlay = document.getElementById('planEditorOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
+  window.scrollTo({ top: 0, behavior: 'instant' });
   _planEditorMode = null;
   if (_planEditorEscHandler) {
     document.removeEventListener('keydown', _planEditorEscHandler);
@@ -1604,7 +1621,7 @@ function _updateEditorSub(filteredCount, total) {
 
 function renderPlanEditorSessions(container) {
   const q         = (_planEditorQuery || '').toLowerCase();
-  const planIds   = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const planIds   = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
   const wantOther  = _planEditorCategories.has('other');
   const wantedCats = [..._planEditorCategories].filter(c => c !== 'other').length > 0
     ? new Set([..._planEditorCategories].filter(c => c !== 'other').flatMap(c => PLAN_CATEGORY_MATCH[c] || []))
@@ -1666,7 +1683,7 @@ function renderPlanEditorSessions(container) {
         <span class="editor-day-divider-line"></span>
       </div>`;
     }
-    const slotPlanCount = sessions.filter(s => planIds.has(s.session_id)).length;
+    const slotPlanCount = sessions.filter(s => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
     const hasClash = slotPlanCount >= 2;
     html += `<div class="editor-slot${hasClash ? ' has-clash' : ''}">
       <div class="editor-slot-head">
@@ -1675,7 +1692,7 @@ function renderPlanEditorSessions(container) {
       </div>
       <div class="editor-slot-rows">`;
     for (const s of sessions) {
-      const inPlan     = planIds.has(s.session_id);
+      const inPlan     = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
       const speaker    = (s.speakers || [])[0];
       const speakerLine = speaker
         ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>`
@@ -1717,7 +1734,7 @@ function renderPlanEditorSessions(container) {
           </div>
           <div class="editor-row-actions">
             <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
-              onclick="togglePlanSession('${escHtml(String(s.session_id))}')" type="button">
+              onclick="togglePlanSession('${escHtml(String(s.session_id))}','${escHtml(s.day||'')}','${escHtml(s.start_time||'')}')" type="button">
               ${inPlan
                 ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
                 : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add to plan`}
@@ -1813,16 +1830,18 @@ function renderPlanEditorBooths(container) {
   container.innerHTML = `<div class="editor-booth-list">${rows}</div>`;
 }
 
-window.togglePlanSession = async function(sessionId) {
-  const inPlan = (_plan.sessions || []).some(s => String(s.session_id) === String(sessionId));
+window.togglePlanSession = async function(sessionId, day, startTime) {
+  const match = s => String(s.session_id) === String(sessionId) && s.day === day && s.start_time === startTime;
+  const inPlan = (_plan.sessions || []).some(match);
   if (inPlan) {
-    _plan.sessions = (_plan.sessions || []).filter(s => String(s.session_id) !== String(sessionId));
+    _plan.sessions = (_plan.sessions || []).filter(s => !match(s));
   } else {
-    const full = (_allSessions || []).find(s => String(s.session_id) === String(sessionId));
+    const full = (_allSessions || []).find(match);
     if (full) _plan.sessions = [...(_plan.sessions || []), full];
   }
   renderPlanEditorResults();
   await supabase.from('plans').update({ sessions: _plan.sessions }).eq('id', _plan.id);
+  renderApp();
 };
 
 window.togglePlanBooth = async function(standNumber) {
@@ -1835,6 +1854,7 @@ window.togglePlanBooth = async function(standNumber) {
   }
   renderPlanEditorResults();
   await supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
+  renderApp();
 };
 
 // ── Sponsors footer ───────────────────────────────────────────────────────────
@@ -2322,6 +2342,15 @@ window.planSwapSession = function(currentId, newId) {
   if (newSession.day && newSession.start_time) {
     _resolvedSlots.add(`${newSession.day}-${newSession.start_time}`);
   }
+  savePlanSessions();
+  renderApp();
+};
+
+window.planRemoveSession = function(sessionId, day, startTime) {
+  if (!_plan) return;
+  _plan.sessions = _plan.sessions.filter(s =>
+    !(s.session_id === sessionId && s.day === day && s.start_time === startTime),
+  );
   savePlanSessions();
   renderApp();
 };

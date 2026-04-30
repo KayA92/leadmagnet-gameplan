@@ -7205,6 +7205,9 @@ button.app-pill.purple.clickable:hover {
 }
 .checklist-time-swap:hover { opacity: 1; }
 .checklist-time-swap svg { flex-shrink: 0; }
+.checklist-remove-btn { display: flex; align-items: center; gap: 4px; background: none; border: none; padding: 4px 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s; margin-top: 6px; }
+.checklist-row:hover .checklist-remove-btn { opacity: 1; }
+.checklist-remove-btn:hover { color: var(--pink); }
 
 /* Slot-swap modal */
 .slot-swap-modal .login-modal-panel { max-height: 80vh; overflow-y: auto; }

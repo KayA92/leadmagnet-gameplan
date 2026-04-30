@@ -556,6 +556,10 @@ function renderChecklistTab() {
               <div class="row-rate-caption">${ratingLabel}</div>
               <div class="row-rate-inline">${rowFlames(item.rating)}</div>
             </div>
+            <button class="checklist-remove-btn" onclick="planRemoveBooth('${escHtml(String(item.stand_number))}')" type="button" aria-label="Remove from checklist">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Remove
+            </button>
           </div>
         </div>
       </div>`;
@@ -635,6 +639,10 @@ function renderChecklistTab() {
           </h2>
           <div class="checklist-section-meta">
             <span class="checklist-section-count">${booths.length} ${booths.length === 1 ? 'booth' : 'booths'}</span>
+            <button class="checklist-section-edit variant-booths" onclick="openPlanEditor('booths')" type="button">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Edit
+            </button>
           </div>
         </div>
         <p class="checklist-intro">Rate each vendor after a conversation — your notes and scores feed into your debrief.</p>
@@ -2352,6 +2360,13 @@ window.planRemoveSession = function(sessionId, day, startTime) {
     !(s.session_id === sessionId && s.day === day && s.start_time === startTime),
   );
   savePlanSessions();
+  renderApp();
+};
+
+window.planRemoveBooth = function(standNumber) {
+  if (!_plan) return;
+  _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
+  supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
 };
 

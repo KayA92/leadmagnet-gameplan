@@ -85,17 +85,23 @@ These extend engagement beyond the email capture and feed the debrief report:
 
 ## Repository contents
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `index.html` | Single-file front end — the entire tool |
-| `programme.csv` | Session data used by the AI matching logic |
+| `index.html` | Landing page and 5-stage wizard |
+| `plan/index.html` | Post-save app shell (tabs rendered by JS) |
+| `js/` | Client-side modules: wizard, plan tabs, filter, auth, API caller |
+| `css/main.css` | All styles — compiled static file, edit directly |
+| `data/programme.json` / `data/exhibitors.json` | Pre-built session and exhibitor data (generated from CSVs) |
+| `programme.csv` / `exhibitors.csv` | Source data — run `node scripts/csv-to-json.js` to rebuild JSON |
+| `supabase/` | Supabase config, Edge Function (Claude AI ranker), and DB migrations |
+| `scripts/` | Node.js data pipeline (CSV → JSON) |
 | `CNAME` | GitHub Pages custom domain → `gameplan.workiro.com` |
 
 ---
 
 ## Ops notes
 
-- Deployed via GitHub Pages. The `CNAME` file points the custom domain. No build step; `index.html` is the production artefact.
-- The tool is fully client-side. No back-end infrastructure to maintain during the show.
-- Email capture and lead data flow through the save mechanism in `index.html` — confirm the destination endpoint and CRM integration before go-live.
-- To update session data, replace `programme.csv` and push to `main`.
+- Deployed via GitHub Pages. Push to `main` auto-deploys. No frontend build step — JS/HTML/CSS are served as-is.
+- Backend is Supabase (Postgres + Auth + Edge Functions). The AI matching Edge Function (`supabase/functions/match-sessions/`) calls Claude Haiku and must be deployed separately: `supabase functions deploy match-sessions`.
+- To update session or exhibitor data: edit the CSVs, run `node scripts/csv-to-json.js` and `node scripts/exhibitors-csv-to-json.js`, commit the generated JSON files.
+- See `CLAUDE.md` for full developer reference.

@@ -391,33 +391,6 @@ function renderPlanPreview() {
   `;
 }
 
-// ── Keyword → category auto-selection ────────────────────────────────────────
-const KEYWORD_CATEGORY_MAP = [
-  { pattern: /\b(mtd|making tax digital|vat|digital tax)\b/i,           cat: 'tax-mtd' },
-  { pattern: /\b(ai|artificial intelligence|automation|automat)\b/i,     cat: 'ai-automation' },
-  { pattern: /\b(bookkeeping|bookkeeper)\b/i,                            cat: 'bookkeeping' },
-  { pattern: /\b(payroll)\b/i,                                           cat: 'payroll' },
-  { pattern: /\b(document management|doc management|file management)\b/i, cat: 'doc-management' },
-  { pattern: /\b(hr|people management|recruitment|staff)\b/i,            cat: 'hr-people' },
-  { pattern: /\b(banking|payments?|open banking)\b/i,                    cat: 'banking-payments' },
-  { pattern: /\b(expenses?|spend management)\b/i,                        cat: 'expenses' },
-  { pattern: /\b(practice management|workflow)\b/i,                      cat: 'practice-management' },
-  { pattern: /\b(crm|client relationship)\b/i,                           cat: 'crm-comms' },
-  { pattern: /\b(data|analytics?|reporting)\b/i,                         cat: 'data-analytics' },
-  { pattern: /\b(cyber|security|cyber-?security)\b/i,                    cat: 'cyber-security' },
-  { pattern: /\b(e-?sign|e-?signature|digital signature)\b/i,            cat: 'esign' },
-  { pattern: /\b(aml|kyc|anti.money.laundering)\b/i,                     cat: 'aml-kyc' },
-  { pattern: /\b(outsourc)\b/i,                                          cat: 'outsourcing' },
-  { pattern: /\b(marketing|growth|leads?)\b/i,                           cat: 'marketing-growth' },
-];
-
-function applyKeywordCategories(text) {
-  for (const { pattern, cat } of KEYWORD_CATEGORY_MAP) {
-    if (pattern.test(text) && !state.answers.categories.includes(cat)) {
-      state.answers.categories.push(cat);
-    }
-  }
-}
 
 // ── Stage 3: category toggle ──────────────────────────────────────────────────
 function toggleCategory(cat) {
@@ -608,7 +581,6 @@ export async function initWizard() {
   $('problem-back')?.addEventListener('click', () => history.back());
   $('problem-next')?.addEventListener('click', () => {
     if (state.answers.problem.length >= 20) {
-      applyKeywordCategories(state.answers.problem);
       goToStage(3);
     }
   });

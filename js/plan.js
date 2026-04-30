@@ -798,7 +798,7 @@ function buildIntelBlocks() {
   `;
 }
 
-function renderTeammateCard(m, index, isLead) {
+function renderTeammateCard(m, index) {
   const u         = m.users;
   const isMe      = u.id === _authUser?.id;
   const initials  = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
@@ -847,7 +847,7 @@ function renderTeammateCard(m, index, isLead) {
         </div>
         <div class="teammate-footer-joined">${escHtml(joinedStr)}</div>
       </div>
-      ${isLead && !isMe ? `
+      ${!isMe ? `
         <button class="teammate-remove-btn" onclick="planRemoveTeamMember('${escHtml(u.id)}')" type="button">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Remove from team
@@ -859,18 +859,12 @@ function renderTeammateCard(m, index, isLead) {
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const myMembership = _teamData.members.find(m => m.users?.id === _authUser?.id);
-  const isLead = myMembership?.role === 'lead';
-
   const inviteFormHtml = `
     <div class="team-invite-hero">
       <div class="team-invite-hero-inner">
-        <div class="team-invite-hero-label">${isLead ? 'Invite your team' : 'Invite a colleague'}</div>
-        <div class="team-invite-hero-title">${isLead ? 'Grow your <em>team workspace.</em>' : `You're in <em>${escHtml(_teamData.company || 'the team')}.</em>`}</div>
-        <div class="team-invite-hero-sub">${isLead
-          ? 'Enter a colleague\'s email and we\'ll send them a magic link. They answer the same onboarding, get their own plan, and land in this shared workspace.'
-          : 'Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Invite more colleagues below.'
-        }</div>
+        <div class="team-invite-hero-label">Invite a colleague</div>
+        <div class="team-invite-hero-title">You're in <em>${escHtml(_teamData.company || 'the team')}.</em></div>
+        <div class="team-invite-hero-sub">Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Invite more colleagues below.</div>
         <div class="team-invite-form" id="team-invite-form">
           <div class="team-invite-input-row">
             <input type="email" class="team-invite-email-input" id="team-invite-email"
@@ -918,7 +912,7 @@ function renderTeamTab() {
         <div class="app-section-title">Who's going &amp; why <span class="app-section-count">${memberCount} ${memberCount === 1 ? 'mission' : 'missions'}</span></div>
       </div>
       <div class="teammate-grid">
-        ${_teamData.members.map((m, i) => renderTeammateCard(m, i, isLead)).join('')}
+        ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
       </div>
     </div>
 

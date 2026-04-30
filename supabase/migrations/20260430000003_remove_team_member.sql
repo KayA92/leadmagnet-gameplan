@@ -1,6 +1,6 @@
--- Allows a team lead to remove a member from their team.
+-- Allows any team member to remove another member from the shared team.
 -- Clears the removed user's plan.team_id (plan itself is untouched).
--- Only the team lead can call this successfully.
+-- Any authenticated team member can call this — there is no lead-only gate.
 CREATE OR REPLACE FUNCTION public.remove_team_member(p_user_id uuid)
 RETURNS json
 LANGUAGE plpgsql
@@ -10,14 +10,14 @@ AS $$
 DECLARE
   v_team_id uuid;
 BEGIN
-  -- Caller must be a lead
+  -- Caller must be in a team
   SELECT team_id INTO v_team_id
   FROM public.team_members
-  WHERE user_id = auth.uid() AND role = 'lead'
+  WHERE user_id = auth.uid()
   LIMIT 1;
 
   IF v_team_id IS NULL THEN
-    RETURN json_build_object('error', 'Not authorised');
+    RETURN json_build_object('error', 'Not a team member');
   END IF;
 
   IF p_user_id = auth.uid() THEN

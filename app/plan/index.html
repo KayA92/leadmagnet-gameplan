@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<meta name="robots" content="noindex">
+<title>Your Accountex Game Plan · Workiro</title>
+<link rel="icon" type="image/svg+xml" href="https://workiro.com/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+/* ── Loading state ── */
+#plan-loading {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; background: var(--ink);
+}
+.loading-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--ink-3); border-top-color: var(--pink);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+/* ── Error banner ── */
+#plan-error {
+  display: none; margin: 16px auto; max-width: 720px; padding: 14px 20px;
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35);
+  border-radius: 10px; color: #ef4444; font-size: 14px;
+  position: relative; z-index: 10;
+}
+
+/* ── Plan root wrapper ── */
+#plan-root { position: relative; z-index: 10; min-height: 100vh; }
+
+/* ── Sticky header ── */
+.plan-header {
+  padding: 24px 32px 20px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  border-bottom: 1px solid var(--ink-3);
+  background: linear-gradient(to bottom, rgba(10,10,18,0.98) 0%, rgba(10,10,18,0.85) 100%);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 50;
+}
+.plan-header-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--grad); position: relative; flex-shrink: 0; }
+.brand-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 4px; }
+.brand-mark::before { content: ''; position: absolute; inset: 8px; background: var(--grad); border-radius: 2px; z-index: 1; }
+.brand-text { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+.brand-text em { font-style: italic; color: var(--text-muted); }
+
+/* ── Themes ── */
+.plan-themes-section { padding: 28px 32px 0; max-width: 784px; margin: 0 auto; }
+.plan-themes { display: flex; flex-wrap: wrap; gap: 8px; }
+.theme-pill {
+  padding: 8px 16px; background: rgba(34,230,168,0.1);
+  border: 1px solid rgba(34,230,168,0.3); border-radius: 100px;
+  font-size: 13px; color: var(--mint); font-weight: 500;
+}
+
+/* ── Plan sections ── */
+.plan-section { padding: 28px 32px 0; max-width: 784px; margin: 0 auto; }
+.plan-section:last-child { padding-bottom: 80px; }
+.plan-section-title {
+  font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400;
+  margin-bottom: 14px; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.count-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: var(--ink-3); border-radius: 100px;
+  padding: 3px 10px; color: var(--text-muted); font-weight: 400;
+}
+
+/* ── Booth mini-item overrides ── */
+.plan-mini-item { align-items: flex-start; padding: 14px 16px; }
+.plan-mini-item .mini-tick { margin-top: 2px; }
+.plan-mini-item .mini-title {
+  white-space: normal; overflow: visible; text-overflow: clip;
+  font-size: 14px; font-weight: 600;
+}
+.plan-mini-item .mini-meta { margin: 4px 0 8px; }
+
+/* ── Shared session + booth content styles ── */
+.plan-item-reason { font-size: 13px; color: var(--text-muted); line-height: 1.45; margin: 8px 0 10px; }
+.plan-item-reason-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--mint); margin-right: 6px;
+}
+.plan-item-actions {
+  display: flex; flex-direction: column; gap: 10px;
+  padding-top: 10px; border-top: 1px solid var(--ink-3); margin-top: 10px;
+}
+
+/* ── Checklist layout within plan sections ── */
+.plan-section .checklist { display: flex; flex-direction: column; gap: 0; }
+.plan-section .checklist-row { border-radius: 10px; margin-bottom: 6px; }
+.plan-section .checklist-main-title { font-size: 14px; font-weight: 600; white-space: normal; }
+.plan-section .checklist-main-meta { margin: 4px 0 8px; }
+.plan-section .checklist-why-header { margin-top: 10px; }
+.plan-section .checklist-alternatives { margin-top: 10px; }
+
+/* ── Ratings ── */
+.rating-wrap { display: flex; align-items: center; gap: 4px; }
+.flame-btn {
+  background: none; border: none; font-size: 18px; cursor: pointer;
+  padding: 3px 5px; border-radius: 6px; opacity: 0.25;
+  transition: opacity 0.15s, transform 0.15s; line-height: 1;
+}
+.flame-btn:hover { opacity: 0.7; transform: scale(1.15); }
+.flame-btn.lit { opacity: 1; filter: drop-shadow(0 0 5px rgba(255,150,50,0.6)); }
+
+/* ── Notes ── */
+.note-wrap { display: flex; flex-direction: column; gap: 8px; }
+.note-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.note-input {
+  background: var(--ink-3); border: 1px solid var(--ink-4);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
+  resize: none; width: 100%; transition: border-color 0.2s;
+}
+.note-input:focus { outline: none; border-color: var(--pink); }
+.note-input::placeholder { color: var(--text-faint); }
+.save-note-btn, .btn-sm {
+  align-self: flex-start; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  background: var(--ink-3); border: 1px solid var(--ink-4); color: var(--text-muted);
+}
+.save-note-btn:hover { border-color: var(--mint); color: var(--mint); }
+.save-note-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Empty / no-plan states ── */
+.empty-plan {
+  padding: 80px 32px; text-align: center; max-width: 480px;
+  margin: 0 auto; position: relative; z-index: 10;
+}
+.empty-plan p { font-size: 16px; color: var(--text-muted); line-height: 1.6; }
+.empty-plan a { color: var(--mint); text-decoration: none; font-weight: 600; }
+.empty-plan a:hover { text-decoration: underline; }
+.empty-state { font-size: 14px; color: var(--text-faint); padding: 16px 0; }
+
+@media (max-width: 600px) {
+  .plan-header { padding: 16px 20px; }
+  .plan-themes-section, .plan-section { padding-left: 20px; padding-right: 20px; }
+  .plan-header-sub { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="ambient-glow g1"></div>
+<div class="ambient-glow g2"></div>
+<div class="ambient-glow g3"></div>
+
+<div id="plan-loading">
+  <div class="loading-spinner"></div>
+  <span class="loading-label">Loading your plan…</span>
+</div>
+
+<p id="plan-error"></p>
+
+<div id="plan-root"></div>
+
+<script type="module">
+  import { initPlan } from '../js/plan.js';
+  document.addEventListener('DOMContentLoaded', initPlan);
+</script>
+</body>
+</html>

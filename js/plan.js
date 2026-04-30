@@ -28,7 +28,6 @@ let _userProfile  = null;
 
 let _dismissedAlternatives = new Set();
 let _resolvedSlots = new Set();
-let _inviteNudgeDismissed = false;
 let _pendingJoinToken     = null;
 let _pendingJoinCompany   = null;
 
@@ -590,17 +589,6 @@ function renderChecklistTab() {
 
   const boothItems = booths.map((item, i) => renderBoothRow(item, i)).join('');
 
-  const nudgeChip = !_inviteNudgeDismissed ? `
-    <div class="solo-nudge-chip">
-      <button class="solo-nudge-chip-body" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button">
-        <span class="solo-nudge-dot"></span>
-        <span class="solo-nudge-text">Going with colleagues? <strong>Send them your invite link</strong> — see their sessions, ratings, notes, and get an AI team summary.</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </button>
-      <button class="solo-nudge-chip-dismiss" onclick="planDismissInviteNudge(event)" type="button" aria-label="Dismiss">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>` : '';
 
   return `
     <div class="app-header">
@@ -608,7 +596,6 @@ function renderChecklistTab() {
         <div>
           <h2 class="app-title">Your <em>Accountex</em> plan.</h2>
           <p class="app-sub" style="margin-top:8px;">Rate sessions as you go and add notes — they roll into your debrief.</p>
-          ${nudgeChip}
         </div>
       </div>
     </div>
@@ -1425,6 +1412,7 @@ window.openPlanEditor = function(mode) {
   if (search) search.value = '';
 
   overlay.classList.add('open');
+  document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
   renderPlanEditorFilters();
@@ -1453,6 +1441,7 @@ window.openPlanEditorWithProblem = function(cat) {
   if (search) search.value = '';
 
   overlay.classList.add('open');
+  document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
   renderPlanEditorFilters();
@@ -1465,6 +1454,7 @@ window.openPlanEditorWithProblem = function(cat) {
 window.closePlanEditor = function() {
   const overlay = document.getElementById('planEditorOverlay');
   if (overlay) overlay.classList.remove('open');
+  document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
   window.scrollTo({ top: 0, behavior: 'instant' });
   _planEditorMode = null;
@@ -2411,11 +2401,7 @@ window.planRemoveBooth = function(standNumber) {
   renderApp();
 };
 
-window.planDismissInviteNudge = function(ev) {
-  if (ev) ev.stopPropagation();
-  _inviteNudgeDismissed = true;
-  renderApp();
-};
+
 
 window.planCopyDebrief = function(btn) {
   const ta = document.getElementById('debrief-textarea');

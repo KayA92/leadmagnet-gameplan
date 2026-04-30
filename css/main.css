@@ -328,7 +328,7 @@ body::before {
   z-index: 2;
 }
 @media (max-width: 720px) {
-  .time-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .time-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, auto); grid-auto-flow: column; gap: 10px; }
   .time-tile { padding: 14px 14px 12px; }
   .time-tile-period { font-size: 18px; }
   .time-tile-hours { font-size: 12px; }
@@ -7101,7 +7101,7 @@ button.app-pill.purple.clickable:hover {
 @media (max-width: 640px) {
   .top-bar { padding: 14px 18px; }
   .stage { padding: 70px 20px 40px; }
-  .stage.flow-mode { padding: 80px 18px 40px; }
+  .stage.flow-mode { padding: 96px 18px 40px; }
   /* App stage on mobile: no top gap (the tab bar IS the top chrome), no horizontal
      padding (the app-shell handles horizontal spacing). This closes the dead space
      above the install-strip that made the page look shoved down the screen. */
@@ -7114,7 +7114,18 @@ button.app-pill.purple.clickable:hover {
   .app-tabs-inner { padding: 0 14px; }
   .app-tabs-brand-row { padding: 12px 0 10px; }
   .app-tabs-brand-text { font-size: 15px; }
-  .app-tabs-row { padding: 10px 0; gap: 4px; }
+  .app-tabs-row {
+    padding: 10px 0 12px;
+    gap: 4px;
+    /* Right-edge fade: signals more tabs are hidden off-screen */
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 52px), transparent 100%);
+    mask-image: linear-gradient(to right, black calc(100% - 52px), transparent 100%);
+    /* Thin scrollbar for Android */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.18) transparent;
+  }
+  .app-tabs-row::-webkit-scrollbar { display: block; height: 2px; }
+  .app-tabs-row::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 1px; }
   .app-tab { padding: 9px 12px; font-size: 13px; flex: 0 0 auto; }
   .app-tab .tab-badge { font-size: 9px; padding: 1px 5px; }
   /* Tighter horizontal padding on mobile — was 18px, now 14px — gives content

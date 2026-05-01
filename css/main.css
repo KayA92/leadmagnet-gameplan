@@ -6582,6 +6582,30 @@ button.app-pill.purple.clickable:hover {
 .magic-action-step-sub strong { color: var(--text); font-weight: 600; }
 .magic-action-step-sub em { font-style: italic; color: var(--mint); font-weight: 600; }
 /* Spam / junk reminder card */
+/* "Add to contacts" pro tip — sits above the junk-folder reminder.
+   Mint-tinted to feel like a positive opt-in, not an alert. */
+.magic-contacts-tip {
+  margin: 0 auto 14px;
+  padding: 14px 18px;
+  background: rgba(34,230,168,0.06);
+  border: 1px solid rgba(34,230,168,0.30);
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  text-align: left;
+}
+.magic-contacts-tip-icon {
+  flex-shrink: 0;
+  color: var(--mint);
+  margin-top: 1px;
+}
+.magic-contacts-tip-text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.magic-contacts-tip-text strong { color: var(--text); font-weight: 700; }
 .magic-spam-card {
   margin: 0 auto 28px;
   padding: 16px 18px;
@@ -8183,6 +8207,49 @@ button.app-pill.purple.clickable:hover {
   text-decoration: none;
 }
 .login-page-msg a:hover { opacity: 0.8; }
+/* Resend prompt — appears 60s after a successful submit if the user
+   hasn't received the email. Mint-outlined button matches the page's
+   green accent semantics (positive recovery action). */
+.login-page-resend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: -10px auto 16px;
+  padding: 12px 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ink-3);
+  border-radius: 12px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+.login-page-resend-label { line-height: 1.5; }
+.login-page-resend-btn {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: transparent;
+  border: 1.5px solid var(--mint);
+  color: var(--mint);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+.login-page-resend-btn:hover:not(:disabled) {
+  background: rgba(34,230,168,0.10);
+}
+.login-page-resend-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: var(--ink-4);
+  color: var(--text-muted);
+}
 .login-page-footnote {
   margin-top: 8px;
 }

@@ -76,6 +76,11 @@
 
     <div class="login-page-msg" id="login-msg" style="display:none;"></div>
 
+    <div class="login-page-resend" id="login-page-resend" hidden>
+      <span class="login-page-resend-label">Didn't get it in 60 seconds?</span>
+      <button class="login-page-resend-btn" id="login-page-resend-btn" type="button">Resend</button>
+    </div>
+
     <div class="hero-footnote login-page-footnote">
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> No password ever</span>
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Works for new + returning</span>
@@ -135,6 +140,8 @@
   const submitBtn = document.getElementById('login-submit');
   const msg = document.getElementById('login-msg');
   const inviteBanner = document.getElementById('login-page-invite-banner');
+  const resendEl = document.getElementById('login-page-resend');
+  const resendBtn = document.getElementById('login-page-resend-btn');
 
   // Pass through invite token if present in the URL — preserves the team-invite
   // flow when emails point at /login/?invite=TOKEN
@@ -143,6 +150,27 @@
   if (inviteToken) inviteBanner.hidden = false;
 
   const originalBtnContent = submitBtn.innerHTML;
+
+  // Resend state — populated after a successful first send.
+  let lastEmail = '';
+  let resendRevealTimer = null;
+  let resendThrottleTimer = null;
+
+  // Build the redirect URL identically for first-send + resend.
+  const buildRedirectUrl = () => inviteToken
+    ? `${window.location.origin}/plan/?invite=${encodeURIComponent(inviteToken)}`
+    : `${window.location.origin}/plan/`;
+
+  // Reset any pending resend state — called when the user types a different
+  // email or resubmits, so the resend prompt only ever points at the most
+  // recently-sent email address.
+  const resetResendState = () => {
+    if (resendRevealTimer) { clearTimeout(resendRevealTimer); resendRevealTimer = null; }
+    if (resendThrottleTimer) { clearTimeout(resendThrottleTimer); resendThrottleTimer = null; }
+    resendEl.hidden = true;
+    resendBtn.disabled = false;
+    resendBtn.textContent = 'Resend';
+  };
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -158,12 +186,9 @@
     submitBtn.disabled = true;
     submitBtn.innerHTML = 'Sending…';
     msg.style.display = 'none';
+    resetResendState();
 
-    const redirectUrl = inviteToken
-      ? `${window.location.origin}/plan/?invite=${encodeURIComponent(inviteToken)}`
-      : `${window.location.origin}/plan/`;
-
-    const { error } = await sendMagicLink(email, redirectUrl);
+    const { error } = await sendMagicLink(email, buildRedirectUrl());
 
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalBtnContent;
@@ -175,7 +200,51 @@
     } else {
       msg.className = 'login-page-msg success';
       msg.innerHTML = `<strong>Check your inbox.</strong> A magic link is on its way to <strong>${email}</strong>. Click it to enter.`;
+      lastEmail = email;
       emailInput.value = '';
+      // Reveal the resend prompt 60s later — gives email time to arrive.
+      // Most magic links land in <60s; if it didn't, this is the safety net.
+      resendRevealTimer = setTimeout(() => {
+        if (lastEmail) resendEl.hidden = false;
+      }, 60000);
+    }
+  });
+
+  // Resend handler — fires sendMagicLink again with the stored email + a 30s
+  // throttle before the user can request another one (Supabase Auth itself
+  // rate-limits magic-link requests too, but the UX disable is friendlier).
+  resendBtn.addEventListener('click', async () => {
+    if (!lastEmail || resendBtn.disabled) return;
+    resendBtn.disabled = true;
+    const originalText = resendBtn.textContent;
+    resendBtn.textContent = 'Sending…';
+
+    const { error } = await sendMagicLink(lastEmail, buildRedirectUrl());
+
+    if (error) {
+      msg.style.display = 'block';
+      msg.className = 'login-page-msg error';
+      msg.innerHTML = `Couldn't resend right now. Try again in a moment or email <a href="mailto:help@autoevent.io">help@autoevent.io</a>.`;
+      resendBtn.disabled = false;
+      resendBtn.textContent = originalText;
+    } else {
+      msg.style.display = 'block';
+      msg.className = 'login-page-msg success';
+      msg.innerHTML = `<strong>Resent.</strong> A fresh login link is on its way to <strong>${lastEmail}</strong>.`;
+      resendBtn.textContent = 'Resent ✓';
+      // 30s throttle before resend is usable again
+      resendThrottleTimer = setTimeout(() => {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Resend';
+      }, 30000);
+    }
+  });
+
+  // If the user starts typing a NEW email, hide the resend prompt — it would
+  // resend to the OLD email which would be confusing.
+  emailInput.addEventListener('input', () => {
+    if (lastEmail && emailInput.value.trim() !== lastEmail) {
+      resetResendState();
     }
   });
 </script>

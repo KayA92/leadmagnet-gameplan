@@ -81,26 +81,26 @@ body::before {
 .top-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 32px;
+  padding: 16px 32px;
   background: transparent;
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   pointer-events: none;
 }
 .top-bar > * { pointer-events: auto; }
-.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
-.brand-logo { height: 36px; width: auto; display: block; flex-shrink: 0; }
-.brand-divider { width: 1px; height: 26px; background: var(--ink-3); flex-shrink: 0; align-self: center; }
+.brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text); }
+.brand-logo { height: 32px; width: auto; display: block; flex-shrink: 0; }
+.brand-divider { display: none; }
 .brand-event {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
   font-weight: 700;
   white-space: nowrap;
   line-height: 1;
-  align-self: center;
+  padding-top: 1px;
 }
 /* Legacy brand-mark + brand-text — kept for any view that still renders them.
    The top-bar uses .brand-logo / .brand-divider / .brand-event now. */
@@ -130,9 +130,6 @@ body::before {
   transition: color 0.2s;
 }
 .top-bar-link:hover { color: var(--mint); }
-@media (max-width: 480px) {
-  .top-bar-link { display: none; }
-}
 .login-btn {
   display: inline-flex;
   align-items: center;
@@ -7275,13 +7272,12 @@ button.app-pill.purple.clickable:hover {
 }
 
 @media (max-width: 640px) {
-  .top-bar { padding: 14px 18px; }
-  .brand { gap: 10px; }
-  .brand-logo { height: 28px; }
-  .brand-divider { height: 20px; }
+  .top-bar { padding: 12px 18px; }
+  .brand { gap: 12px; }
+  .brand-logo { height: 26px; }
   .brand-event { font-size: 10px; letter-spacing: 0.14em; }
   .top-bar-right { gap: 14px; }
-  .top-bar-link { font-size: 10px; letter-spacing: 0.14em; }
+  .top-bar-link { display: none; }
   .stage { padding: 70px 20px 40px; }
   .stage.flow-mode { padding: 96px 18px 40px; }
   /* App stage on mobile: no top gap (the tab bar IS the top chrome), no horizontal
@@ -7356,7 +7352,7 @@ button.app-pill.purple.clickable:hover {
 }
 
 @media (max-width: 380px) {
-  .brand-divider, .brand-event { display: none; }
+  .brand-event { display: none; }
 }
 
 /* Solo invite nudge chip — appears on checklist when not in a team */

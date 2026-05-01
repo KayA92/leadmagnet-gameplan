@@ -1892,7 +1892,7 @@ function sponsorsFooterHtml() {
       </div>
     </div>
     <div class="hero-page-footer">
-      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/accountex-gameplan" target="_blank" rel="noopener">Privacy &amp; terms</a>
+      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/accountex-2026" target="_blank" rel="noopener">Privacy &amp; terms</a>
     </div>
     <div class="sponsors-footer" style="border-top:none;">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
@@ -1956,7 +1956,7 @@ function renderApp() {
 
 const _teamFooterHtml = `
     <div class="hero-page-footer">
-      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/accountex-gameplan" target="_blank" rel="noopener">Privacy &amp; terms</a>
+      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/accountex-2026" target="_blank" rel="noopener">Privacy &amp; terms</a>
     </div>
     <div class="sponsors-footer" style="border-top:none;">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>

@@ -65,14 +65,14 @@ function buildUserPrompt(req: MatchRequest): string {
     day: s.day,
     time: `${s.start_time}–${s.end_time}`,
     categories: s.categories,
-    description: s.description.slice(0, 300),
+    description: (s.description ?? '').slice(0, 300),
   }));
 
   const exhibitorsCompact = exhibitors.map((e) => ({
     company_name: e.company_name,
     stand_number: e.stand_number,
-    products: e.normalised_products.slice(0, 5).join(", "),
-    description: e.company_description.slice(0, 200),
+    products: (e.normalised_products ?? []).slice(0, 5).join(", "),
+    description: (e.company_description ?? '').slice(0, 200),
   }));
 
   const tw = user_profile.time_window;
@@ -139,12 +139,12 @@ Deno.serve(async (req) => {
   }
 
   const anthropic = new Anthropic({ apiKey });
-  const userPrompt = buildUserPrompt(body);
 
   let lastError: string = "";
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
+      const userPrompt = buildUserPrompt(body);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
 
@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
         result = extractJSON(text);
       }
 
-      if (result && Array.isArray(result.sessions)) {
+      if (result && Array.isArray(result.sessions) && Array.isArray(result.booths)) {
         return new Response(JSON.stringify(result), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

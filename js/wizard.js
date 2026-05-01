@@ -449,9 +449,14 @@ async function handleSaveSubmit(e) {
     // Sign in anonymously and write to DB immediately (data safe even if link expires)
     let userId;
     const existing = await getUser();
-    if (existing) {
+    if (existing?.is_anonymous) {
+      // Reuse existing anon session — user went back mid-wizard without completing
       userId = existing.id;
     } else {
+      // If an authenticated user is present (e.g. a different user on the same browser),
+      // sign them out first so this wizard run gets a clean anonymous session and
+      // doesn't overwrite their profile or create a duplicate plan under their account.
+      if (existing) await supabase.auth.signOut();
       const { data, error } = await signInAnon();
       if (error) throw error;
       userId = data.user.id;

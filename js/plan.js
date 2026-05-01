@@ -238,7 +238,17 @@ function renderTabNav() {
         `).join('')}
       </div>
     </div>
-  </nav>`;
+  </nav>
+  <div class="app-sponsors-strip">
+    <span class="app-sponsors-label">Brought to you by</span>
+    <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
+      <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+    </a>
+    <span class="app-sponsors-divider"></span>
+    <a href="https://workiro.com" target="_blank" rel="noopener" aria-label="Workiro">
+      <img src="/images/workiro-logo.svg" alt="Workiro">
+    </a>
+  </div>`;
 }
 
 // ── Checklist tab ─────────────────────────────────────────────────────────────

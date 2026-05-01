@@ -701,41 +701,31 @@ function renderChecklistTab() {
         </div>`;
     })()}
 
-    <div class="checklist-webinar-card">
-      <div class="checklist-webinar-card-inner">
-        <div class="checklist-webinar-card-left">
-          <div class="checklist-webinar-card-eyebrow">
-            <span class="checklist-webinar-card-dot"></span>
-            30-min webinar · Free recording
+    <section class="sponsors-footer" style="max-width:760px;">
+      <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
+      <div class="sponsors-grid">
+        <div class="sponsor-card">
+          <div class="sponsor-card-logo">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <h3 class="checklist-webinar-card-title">See how top UK firms <em>use this at the show.</em></h3>
-          <p class="checklist-webinar-card-body">
-            Francesca McClory, Robyn Milstead and Rachel Gregory walk through the before / during / after flow — with Alex Hayter demoing every tab. <strong>Watch once, plan better.</strong>
-          </p>
-          <a class="checklist-webinar-card-btn" href="https://getbusy.zoom.us/webinar/register/8417768602832/WN_b9JOGulrQfWbD1FUeRKjmg#/registration" target="_blank" rel="noopener">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Join the webinar
+          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+            xumagazine.com
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
-        <div class="checklist-webinar-card-right">
-          <div class="checklist-webinar-panellists">
-            <div class="checklist-webinar-panellist" title="Francesca McClory FMAAT">
-              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff8069dfe318081038_Francesca%20McClory.png" alt="Francesca" onerror="this.style.display='none'">
-            </div>
-            <div class="checklist-webinar-panellist" title="Robyn Milstead CTA">
-              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff0849ce880aa86e8e_Robyn%20Milstead.png" alt="Robyn" onerror="this.style.display='none'">
-            </div>
-            <div class="checklist-webinar-panellist" title="Rachel Gregory — Accountex">
-              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff51082b60b60d479e_Rachel%20Gregory.png" alt="Rachel" onerror="this.style.display='none'">
-            </div>
-            <div class="checklist-webinar-panellist" title="Alex Hayter — Workiro">
-              <img loading="lazy" src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ffb5c8083dfb2e619e_Alexandra%20Hayter.png" alt="Alex" onerror="this.style.display='none'">
-            </div>
+        <div class="sponsor-card">
+          <div class="sponsor-card-logo">
+            <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <div class="checklist-webinar-panellists-label">With Francesca, Robyn, Rachel &amp; Alex</div>
+          <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants.</p>
+          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
+            workiro.com
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
         </div>
       </div>
-    </div>
+    </section>
   `;
 }
 
@@ -1848,68 +1838,33 @@ window.togglePlanBooth = async function(standNumber) {
 
 function sponsorsFooterHtml() {
   return `
-    <div class="workiro-cta workiro-cta-simple">
-      <div class="workiro-cta-visual">
-        <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g transform="translate(8, 20)">
-            <rect x="0" y="0" width="34" height="44" rx="4" fill="rgba(255,94,132,0.10)" stroke="rgba(255,94,132,0.55)" stroke-width="1.4"/>
-            <line x1="6" y1="12" x2="26" y2="12" stroke="rgba(255,94,132,0.55)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="6" y1="20" x2="22" y2="20" stroke="rgba(255,94,132,0.4)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="6" y1="28" x2="26" y2="28" stroke="rgba(255,94,132,0.4)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="6" y1="36" x2="18" y2="36" stroke="rgba(255,94,132,0.3)" stroke-width="1.2" stroke-linecap="round"/>
-          </g>
-          <g transform="translate(48, 32)">
-            <rect x="0" y="0" width="34" height="44" rx="4" fill="rgba(168,85,247,0.10)" stroke="rgba(168,85,247,0.55)" stroke-width="1.4"/>
-            <line x1="6" y1="12" x2="26" y2="12" stroke="rgba(168,85,247,0.55)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="6" y1="20" x2="22" y2="20" stroke="rgba(168,85,247,0.4)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="6" y1="28" x2="26" y2="28" stroke="rgba(168,85,247,0.4)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="6" y1="36" x2="18" y2="36" stroke="rgba(168,85,247,0.3)" stroke-width="1.2" stroke-linecap="round"/>
-          </g>
-          <path d="M 88 40 Q 110 40 130 50" fill="none" stroke="rgba(34,230,168,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 3">
-            <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="2.4s" repeatCount="indefinite"/>
-          </path>
-          <path d="M 88 56 Q 110 60 130 60" fill="none" stroke="rgba(34,230,168,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 3">
-            <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="2.4s" begin="0.6s" repeatCount="indefinite"/>
-          </path>
-          <g transform="translate(130, 24)">
-            <path d="M 0 8 Q 0 4 4 4 L 18 4 L 22 10 L 56 10 Q 60 10 60 14 L 60 50 Q 60 54 56 54 L 4 54 Q 0 54 0 50 Z"
-                  fill="rgba(34,230,168,0.12)" stroke="rgba(34,230,168,0.7)" stroke-width="1.5" stroke-linejoin="round"/>
-            <line x1="8" y1="22" x2="52" y2="22" stroke="rgba(34,230,168,0.7)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="8" y1="30" x2="44" y2="30" stroke="rgba(34,230,168,0.55)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="8" y1="38" x2="52" y2="38" stroke="rgba(34,230,168,0.55)" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="8" y1="46" x2="38" y2="46" stroke="rgba(34,230,168,0.4)" stroke-width="1.2" stroke-linecap="round"/>
-            <circle cx="56" cy="14" r="2.5" fill="rgba(34,230,168,1)">
-              <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
-            </circle>
-          </g>
-        </svg>
-      </div>
-      <div class="workiro-cta-content">
-        <div class="workiro-cta-eyebrow">
-          <span class="workiro-cta-eyebrow-dot"></span>
-          About Workiro
-        </div>
-        <div class="workiro-cta-headline">
-          Document management <em>for UK accounting firms.</em>
-        </div>
-        <div class="workiro-cta-actions">
-          <a class="workiro-cta-btn primary" href="https://workiro.com" target="_blank" rel="noopener">
-            Visit workiro.com
+    <section class="sponsors-footer" style="max-width:760px;">
+      <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
+      <div class="sponsors-grid">
+        <div class="sponsor-card">
+          <div class="sponsor-card-logo">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+          </div>
+          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+            xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
-          <span class="workiro-cta-note">· Or come see us at stand <strong>1144</strong></span>
+        </div>
+        <div class="sponsor-card">
+          <div class="sponsor-card-logo">
+            <img src="/images/workiro-logo.svg" alt="Workiro">
+          </div>
+          <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants. Come say hi at stand <strong>1144</strong>.</p>
+          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
+            workiro.com
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
         </div>
       </div>
-    </div>
+    </section>
     <div class="hero-page-footer">
       Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
-    </div>
-    <div class="sponsors-footer" style="border-top:none;">
-      <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
-      <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
-        <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
-      </div>
     </div>
   `;
 }

@@ -81,16 +81,16 @@ body::before {
 .top-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 32px;
-  background: linear-gradient(to bottom, rgba(10,10,18,0.98) 0%, rgba(10,10,18,0.85) 70%, transparent 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  padding: 18px 32px;
+  background: transparent;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
   pointer-events: none;
 }
 .top-bar > * { pointer-events: auto; }
-.brand { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--text); }
-.brand-logo { height: 28px; width: auto; display: block; flex-shrink: 0; }
-.brand-divider { width: 1px; height: 22px; background: var(--ink-3); flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+.brand-logo { height: 36px; width: auto; display: block; flex-shrink: 0; }
+.brand-divider { width: 1px; height: 26px; background: var(--ink-3); flex-shrink: 0; align-self: center; }
 .brand-event {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
@@ -99,6 +99,8 @@ body::before {
   color: var(--text-muted);
   font-weight: 700;
   white-space: nowrap;
+  line-height: 1;
+  align-self: center;
 }
 /* Legacy brand-mark + brand-text — kept for any view that still renders them.
    The top-bar uses .brand-logo / .brand-divider / .brand-event now. */
@@ -7274,9 +7276,9 @@ button.app-pill.purple.clickable:hover {
 
 @media (max-width: 640px) {
   .top-bar { padding: 14px 18px; }
-  .brand { gap: 12px; }
-  .brand-logo { height: 22px; }
-  .brand-divider { height: 16px; }
+  .brand { gap: 10px; }
+  .brand-logo { height: 28px; }
+  .brand-divider { height: 20px; }
   .brand-event { font-size: 10px; letter-spacing: 0.14em; }
   .top-bar-right { gap: 14px; }
   .top-bar-link { font-size: 10px; letter-spacing: 0.14em; }

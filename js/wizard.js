@@ -508,7 +508,7 @@ async function handleSaveSubmit(e) {
   // "team-lead" in the wizard, the ?team= param ensures join_team runs on the plan page
   // and attaches them to the correct team rather than creating a new one.
   const redirectTo = state.teamInviteToken
-    ? `${window.location.origin}/plan/?team=${state.teamInviteToken}`
+    ? `${window.location.origin}/magic-link-confirm/?team=${state.teamInviteToken}&`
     : undefined;
   const { error: emailErr } = await sendMagicLink(email, redirectTo);
   if (emailErr) {

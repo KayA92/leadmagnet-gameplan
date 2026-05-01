@@ -11,7 +11,7 @@ const ROLE_LABELS: Record<string, string> = {
   founder:     "Founder",
   partner:     "Partner",
   director:    "Director",
-  senior:      "Senior accountant / Manager",
+  senior:      "Senior Accountant / Manager",
   industry:    "CFO / Finance Director",
   accountant:  "Accountant",
   bookkeeper:  "Bookkeeper",

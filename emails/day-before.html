@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Accountex tomorrow — open your plan tonight</title>
+<!--
+  Filename:    day-before-email.html
+  Sent on:     Tue 12 May 09:00 BST broadcast (one-off, scheduled)
+  Audience:    everyone where created_at < '2026-05-11 23:00 BST'
+                 — i.e. signed up by Monday night. Tuesday-day signups
+                 don't get this (they're already in onboarding flow).
+  Subject:     Accountex tomorrow — open your plan tonight
+  From:        Workiro <hello@workiro.com>
+  Reply-To:    hello@workiro.com
+
+  Template variables:
+    {{firstName}}       — recipient's first name
+    {{loginUrl}}        — magic-link URL
+    {{teamInviteUrl}}   — workspace invite URL
+    {{teamSize}}        — current teammate count (1 = solo, 2+ = team)
+    {{teamGreeting}}    — server-picked solo/team variant string
+    {{teamBody}}        — server-picked solo/team variant body
+    {{unsubscribeUrl}}  — list-unsubscribe footer
+
+  This is a broadcast send. Pre-warm over 30 mins — don't fire all 2,000
+  at once. Replaces the earlier Mon 11 May "pre-event prep" email.
+  Day-before timing has more urgency than 48h-out and the user has time
+  to actually do the prep tonight.
+-->
+<style>
+  @media only screen and (max-width: 600px) {
+    .container { width: 100% !important; max-width: 100% !important; }
+    .px-32 { padding-left: 22px !important; padding-right: 22px !important; }
+    .h1 { font-size: 28px !important; line-height: 1.18 !important; }
+    .login-btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+  }
+  a { color: #ff5e84; }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#0a0a12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#f5f2ec;-webkit-font-smoothing:antialiased;">
+
+<div style="display:none;font-size:1px;color:#0a0a12;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+  Open your plan tonight, install on your phone, and you're set. Day 1 plan recap lands tomorrow 7:30am.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a12;">
+  <tr>
+    <td align="center" style="padding:24px 16px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#15151f;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+
+        <!-- ══════ HERO ══════ -->
+        <tr>
+          <td class="px-32" style="background:#0a0a12;background-image:linear-gradient(135deg,#0a0a12 0%,#15151f 100%);padding:36px 40px 32px;color:#ffffff;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:'JetBrains Mono',Menlo,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#22e6a8;padding-bottom:14px;">
+                  Accountex 2026 · Tomorrow
+                </td>
+              </tr>
+              <tr>
+                <td class="h1" style="font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:1.12;color:#ffffff;font-weight:400;letter-spacing:-0.01em;padding-bottom:8px;">
+                  {{firstName}} — show opens<br>
+                  <em style="font-style:italic;color:#22e6a8;">tomorrow morning.</em>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:15px;line-height:1.55;color:rgba(255,255,255,0.78);padding-top:6px;">
+                  Two things tonight. Your Day 1 plan recap lands <strong style="color:#ffffff;">7:30am tomorrow.</strong>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ Step 1: Install on phone ══════ -->
+        <tr>
+          <td class="px-32" style="padding:32px 40px 8px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="vertical-align:top;width:42px;padding-top:2px;">
+                  <div style="width:34px;height:34px;background:linear-gradient(135deg,#ff5e84,#a855f7);border-radius:50%;color:#ffffff;text-align:center;line-height:34px;font-family:Georgia,serif;font-size:16px;font-weight:600;">1</div>
+                </td>
+                <td style="vertical-align:top;padding-left:14px;">
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:500;color:#f5f2ec;letter-spacing:-0.01em;padding-bottom:8px;">
+                    Add to your home screen.
+                  </div>
+                  <div style="font-size:13px;line-height:1.55;color:#f5f2ec;background:#1c1c28;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;">
+                    <strong>iPhone:</strong> open <a href="{{loginUrl}}" style="color:#ff5e84;">your plan</a> in Safari → Share → "Add to Home Screen"<br>
+                    <strong>Android:</strong> open in Chrome → menu (⋮) → "Install app"
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ Step 2: Conditional team check ══════ -->
+        <!-- This block uses {{teamSize}}. In Postmark Mustache:
+             {{#equal teamSize "1"}} solo content {{/equal}}
+             {{^equal teamSize "1"}} team content {{/equal}}
+             OR send two variants of the email and gate at server level.
+             Cleaner: server checks teamSize and picks variant 'solo' vs 'team'.
+        -->
+        <tr>
+          <td class="px-32" style="padding:24px 40px 8px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="vertical-align:top;width:42px;padding-top:2px;">
+                  <div style="width:34px;height:34px;background:linear-gradient(135deg,#a855f7,#22e6a8);border-radius:50%;color:#ffffff;text-align:center;line-height:34px;font-family:Georgia,serif;font-size:16px;font-weight:600;">2</div>
+                </td>
+                <td style="vertical-align:top;padding-left:14px;">
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:500;color:#f5f2ec;letter-spacing:-0.01em;padding-bottom:6px;">
+                    {{teamGreeting}}
+                  </div>
+                  <div style="font-size:14px;line-height:1.55;color:#c4c2d4;padding-bottom:10px;">
+                    {{teamBody}}
+                  </div>
+                  <!-- Renders for solo only — the link to send -->
+                  <div style="background:#1c1424;border:1px solid #ffd4dd;border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',Menlo,monospace;font-size:13px;color:#f5f2ec;word-break:break-all;">
+                    <a href="{{teamInviteUrl}}" style="color:#ff5e84;text-decoration:none;font-weight:600;">{{teamInviteUrl}}</a>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ Step 3: What happens Wednesday ══════ -->
+        <!-- ══════ Workiro / TaxReady value-add ══════ -->
+        <tr>
+          <td class="px-32" style="padding:28px 40px 8px;">
+            <div style="font-size:13.5px;line-height:1.55;color:#c4c2d4;border-left:3px solid #22e6a8;padding:10px 16px;background:#142420;border-radius:0 8px 8px 0;">
+              <strong style="color:#f5f2ec;">Bonus while you're there.</strong> <a href="https://workiro.com" style="color:#22e6a8;font-weight:600;text-decoration:none;">Workiro</a> (we built this) is at <strong>stand 1144</strong> running free AI-matched listings on <a href="https://taxready.uk" style="color:#22e6a8;font-weight:600;text-decoration:none;">TaxReady</a> — the UK's accountant directory. <strong>2,690+ firms already listed.</strong> The one rated highest in each city wins the inbound leads. Three-minute claim at the stand.
+            </div>
+          </td>
+        </tr>
+
+        <!-- ══════ Login button (always available) ══════ -->
+        <tr>
+          <td class="px-32" style="padding:24px 40px 32px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{loginUrl}}" style="height:50px;v-text-anchor:middle;width:280px;" arcsize="22%" stroke="f" fillcolor="#1a1a24">
+                    <w:anchorlock/>
+                    <center style="color:#ffffff;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;">Open my plan</center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-- -->
+                  <a href="{{loginUrl}}" class="login-btn" style="display:inline-block;background:#1a1a24;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 30px;border-radius:10px;letter-spacing:0.01em;">
+                    Open my plan
+                  </a>
+                  <!--<![endif]-->
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ FOOTER ══════ -->
+        <tr>
+          <td style="background:#1c1c28;padding:24px 40px;border-top:1px solid rgba(255,255,255,0.08);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size:12px;line-height:1.55;color:#8c8a9e;">
+                  Sent by <a href="https://workiro.com" style="color:#8c8a9e;text-decoration:underline;">Workiro</a> · AutoEvent is a free planning tool for professional events. The Accountex 2026 deployment is for the UK accounting community.<br>
+                  <a href="https://www.workiro.com/terms-and-policies/autoevent" style="color:#8c8a9e;text-decoration:underline;">Privacy &amp; terms</a> · <a href="{{unsubscribeUrl}}" style="color:#8c8a9e;text-decoration:underline;">Unsubscribe</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

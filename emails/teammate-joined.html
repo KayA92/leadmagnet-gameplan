@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{{joinerFirstName}} just joined your Accountex workspace</title>
+<!--
+  Filename:    teammate-joined-email.html
+  Sent on:     each time a new teammate joins (up to 7× per workspace)
+  Recipient:   the workspace OWNER only (not the new joiner)
+  Trigger:     POST /api/team/:id/join transaction commits successfully
+  Subject:     {{joinerFirstName}} just joined your Accountex workspace
+  From:        Workiro <hello@workiro.com>
+  Reply-To:    hello@workiro.com
+
+  Template variables:
+    {{firstName}}       — workspace owner's first name
+    {{joinerFirstName}} — new teammate's first name
+    {{joinerFullName}}  — new teammate's full name
+    {{joinerRole}}      — new teammate's role (e.g. "Practice founder")
+    {{loginUrl}}        — workspace owner's magic-link URL (deep-link to /team)
+    {{teamSize}}        — count after this join (2–8)
+    {{remainingSpots}}  — MAX_TEAM_MEMBERS - teamSize (1–6, or 0 if full)
+    {{unsubscribeUrl}}  — list-unsubscribe footer (kept for compliance though
+                           this is transactional and bypasses the gate)
+
+  This is a transactional email — it bypasses the marketing suppression list
+  and is sent regardless of broadcast unsubscribe status. The owner needs
+  this confirmation. Do NOT batch-suppress.
+
+  Voice: friendly + useful, not promotional. No TaxReady, no AI pitch — this
+  is a "your invite worked" notification, single purpose.
+
+  Brand: matches transactional emails (magic link family) — pink accent.
+-->
+<style>
+  @media only screen and (max-width: 600px) {
+    .container { width: 100% !important; max-width: 100% !important; }
+    .px-32 { padding-left: 22px !important; padding-right: 22px !important; }
+    .h1 { font-size: 28px !important; line-height: 1.18 !important; }
+    .login-btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+  }
+  a { color: #ff5e84; }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#0a0a12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#f5f2ec;-webkit-font-smoothing:antialiased;">
+
+<!-- Preheader: scannable in inbox preview -->
+<div style="display:none;font-size:1px;color:#0a0a12;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+  Their plan is now visible in your workspace. Open the Team tab to see what they're going to and where you overlap.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a12;">
+  <tr>
+    <td align="center" style="padding:24px 16px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#15151f;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+
+        <!-- ══════ HERO ══════ -->
+        <tr>
+          <td class="px-32" style="background:#0a0a12;background-image:linear-gradient(135deg,#0a0a12 0%,#15151f 100%);padding:36px 40px 28px;color:#ffffff;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:'JetBrains Mono',Menlo,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#22e6a8;padding-bottom:14px;">
+                  Workspace · {{teamSize}} of 8
+                </td>
+              </tr>
+              <tr>
+                <td class="h1" style="font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:1.15;color:#ffffff;font-weight:400;letter-spacing:-0.01em;padding-bottom:8px;">
+                  {{joinerFirstName}} just<br>
+                  <em style="font-style:italic;color:#22e6a8;">joined your workspace.</em>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:15px;line-height:1.55;color:rgba(255,255,255,0.78);padding-top:6px;">
+                  Hi {{firstName}} — your invite link worked. <strong style="color:#ffffff;">{{joinerFullName}}</strong> ({{joinerRole}}) is in. Their plan, ratings, and notes are now part of your shared workspace.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ Login button ══════ -->
+        <tr>
+          <td class="px-32" style="padding:32px 40px 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" style="padding-bottom:14px;">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{loginUrl}}" style="height:54px;v-text-anchor:middle;width:320px;" arcsize="22%" stroke="f" fillcolor="#ff5e84">
+                    <w:anchorlock/>
+                    <center style="color:#ffffff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;">See {{joinerFirstName}}'s plan</center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-- -->
+                  <a href="{{loginUrl}}" class="login-btn" style="display:inline-block;background:#ff5e84;color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:17px 36px;border-radius:12px;box-shadow:0 4px 14px rgba(255,94,132,0.3);letter-spacing:0.01em;">
+                    See {{joinerFirstName}}'s plan →
+                  </a>
+                  <!--<![endif]-->
+                </td>
+              </tr>
+              <tr>
+                <td align="center" style="font-family:'JetBrains Mono',Menlo,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8c8a9e;">
+                  Opens straight to your Team tab
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ What just changed ══════ -->
+        <tr>
+          <td class="px-32" style="padding:24px 40px 8px;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:500;letter-spacing:-0.01em;color:#f5f2ec;padding-bottom:12px;">
+              What just changed.
+            </div>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding:10px 14px;background:#1c1c28;border:1px solid rgba(255,255,255,0.08);border-radius:10px;">
+                  <div style="font-family:'JetBrains Mono',Menlo,monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#ff5e84;padding-bottom:4px;">Their sessions on your map</div>
+                  <div style="font-size:14px;line-height:1.5;color:#f5f2ec;">{{joinerFirstName}}'s session picks now show alongside yours. Tap any session to see who's going.</div>
+                </td>
+              </tr>
+              <tr><td style="height:8px;line-height:8px;font-size:8px;">&nbsp;</td></tr>
+              <tr>
+                <td style="padding:10px 14px;background:#1c1c28;border:1px solid rgba(255,255,255,0.08);border-radius:10px;">
+                  <div style="font-family:'JetBrains Mono',Menlo,monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#a855f7;padding-bottom:4px;">Overlap visible</div>
+                  <div style="font-size:14px;line-height:1.5;color:#f5f2ec;">If you're both going to the same session, swap one of you out and cover more ground. The Plan tab surfaces overlaps automatically.</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ══════ Capacity status (subtle) ══════ -->
+        <tr>
+          <td class="px-32" style="padding:24px 40px 8px;">
+            <div style="font-size:13.5px;line-height:1.55;color:#c4c2d4;border-left:3px solid #22e6a8;padding:10px 16px;background:#142420;border-radius:0 8px 8px 0;">
+              <strong style="color:#f5f2ec;">{{teamSize}} of 8 spots filled.</strong> {{remainingSpots}} more teammates can still join — same invite link, no need to resend.
+            </div>
+          </td>
+        </tr>
+
+        <!-- ══════ Security signal (gentle) ══════ -->
+        <tr>
+          <td class="px-32" style="padding:20px 40px 32px;">
+            <div style="font-size:13px;line-height:1.55;color:#8c8a9e;">
+              <strong style="color:#f5f2ec;">Wasn't expecting {{joinerFirstName}}?</strong> The invite link is shareable, so anyone with it could join. Reply to this email and we'll help you remove them and rotate the link.
+            </div>
+          </td>
+        </tr>
+
+        <!-- ══════ FOOTER ══════ -->
+        <tr>
+          <td style="background:#1c1c28;padding:24px 40px;border-top:1px solid rgba(255,255,255,0.08);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size:12px;line-height:1.55;color:#8c8a9e;">
+                  Sent by <a href="https://workiro.com" style="color:#8c8a9e;text-decoration:underline;">Workiro</a> · AutoEvent is a free planning tool for professional events. The Accountex 2026 deployment is for the UK accounting community.<br>
+                  <a href="https://www.workiro.com/terms-and-policies/autoevent" style="color:#8c8a9e;text-decoration:underline;">Privacy &amp; terms</a> · <a href="{{unsubscribeUrl}}" style="color:#8c8a9e;text-decoration:underline;">Unsubscribe</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

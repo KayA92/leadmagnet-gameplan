@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<meta name="robots" content="noindex">
+<title>Email templates — AutoEvent for Accountex 2026</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .email-list-page {
+    position: relative;
+    z-index: 10;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 100px 24px 80px;
+  }
+  .email-list-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mint);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .email-list-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(34px, 5vw, 48px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+  .email-list-title em {
+    font-style: italic;
+    background: var(--grad-hero);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-shift 8s ease-in-out infinite;
+  }
+  .email-list-sub {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin: 0 0 36px;
+    max-width: 640px;
+  }
+  .email-list-sub strong { color: var(--text); }
+  .email-list-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .email-card {
+    background: var(--ink-2);
+    border: 1px solid var(--ink-3);
+    border-radius: 14px;
+    padding: 22px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .email-card:hover {
+    border-color: var(--mint);
+    transform: translateY(-2px);
+  }
+  .email-card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+  }
+  .email-card-tag.essential { background: rgba(255,94,132,0.12); color: var(--pink); border: 1px solid rgba(255,94,132,0.30); }
+  .email-card-tag.transactional { background: rgba(34,230,168,0.10); color: var(--mint); border: 1px solid rgba(34,230,168,0.30); }
+  .email-card-tag.lifecycle { background: rgba(168,85,247,0.10); color: var(--purple); border: 1px solid rgba(168,85,247,0.30); }
+  .email-card-tag.marketing { background: rgba(0,212,214,0.10); color: var(--teal); border: 1px solid rgba(0,212,214,0.30); }
+  .email-card-name {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .email-card-subject {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .email-card-subject::before { content: 'Subject: '; font-style: normal; font-weight: 600; color: var(--text); }
+  .email-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--ink-3);
+    border-bottom: 1px solid var(--ink-3);
+  }
+  .email-card-meta-item strong { color: var(--text); font-weight: 600; }
+  .email-card-body {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .email-card-body strong { color: var(--text); font-weight: 600; }
+  .email-card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--mint);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .email-card-cta svg { transition: transform 0.2s; }
+  .email-card:hover .email-card-cta svg { transform: translateX(3px); }
+  .email-changelog {
+    margin-top: 56px;
+    padding: 24px 28px;
+    background: rgba(34,230,168,0.04);
+    border: 1px solid rgba(34,230,168,0.20);
+    border-radius: 14px;
+  }
+  .email-changelog h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 12px;
+    color: var(--text);
+  }
+  .email-changelog ul { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+  .email-changelog li { margin-bottom: 6px; }
+  .email-changelog li strong { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="ambient-glow g1"></div>
+<div class="ambient-glow g2"></div>
+<div class="ambient-glow g3"></div>
+
+<nav class="top-bar">
+  <a class="brand" href="/">
+    <img src="../images/AutoEvent.svg" alt="AutoEvent" class="brand-logo">
+    <span class="brand-event">Accountex 2026</span>
+  </a>
+  <div class="top-bar-right">
+    <a class="top-bar-link" href="/about/">About</a>
+    <a class="login-btn" href="/login/">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Log in to your plan
+    </a>
+  </div>
+</nav>
+
+<main class="email-list-page">
+
+  <div class="email-list-eyebrow">Internal preview · Hand to dev</div>
+  <h1 class="email-list-title">Email <em>templates.</em></h1>
+  <p class="email-list-sub">
+    All email HTML for the AutoEvent Accountex 2026 lead magnet. Open each one in a new tab to preview the rendered email. <strong>Variables in <code style="background:var(--ink-2);padding:2px 6px;border-radius:4px;font-size:13px;">{{double-curly-braces}}</code> are placeholders</strong> — Postmark/SendGrid/Supabase will substitute them at send time. Every email points at <code style="background:var(--ink-2);padding:2px 6px;border-radius:4px;font-size:13px;">workiro-ai.com</code> and the AutoEvent privacy URL.
+  </p>
+
+  <div class="email-list-grid">
+
+    <!-- WELCOME (sign-up) -->
+    <a class="email-card" href="welcome.html" target="_blank" rel="noopener">
+      <span class="email-card-tag essential">Essential · Sent on signup</span>
+      <div class="email-card-name">Welcome — first login link</div>
+      <div class="email-card-subject">{{firstName}}, your Accountex 2026 plan is ready — log in</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> account creation (after wizard save form)</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, teamInviteUrl, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        Single-use magic link to enter the plan for the first time. Tells the user that future logins are via <strong>workiro-ai.com/login</strong>. Includes team-invite block, install-as-app block, and a "mark not junk" reminder.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- LOGIN LINK (recurring) -->
+    <a class="email-card" href="login-link.html" target="_blank" rel="noopener">
+      <span class="email-card-tag transactional">Transactional · Sent on every login request</span>
+      <div class="email-card-name">Login link — recurring sign-in</div>
+      <div class="email-card-subject">{{firstName}} — your AutoEvent login link</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> user enters email at /login/ and submits</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        <strong>NEW template.</strong> The recurring magic link sent every time someone requests a login. Single primary action (the button), no marketing, no team-invite — those belong in the welcome email. Includes a "didn't request this?" security disclaimer.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- TEAM INVITE NUDGE -->
+    <a class="email-card" href="team-invite.html" target="_blank" rel="noopener">
+      <span class="email-card-tag lifecycle">Lifecycle · 24h after signup if 0 teammates</span>
+      <div class="email-card-name">Team-invite nudge</div>
+      <div class="email-card-subject">{{firstName}} — bring your team to your Accountex workspace</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> user has 0 teammates 24h post-signup AND event is &gt;48h away</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, teamInviteUrl, loginUrl, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        Pulls solo signups toward team workspaces. Names the four things that unlock when one teammate joins. Workspace cap of 8.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- TEAMMATE JOINED -->
+    <a class="email-card" href="teammate-joined.html" target="_blank" rel="noopener">
+      <span class="email-card-tag transactional">Transactional · Sent when an invite is accepted</span>
+      <div class="email-card-name">Teammate joined</div>
+      <div class="email-card-subject">{{joinerFirstName}} just joined your Accountex workspace</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> someone accepts the workspace's invite link</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, joinerFirstName, joinerFullName, joinerRole, teamSize, remainingSpots, loginUrl, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        Notifies the workspace owner that a teammate just joined. Surfaces the count (X of 8 spots filled), and a "didn't expect this?" escape hatch.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- DAY BEFORE -->
+    <a class="email-card" href="day-before.html" target="_blank" rel="noopener">
+      <span class="email-card-tag marketing">Lifecycle · Day before the show</span>
+      <div class="email-card-name">Day before</div>
+      <div class="email-card-subject">Accountex tomorrow — open your plan tonight</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> Tue 12 May 2026, ~5pm UK</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, teamInviteUrl, teamGreeting, teamBody, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        Final pre-show nudge. Two actions: add to home screen + bring the team. Conditional content for solo vs team workspaces.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- DAY 1 MORNING -->
+    <a class="email-card" href="day1-morning.html" target="_blank" rel="noopener">
+      <span class="email-card-tag marketing">Lifecycle · Morning of Day 1</span>
+      <div class="email-card-name">Day 1 morning</div>
+      <div class="email-card-subject">Your Accountex Day 1 starts now — open your plan</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> Wed 13 May 2026, 7:30am UK</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        Wake-up email. Three reminders for the floor: rate as you go, booth notes are different, swap on the fly.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- DAY-OF LOGIN -->
+    <a class="email-card" href="day-of-login.html" target="_blank" rel="noopener">
+      <span class="email-card-tag marketing">Lifecycle · Day of show</span>
+      <div class="email-card-name">Day-of login + team nudge</div>
+      <div class="email-card-subject">You're in at Accountex — log in and bring your team</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> Wed 13 May 2026, on the show floor opening</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, teamInviteUrl, unsubscribeUrl</div>
+      </div>
+      <div class="email-card-body">
+        Login link plus a team-invite reminder for anyone who came with colleagues but hasn't shared the link yet.
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+  </div>
+
+  <div class="email-changelog">
+    <h3>What changed in this pass</h3>
+    <ul>
+      <li><strong>New login flow:</strong> Each login now requires a fresh single-use magic link from /login/. The welcome email's link is one-time-use only. <em>All "save / star / flag / pin this email" copy was removed</em> — saving a single-use link doesn't help.</li>
+      <li><strong>New template added:</strong> <code>login-link.html</code> — the recurring magic link sent every time someone requests a login.</li>
+      <li><strong>Brand:</strong> "Workiro Accountex Game Plan" → "AutoEvent for Accountex 2026" across all 7 emails.</li>
+      <li><strong>Domain:</strong> <code>gameplan.workiro.com</code> → <code>workiro-ai.com</code>.</li>
+      <li><strong>Privacy URL:</strong> <code>/terms-and-policies/accountex-gameplan</code> → <code>/terms-and-policies/autoevent</code>.</li>
+      <li><strong>Anti-spam:</strong> subject lines now lead with first name (more personal, less promotional). Welcome email includes a "mark not junk" reminder so future login links land in the inbox.</li>
+      <li><strong>Caption fix:</strong> "(No password — same link every time.)" was wrong under the new flow. Updated to "(One-tap login — no password)".</li>
+    </ul>
+  </div>
+
+</main>
+
+<div class="hero-page-footer">
+  Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+</div>
+
+</body>
+</html>

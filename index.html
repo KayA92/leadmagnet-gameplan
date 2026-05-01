@@ -495,70 +495,49 @@
   </div>
 </section>
 
-<!-- Stage email-sent: Magic link confirmation -->
+<!-- Stage email-sent: Check your email confirmation -->
 <section class="stage flow-mode" id="stage-email-sent">
   <div class="magic-confirm">
     <div class="magic-confirm-eyebrow">
       <span class="magic-confirm-eyebrow-dot"></span>
-      <span>Plan saved · Magic link sent</span>
+      <span>Plan saved · Email sent</span>
     </div>
-    <h2 class="magic-confirm-title">You're <em>in.</em></h2>
-    <p class="magic-confirm-sub">We've sent a magic link to <strong id="sent-email"></strong>. Click it any time to return to your plan — no password, no sign-up dance.</p>
 
-    <div class="magic-install-card">
-      <div class="magic-install-eyebrow">Head to your inbox — here's what to do:</div>
-      <ol class="magic-install-steps">
-        <li>
-          <span class="magic-install-step-num">1</span>
-          <div class="magic-install-step-body">
-            <div class="magic-install-step-head">STAR THIS EMAIL NOW</div>
-            <div class="magic-install-step-sub">Your login link for Accountex on the 13–14 May. Flag it in Gmail/Outlook so it never gets buried.</div>
-          </div>
-        </li>
-        <li>
-          <span class="magic-install-step-num">2</span>
-          <div class="magic-install-step-body">
-            <div class="magic-install-step-head">CLICK THE MAGIC LINK</div>
-            <div class="magic-install-step-sub">One tap opens your saved plan — sessions, booths, and notes ready to go on the day.</div>
-          </div>
-        </li>
-        <li>
-          <span class="magic-install-step-num">3</span>
-          <div class="magic-install-step-body">
-            <div class="magic-install-step-head">WATCH THE RECORDING</div>
-            <div class="magic-install-step-sub">We'll send a second email with a <strong>30-minute webinar recording</strong> — Francesca, Robyn and Rachel on how top UK firms actually use this at the show.</div>
-          </div>
-        </li>
-      </ol>
-      <div class="magic-email-callout">
-        <div class="magic-email-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        </div>
-        <div class="magic-email-text">
-          <strong>Check your inbox now.</strong> Your magic link is on its way.
+    <div class="magic-email-hero-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </div>
+
+    <h2 class="magic-confirm-title">Check your <em>inbox</em><br>to log in.</h2>
+    <p class="magic-confirm-sub">We've sent a one-click login link to<br><strong id="sent-email"></strong></p>
+
+    <div class="magic-action-card">
+      <div class="magic-action-step">
+        <span class="magic-action-step-num">1</span>
+        <div class="magic-action-step-body">
+          <div class="magic-action-step-head">Open the email from AutoEvent</div>
+          <div class="magic-action-step-sub">Sender: <strong>hello@workiro-ai.com</strong> · Can take 1–2 minutes to arrive.</div>
         </div>
       </div>
-      <div class="magic-panellists">
-        <div class="magic-panellists-label">With insights from</div>
-        <div class="magic-panellists-row">
-          <div class="magic-panellist">
-            <div class="magic-panellist-photo"><img src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff8069dfe318081038_Francesca%20McClory.png" alt="Francesca McClory" onerror="this.style.display='none'"></div>
-            <div class="magic-panellist-name">Francesca</div>
-          </div>
-          <div class="magic-panellist">
-            <div class="magic-panellist-photo"><img src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff0849ce880aa86e8e_Robyn%20Milstead.png" alt="Robyn Milstead" onerror="this.style.display='none'"></div>
-            <div class="magic-panellist-name">Robyn</div>
-          </div>
-          <div class="magic-panellist">
-            <div class="magic-panellist-photo"><img src="https://cdn.prod.website-files.com/6512a8b117cf6f7907ce200e/69e6c7ff51082b60b60d479e_Rachel%20Gregory.png" alt="Rachel Gregory" onerror="this.style.display='none'"></div>
-            <div class="magic-panellist-name">Rachel</div>
-          </div>
+      <div class="magic-action-step">
+        <span class="magic-action-step-num">2</span>
+        <div class="magic-action-step-body">
+          <div class="magic-action-step-head">Click the login button inside</div>
+          <div class="magic-action-step-sub">Drops you straight into your saved plan — no password, no faff.</div>
         </div>
       </div>
     </div>
-    <div id="team-invite-block" style="margin-bottom:28px;padding:22px 24px;background:linear-gradient(135deg,rgba(255,94,132,0.06) 0%,rgba(168,85,247,0.08) 100%);border:1px solid rgba(168,85,247,0.25);border-radius:16px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--pink);font-weight:700;margin-bottom:8px;">One more step to unlock your team workspace</div>
-      <p style="font-size:13.5px;color:var(--text-muted);line-height:1.55;margin:0;"><strong style="color:var(--text);">Click the magic link in your email</strong> to activate the Team tab — that's where your shareable invite link lives so your team members can join the shared workspace.</p>
+
+    <div class="magic-spam-card">
+      <div class="magic-spam-card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="magic-spam-card-text">
+        <strong>Don't see it? Check your junk / spam folder.</strong> If you find it there, mark it <em>"Not junk"</em> so future login links land in your inbox.
+      </div>
+    </div>
+
+    <div class="magic-future-note">
+      Coming back another day? Just visit <a href="/login/">workiro-ai.com/login</a> any time and we'll send you a fresh link.
     </div>
 
   </div>

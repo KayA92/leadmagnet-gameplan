@@ -314,9 +314,9 @@ body::before {
 .q-container { width: 100%; max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
 .q-number { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 12px; }
 .q-progress { display: flex; gap: 4px; flex: 1; max-width: 140px; }
-.q-progress-seg { flex: 1; height: 4px; background: var(--ink-3); border-radius: 2px; transition: background 0.4s, box-shadow 0.4s; }
-.q-progress-seg.done { background: var(--mint); }
-.q-progress-seg.current { background: var(--grad); box-shadow: 0 0 10px rgba(255,94,132,0.5); }
+.q-progress-seg { flex: 1; height: 4px; background: rgba(255,255,255,0.14); border-radius: 2px; transition: background 0.4s, box-shadow 0.4s; }
+.q-progress-seg.done { background: var(--grad); }
+.q-progress-seg.current { background: var(--grad); box-shadow: 0 0 10px rgba(255,94,132,0.45); }
 .q-title { font-family: 'Fraunces', serif; font-size: clamp(32px,5vw,52px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; color: var(--text); font-variation-settings: 'SOFT' 40; }
 .q-title em { font-style: italic; font-variation-settings: 'SOFT' 90; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .q-title .optional-tag {

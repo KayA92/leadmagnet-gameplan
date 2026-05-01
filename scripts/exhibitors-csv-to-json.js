@@ -29,7 +29,9 @@ const CAT_MAP = {
   'ERP':                                                  ['practice-management'],
   'Expenses':                                             ['expenses'],
   'Foreign Exchange and Multi-Currency Services':         ['banking-payments'],
+  'AML/KYC':                                              ['aml-kyc'],
   'HR':                                                   ['hr-people'],
+  'HR & Leadership':                                      ['hr-people'],
   'HR & People':                                          ['hr-people'],
   'IT Solutions':                                         [],
   'Insolvency':                                           [],
@@ -52,6 +54,7 @@ const CAT_MAP = {
   'Tax':                                                  ['tax-mtd'],
   'Tax & MTD':                                            ['tax-mtd'],
   'Association / Professional Body':                      [],
+  'Other':                                                [],
 };
 
 function fixEncoding(s) {

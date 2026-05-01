@@ -34,6 +34,7 @@ const CAT_MAP = {
   'Exit Strategies':                                                             ['practice-management'],
   'Expenses':                                                                    ['expenses'],
   'Fractional CFO - Training / Systems / Advice':                                ['practice-management'],
+  'HR & Leadership':                                                             ['hr-people'],
   'HR & People':                                                                 ['hr-people'],
   'How To Influence Up / How To Sell Yourself':                                  ['practice-management'],
   'Market Overview & Insight':                                                   ['marketing-growth'],
@@ -64,6 +65,8 @@ const CAT_MAP = {
   // Unmapped — no matching filter key
   'Advisory':                                                     [],
   'Carbon accounting / Sustainability / ESG':                     [],
+  'CFO':                                                          [],
+  'Client Communication':                                         [],
   'Corp Responsibility':                                          [],
   'Digital Assets / Blockchain / Crypto Currency':               [],
   'Insolvency':                                                   [],

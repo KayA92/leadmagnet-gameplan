@@ -8,12 +8,16 @@ const corsHeaders = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  founder: "Practice founder / owner",
-  senior: "Senior accountant / manager",
-  bookkeeper: "Bookkeeper",
-  industry: "Finance Director / CFO (industry)",
-  junior: "Junior / newly qualified",
-  other: "Accounting professional",
+  founder:     "Founder",
+  partner:     "Partner",
+  director:    "Director",
+  senior:      "Senior accountant / Manager",
+  industry:    "CFO / Finance Director",
+  accountant:  "Accountant",
+  bookkeeper:  "Bookkeeper",
+  advisor:     "Tax Advisor",
+  "ops-admin": "Practice Manager",
+  other:       "Accounting professional",
 };
 
 const TIME_LABELS: Record<string, string> = {
@@ -27,11 +31,18 @@ const TIME_LABELS: Record<string, string> = {
 
 const CATEGORY_LABELS: Record<string, string> = {
   "practice-management": "Practice management & growth",
-  "ai-automation": "AI & automation",
-  bookkeeping: "Bookkeeping software",
-  "tax-mtd": "Tax, VAT & MTD",
-  "doc-management": "Document management",
-  payroll: "Payroll",
+  "ai-automation":       "AI & automation",
+  "bookkeeping":         "Bookkeeping software",
+  "tax-mtd":             "Tax, VAT & MTD",
+  "doc-management":      "Document management",
+  "payroll":             "Payroll",
+  "data-analytics":      "Data analytics & reporting",
+  "cyber-security":      "Cyber security",
+  "aml-kyc":             "AML / KYC",
+  "hr-people":           "HR & Leadership",
+  "banking-payments":    "Banking & payments",
+  "outsourcing":         "Outsourcing & offshore support",
+  "marketing-growth":    "Marketing & growth",
 };
 
 const SYSTEM_PROMPT = `You are an expert conference session matching assistant for UK accounting professionals attending Accountex London 2026 at ExCeL London, 13–14 May 2026.

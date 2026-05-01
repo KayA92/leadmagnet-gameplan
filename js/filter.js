@@ -3,27 +3,24 @@
 // Must mirror the CATEGORY_MATCH logic in index.html exactly.
 
 const CATEGORY_MATCH = {
-  'practice-management': ['Practice Management', 'Leadership', 'Sales & Marketing', 'Talent', 'Wellbeing', 'Scaling'],
-  'ai-automation':       ['AI'],
-  'bookkeeping':         ['Bookkeeping', 'Practice Management', 'AI'],
-  'tax-mtd':             ['Tax / VAT / MTD', 'Regulation', 'AML'],
-  'doc-management':      ['Practice Management', 'AI'],
-  'payroll':             ['Payroll'],
-  'esign':               ['Practice Management'],
-  'crm-comms':           ['Sales & Marketing'],
-  'data-analytics':      ['AI'],
-  'cyber-security':      ['Regulation'],
-  'aml-kyc':             ['AML', 'Regulation'],
-  'expenses':            ['Bookkeeping'],
-  'hr-people':           ['Talent'],
-  'banking-payments':    ['Bookkeeping'],
-  'doc-automation':      ['Practice Management', 'AI'],
-  'outsourcing':         ['Practice Management'],
-  'marketing-growth':    ['Sales & Marketing'],
+  'practice-management': ['practice-management'],
+  'ai-automation':       ['ai-automation'],
+  'bookkeeping':         ['bookkeeping'],
+  'tax-mtd':             ['tax-mtd'],
+  'doc-management':      ['doc-management'],
+  'payroll':             ['payroll'],
+  'data-analytics':      ['data-analytics'],
+  'cyber-security':      ['cyber-security'],
+  'aml-kyc':             ['aml-kyc'],
+  'hr-people':           ['hr-people'],
+  'banking-payments':    ['banking-payments'],
+  'outsourcing':         ['outsourcing'],
+  'marketing-growth':    ['marketing-growth'],
 };
 
 const ROLE_THEATRE = {
   founder:    ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
+  partner:    ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
   director:   ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
   senior:     ['practice excellence', 'theatre 3', 'acca', 'theatre 4'],
   accountant: ['practice excellence', 'theatre 3', 'acca', 'theatre 4'],
@@ -175,23 +172,19 @@ export function preFilterSessions(answers, allSessions) {
 
 // ── Exhibitor pre-filter ──────────────────────────────────────────────────────
 const EXHIBITOR_PRODUCT_MATCH = {
-  'practice-management': ['Practice & Project Management', 'Consulting & Business Services', 'CRM', 'ERP', 'Sales & Marketing', 'Document Management'],
-  'ai-automation':       ['AI / Automation / Optimisation', 'Data Entry / OCR', 'Analytics & Reporting', 'Expense Management'],
-  'bookkeeping':         ['Accounting Software', 'Cash Flow Forecasting', 'Bookkeeping', 'Accounts'],
-  'tax-mtd':             ['MTD - Making Tax Digital', 'Tax', 'VAT', 'AML', 'Audit'],
-  'doc-management':      ['Document Management', 'Data Entry / OCR'],
-  'payroll':             ['Payroll', 'Auto Enrolment & Pensions', 'HR'],
-  'esign':               ['Document Management', 'E-Signature'],
-  'crm-comms':           ['CRM', 'Sales & Marketing'],
-  'data-analytics':      ['Analytics & Reporting', 'AI / Automation / Optimisation'],
-  'cyber-security':      ['Cyber Security'],
-  'aml-kyc':             ['AML', 'Compliance'],
-  'expenses':            ['Expense Management', 'Accounts'],
-  'hr-people':           ['HR', 'Auto Enrolment & Pensions'],
-  'banking-payments':    ['Banking', 'Cash Flow Forecasting', 'Accounting Software'],
-  'doc-automation':      ['Data Entry / OCR', 'Document Management', 'AI / Automation / Optimisation'],
-  'outsourcing':         ['Consulting & Business Services'],
-  'marketing-growth':    ['Sales & Marketing'],
+  'practice-management': ['practice-management'],
+  'ai-automation':       ['ai-automation'],
+  'bookkeeping':         ['bookkeeping'],
+  'tax-mtd':             ['tax-mtd'],
+  'doc-management':      ['doc-management'],
+  'payroll':             ['payroll'],
+  'data-analytics':      ['data-analytics'],
+  'cyber-security':      ['cyber-security'],
+  'aml-kyc':             ['aml-kyc'],
+  'hr-people':           ['hr-people'],
+  'banking-payments':    ['banking-payments'],
+  'outsourcing':         ['outsourcing'],
+  'marketing-growth':    ['marketing-growth'],
 };
 
 export function preFilterExhibitors(answers, allExhibitors) {
@@ -200,8 +193,8 @@ export function preFilterExhibitors(answers, allExhibitors) {
 
   const wantedProducts = new Set();
   for (const cat of categories) {
-    for (const product of (EXHIBITOR_PRODUCT_MATCH[cat] || [])) {
-      wantedProducts.add(product.toLowerCase());
+    for (const canonicalCat of (EXHIBITOR_PRODUCT_MATCH[cat] || [])) {
+      wantedProducts.add(canonicalCat);
     }
   }
 
@@ -213,16 +206,12 @@ export function preFilterExhibitors(answers, allExhibitors) {
 
     let score = exhibitor.is_host ? 100 : 0; // Host always surfaces first
 
-    const productsLower = (exhibitor.normalised_products || []).map(p => p.toLowerCase());
     const descLower = (exhibitor.company_description || '').toLowerCase();
 
-    // +1 per matching product category
-    for (const product of productsLower) {
-      for (const wanted of wantedProducts) {
-        if (product.includes(wanted) || wanted.includes(product)) {
-          score += 1;
-          break;
-        }
+    // +1 per matching canonical category
+    for (const cat of (exhibitor.canonical_categories || [])) {
+      if (wantedProducts.has(cat)) {
+        score += 1;
       }
     }
 

@@ -158,8 +158,8 @@
 
   // Build the redirect URL identically for first-send + resend.
   const buildRedirectUrl = () => inviteToken
-    ? `${window.location.origin}/plan/?invite=${encodeURIComponent(inviteToken)}`
-    : `${window.location.origin}/plan/`;
+    ? `${window.location.origin}/plan/?invite=${encodeURIComponent(inviteToken)}&`
+    : `${window.location.origin}/plan/?`;
 
   // Reset any pending resend state — called when the user types a different
   // email or resubmits, so the resend prompt only ever points at the most

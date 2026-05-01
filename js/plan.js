@@ -2085,6 +2085,10 @@ async function handleSignIn(authUser, teamToken) {
           }
         }
         localStorage.removeItem('pendingPlan');
+      } else {
+        // No localStorage data — magic link opened on a different device.
+        // Try to claim any orphaned anonymous plan that shares this email.
+        await supabase.rpc('claim_anonymous_plan_by_email');
       }
 
       // Join team if invite token present
@@ -2551,7 +2555,7 @@ window.planSendInvite = async function() {
 
   if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
-  const redirectTo = `${window.location.origin}/plan/?team=${_teamData.inviteToken}`;
+  const redirectTo = `${window.location.origin}/magic-link-confirm/?team=${_teamData.inviteToken}&`;
   const { error } = await sendMagicLink(email, redirectTo);
 
   if (btn) {
@@ -2587,6 +2591,26 @@ export async function initPlan() {
   }
 
   showLoading(true);
+
+  const tokenHash = qpParams.get('token_hash');
+  if (tokenHash) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: qpParams.get('type') || 'magiclink',
+    });
+    if (error || !data?.user) {
+      showReauthForm('Your link has expired. Enter your email below to get a new one.');
+      return;
+    }
+    // Remove token from URL so it doesn't sit in browser history
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete('token_hash');
+    cleanUrl.searchParams.delete('type');
+    history.replaceState(null, '', cleanUrl.toString());
+    showLoading(false);
+    await handleSignIn(data.user, teamToken);
+    return;
+  }
 
   const user = await getUser();
 

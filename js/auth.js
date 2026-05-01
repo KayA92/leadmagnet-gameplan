@@ -4,7 +4,7 @@ export async function sendMagicLink(email, redirectTo) {
   return supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: redirectTo ?? `${window.location.origin}/plan/`,
+      emailRedirectTo: redirectTo ?? `${window.location.origin}/magic-link-confirm/?`,
     },
   });
 }

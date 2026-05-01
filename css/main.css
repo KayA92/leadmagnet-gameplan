@@ -7280,10 +7280,6 @@ button.app-pill.purple.clickable:hover {
   .brand-event { font-size: 10px; letter-spacing: 0.14em; }
   .top-bar-right { gap: 14px; }
   .top-bar-link { font-size: 10px; letter-spacing: 0.14em; }
-}
-@media (max-width: 380px) {
-  .brand-divider, .brand-event { display: none; }
-}
   .stage { padding: 70px 20px 40px; }
   .stage.flow-mode { padding: 96px 18px 40px; }
   /* App stage on mobile: no top gap (the tab bar IS the top chrome), no horizontal
@@ -7355,6 +7351,10 @@ button.app-pill.purple.clickable:hover {
   .panellists-host-text { text-align: center; }
   .panellists-host-photo { width: 64px; height: 64px; }
   .hero-footnote { font-size: 14px; gap: 20px; margin-top: 24px; }
+}
+
+@media (max-width: 380px) {
+  .brand-divider, .brand-event { display: none; }
 }
 
 /* Solo invite nudge chip — appears on checklist when not in a team */

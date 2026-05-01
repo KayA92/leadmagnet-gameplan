@@ -3741,6 +3741,16 @@ button.app-pill.purple.clickable:hover {
   background-repeat: no-repeat;
   flex-shrink: 0;
 }
+.checklist-why-tag.why-ai {
+  white-space: normal;
+  line-height: 1.45;
+  border-radius: 8px;
+  background: rgba(251,191,36,0.06);
+  border: 1px solid rgba(251,191,36,0.22);
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 12px;
+}
 .checklist-row.attended .checklist-why-tags,
 .checklist-row.attended .checklist-why-header { opacity: 0.4; }
 
@@ -7603,6 +7613,7 @@ button.app-pill.purple.clickable:hover {
   .top-bar-link { display: none; }
   .stage { padding: 70px 20px 40px; }
   .stage.flow-mode { padding: 96px 18px 40px; }
+  #stage-6 { justify-content: flex-start; padding-top: 84px; }
   /* App stage on mobile: no top gap (the tab bar IS the top chrome), no horizontal
      padding (the app-shell handles horizontal spacing). This closes the dead space
      above the install-strip that made the page look shoved down the screen. */

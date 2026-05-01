@@ -2305,6 +2305,9 @@ window.planSwitchTab = function(tabId) {
   renderApp();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (tabId === 'debrief') refreshDebriefNotes();
+  setTimeout(() => {
+    document.querySelector('.app-tab.active')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, 0);
 };
 
 async function refreshDebriefNotes() {

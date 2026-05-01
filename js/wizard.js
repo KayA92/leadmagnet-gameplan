@@ -415,12 +415,13 @@ async function handleSaveSubmit(e) {
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
-  const firstName = $('inp-first').value.trim();
-  const lastName  = $('inp-last').value.trim();
-  const email     = $('inp-email').value.trim();
-  const company   = $('inp-company').value.trim();
+  const firstName     = $('inp-first').value.trim();
+  const lastName      = $('inp-last').value.trim();
+  const email         = $('inp-email').value.trim();
+  const company       = $('inp-company').value.trim();
+  const marketingOptIn = $('inp-marketing')?.checked ?? false;
 
-  state.user = { firstName, lastName, email, company };
+  state.user = { firstName, lastName, email, company, marketingOptIn };
 
   const enrichedSessions = (state.plan?.sessions || []).map(ranked => {
     const full = state.allSessions.find(s => s.session_id === ranked.session_id);
@@ -461,7 +462,16 @@ async function handleSaveSubmit(e) {
     }
 
     const { error: userErr } = await supabase.from('users').upsert(
-      { id: userId, email, first_name: firstName, last_name: lastName, company: company || null },
+      {
+        id: userId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        company: company || null,
+        // GDPR: only set when user actively ticks the opt-in card. Schema needs a
+        // `marketing_opt_in BOOLEAN DEFAULT FALSE` column on public.users — dev to add.
+        marketing_opt_in: marketingOptIn,
+      },
       { onConflict: 'id' },
     );
     if (userErr) throw userErr;

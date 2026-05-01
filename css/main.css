@@ -6249,6 +6249,119 @@ button.app-pill.purple.clickable:hover {
 }
 .save-error:empty { padding-top: 0; }
 
+/* ── Opt-in checkbox card on the save form ──────────────────────
+   Clickable card that toggles the hidden checkbox. Subtle mint hint
+   when unchecked (inviting), celebrated mint glow when checked. */
+.opt-in-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  margin: 0 0 8px;
+  background:
+    linear-gradient(135deg, rgba(34,230,168,0.04) 0%, rgba(34,230,168,0.02) 100%),
+    var(--ink-2);
+  border: 1.5px solid rgba(34,230,168,0.30);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+.opt-in-card:hover {
+  border-color: rgba(34,230,168,0.55);
+  background:
+    linear-gradient(135deg, rgba(34,230,168,0.08) 0%, rgba(34,230,168,0.04) 100%),
+    var(--ink-2);
+  box-shadow: 0 0 22px rgba(34,230,168,0.14);
+  transform: translateY(-1px);
+}
+.opt-in-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.opt-in-check-visual {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--ink);
+  border: 1.5px solid rgba(34,230,168,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.2s;
+}
+.opt-in-check-visual svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.2s, transform 0.2s cubic-bezier(.4,0,.2,1);
+}
+.opt-in-checkbox:checked + .opt-in-check-visual {
+  background: var(--mint);
+  border-color: var(--mint);
+  box-shadow: 0 0 14px rgba(34,230,168,0.45);
+}
+.opt-in-checkbox:checked + .opt-in-check-visual svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.opt-in-card:has(.opt-in-checkbox:checked) {
+  border-color: var(--mint);
+  background:
+    linear-gradient(135deg, rgba(34,230,168,0.10) 0%, rgba(34,230,168,0.04) 100%),
+    var(--ink-2);
+  box-shadow: 0 0 28px rgba(34,230,168,0.22);
+}
+/* Focus ring for keyboard accessibility */
+.opt-in-checkbox:focus-visible + .opt-in-check-visual {
+  outline: 2px solid var(--mint);
+  outline-offset: 3px;
+}
+.opt-in-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.opt-in-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+}
+.opt-in-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  color: var(--mint);
+}
+.opt-in-icon svg { width: 18px; height: 18px; }
+.opt-in-sub {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.opt-in-sub strong { color: var(--text); font-weight: 600; }
+
+@media (max-width: 640px) {
+  .opt-in-card { padding: 16px 16px; gap: 12px; }
+  .opt-in-title { font-size: 15px; }
+  .opt-in-sub { font-size: 13px; }
+}
+
 .save-actions {
   display: flex;
   flex-direction: column;

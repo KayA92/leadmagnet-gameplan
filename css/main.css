@@ -88,7 +88,20 @@ body::before {
   pointer-events: none;
 }
 .top-bar > * { pointer-events: auto; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--text); }
+.brand-logo { height: 28px; width: auto; display: block; flex-shrink: 0; }
+.brand-divider { width: 1px; height: 22px; background: var(--ink-3); flex-shrink: 0; }
+.brand-event {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* Legacy brand-mark + brand-text — kept for any view that still renders them.
+   The top-bar uses .brand-logo / .brand-divider / .brand-event now. */
 .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--grad); position: relative; box-shadow: var(--glow-pink); flex-shrink: 0; }
 .brand-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 4px; }
 .brand-mark::before { content: ''; position: absolute; inset: 8px; background: var(--grad); border-radius: 2px; z-index: 1; }
@@ -98,6 +111,26 @@ body::before {
 .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); transition: all 0.4s cubic-bezier(.4,0,.2,1); }
 .progress-dot.done { background: var(--mint); box-shadow: 0 0 8px rgba(34,230,168,0.6); }
 .progress-dot.current { background: var(--pink); box-shadow: 0 0 10px rgba(255,94,132,0.7); width: 24px; border-radius: 3px; }
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.top-bar-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.top-bar-link:hover { color: var(--mint); }
+@media (max-width: 480px) {
+  .top-bar-link { display: none; }
+}
 .login-btn {
   display: inline-flex;
   align-items: center;
@@ -209,6 +242,27 @@ body::before {
 .hero-brand-free {
   color: var(--text);
   font-weight: 700;
+}
+.hero-feature-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.hero-feature-strip-dot {
+  color: var(--mint);
+  opacity: 0.6;
+}
+@media (max-width: 640px) {
+  .hero-feature-strip { font-size: 10px; gap: 6px 10px; letter-spacing: 0.16em; margin-top: 12px; }
 }
 .hero-brand-dot {
   display: inline-block;
@@ -7220,6 +7274,16 @@ button.app-pill.purple.clickable:hover {
 
 @media (max-width: 640px) {
   .top-bar { padding: 14px 18px; }
+  .brand { gap: 12px; }
+  .brand-logo { height: 22px; }
+  .brand-divider { height: 16px; }
+  .brand-event { font-size: 10px; letter-spacing: 0.14em; }
+  .top-bar-right { gap: 14px; }
+  .top-bar-link { font-size: 10px; letter-spacing: 0.14em; }
+}
+@media (max-width: 380px) {
+  .brand-divider, .brand-event { display: none; }
+}
   .stage { padding: 70px 20px 40px; }
   .stage.flow-mode { padding: 96px 18px 40px; }
   /* App stage on mobile: no top gap (the tab bar IS the top chrome), no horizontal

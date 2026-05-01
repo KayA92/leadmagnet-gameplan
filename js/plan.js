@@ -223,8 +223,9 @@ function renderTabNav() {
     <div class="app-tabs-inner">
       <div class="app-tabs-brand-row">
         <a class="app-tabs-brand" href="/">
-          <div class="brand-mark"></div>
-          <div class="app-tabs-brand-text">The Accountex <em>Game Plan</em></div>
+          <img src="/images/AutoEvent.svg" alt="AutoEvent" class="brand-logo">
+          <span class="brand-divider"></span>
+          <span class="brand-event">Accountex 2026</span>
         </a>
       </div>
       <div class="app-tabs-row">

@@ -26,10 +26,10 @@ opt-in field on the save form.
 ## Where to find each thing
 
 - **Source files:** `emails/` folder in the repo, deployed live at
-  `https://workiro-ai.com/emails/welcome.html` etc.
-- **Visual preview hub:** `https://workiro-ai.com/emails/` — opens
+  `https://autoevent.io/emails/welcome.html` etc.
+- **Visual preview hub:** `https://autoevent.io/emails/` — opens
   every template side-by-side for review.
-- **Sender / Reply-To** for every template: `AutoEvent <hello@workiro-ai.com>`
+- **Sender / Reply-To** for every template: `AutoEvent <hello@autoevent.io>`
 
 ---
 
@@ -113,8 +113,8 @@ functional, not marketing: `welcome.html`, `login-link.html`,
 
 - [ ] Schema: `marketing_opt_in` column added to `public.users`
 - [ ] Subject lines configured per the table above
-- [ ] Sender + Reply-To: `AutoEvent <hello@workiro-ai.com>` (DMARC /
-      SPF / DKIM aligned for `workiro-ai.com` to keep delivery clean)
+- [ ] Sender + Reply-To: `AutoEvent <hello@autoevent.io>` (DMARC /
+      SPF / DKIM aligned for `autoevent.io` to keep delivery clean)
 - [ ] Variables wired up per template
 - [ ] Welcome + login-link emails sent via Supabase Auth's
       email-template hooks (or your transactional ESP)

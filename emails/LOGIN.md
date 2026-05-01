@@ -40,7 +40,7 @@ handle, and what's still on the dev to-do list (per
 | `/login/` | Plain magic-link page | No |
 | `/login/?invite=TOKEN` | Same form, but stores `TOKEN` in JS state and forwards it through to the magic-link redirect URL so the team-invite flow survives the round trip | **Yes** — purple "You've been invited to join a team" banner above the email field |
 
-Send team-invite emails as `https://workiro-ai.com/login/?invite={{token}}`.
+Send team-invite emails as `https://autoevent.io/login/?invite={{token}}`.
 
 ---
 
@@ -50,8 +50,8 @@ The magic-link redirect URL the page sends Supabase is:
 
 | Scenario | Redirect URL |
 |---|---|
-| Plain login | `https://workiro-ai.com/plan/` |
-| Team invite | `https://workiro-ai.com/plan/?invite=<encoded TOKEN>` |
+| Plain login | `https://autoevent.io/plan/` |
+| Team invite | `https://autoevent.io/plan/?invite=<encoded TOKEN>` |
 
 Supabase emails the magic link. User clicks it → lands at the
 redirect URL with their auth session attached. From there, `plan.js`
@@ -67,7 +67,7 @@ takes over.
 - Clicks link → `/plan/` with their saved plan loaded
 
 ### ✅ New team member with an invite link
-- Receives email with `https://workiro-ai.com/login/?invite=ABC`
+- Receives email with `https://autoevent.io/login/?invite=ABC`
   from a teammate's invite-share flow
 - Lands on `/login/`, sees the *"You've been invited to join a
   team"* purple banner

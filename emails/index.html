@@ -180,7 +180,7 @@
   <div class="email-list-eyebrow">Internal preview · Hand to dev</div>
   <h1 class="email-list-title">Email <em>templates.</em></h1>
   <p class="email-list-sub">
-    All email HTML for the AutoEvent Accountex 2026 lead magnet. Open each one in a new tab to preview the rendered email. <strong>Variables in <code style="background:var(--ink-2);padding:2px 6px;border-radius:4px;font-size:13px;">{{double-curly-braces}}</code> are placeholders</strong> — Postmark/SendGrid/Supabase will substitute them at send time. Every email points at <code style="background:var(--ink-2);padding:2px 6px;border-radius:4px;font-size:13px;">workiro-ai.com</code> and the AutoEvent privacy URL.
+    All email HTML for the AutoEvent Accountex 2026 lead magnet. Open each one in a new tab to preview the rendered email. <strong>Variables in <code style="background:var(--ink-2);padding:2px 6px;border-radius:4px;font-size:13px;">{{double-curly-braces}}</code> are placeholders</strong> — Postmark/SendGrid/Supabase will substitute them at send time. Every email points at <code style="background:var(--ink-2);padding:2px 6px;border-radius:4px;font-size:13px;">autoevent.io</code> and the AutoEvent privacy URL.
   </p>
 
   <div class="email-list-grid">
@@ -195,7 +195,7 @@
         <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, teamInviteUrl, unsubscribeUrl</div>
       </div>
       <div class="email-card-body">
-        Single-use magic link to enter the plan for the first time. Tells the user that future logins are via <strong>workiro-ai.com/login</strong>. Includes team-invite block, install-as-app block, and a "mark not junk" reminder.
+        Single-use magic link to enter the plan for the first time. Tells the user that future logins are via <strong>autoevent.io/login</strong>. Includes team-invite block, install-as-app block, and a "mark not junk" reminder.
       </div>
       <span class="email-card-cta">
         Open preview
@@ -319,7 +319,7 @@
       <li><strong>New login flow:</strong> Each login now requires a fresh single-use magic link from /login/. The welcome email's link is one-time-use only. <em>All "save / star / flag / pin this email" copy was removed</em> — saving a single-use link doesn't help.</li>
       <li><strong>New template added:</strong> <code>login-link.html</code> — the recurring magic link sent every time someone requests a login.</li>
       <li><strong>Brand:</strong> "Workiro Accountex Game Plan" → "AutoEvent for Accountex 2026" across all 7 emails.</li>
-      <li><strong>Domain:</strong> <code>gameplan.workiro.com</code> → <code>workiro-ai.com</code>.</li>
+      <li><strong>Domain:</strong> <code>gameplan.workiro.com</code> → <code>autoevent.io</code>.</li>
       <li><strong>Privacy URL:</strong> <code>/terms-and-policies/accountex-gameplan</code> → <code>/terms-and-policies/autoevent</code>.</li>
       <li><strong>Anti-spam:</strong> subject lines now lead with first name (more personal, less promotional). Welcome email includes a "mark not junk" reminder so future login links land in the inbox.</li>
       <li><strong>Caption fix:</strong> "(No password — same link every time.)" was wrong under the new flow. Updated to "(One-tap login — no password)".</li>

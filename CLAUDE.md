@@ -8,7 +8,7 @@ Quick-start reference for Claude Code. Covers the non-obvious parts that take lo
 
 A lead-magnet web app for the Accountex 2026 accounting conference. A 5-stage wizard matches sessions/booths to a user's problems via Claude AI, captures their email, then shows a post-auth collaborative plan. Built by Workiro.
 
-Live at: `workiro-ai.com`  
+Live at: `autoevent.io`  
 Repo: GitHub Pages — pushing to `main` auto-deploys.
 
 ---
@@ -23,7 +23,7 @@ Repo: GitHub Pages — pushing to `main` auto-deploys.
 | Styles | `css/main.css` — one compiled static file, edit it directly. No Tailwind source. |
 | Backend | Supabase (Postgres + Auth + Edge Functions) |
 | AI | Claude Haiku via `supabase/functions/match-sessions/index.ts` (Deno/TypeScript) |
-| Hosting | GitHub Pages, CNAME → workiro-ai.com |
+| Hosting | GitHub Pages, CNAME → autoevent.io |
 
 **Edge Function changes require a deploy:** `supabase functions deploy match-sessions`  
 **Data changes (CSV → JSON):** Run `node scripts/csv-to-json.js` and `node scripts/exhibitors-csv-to-json.js`, then commit the output files in `data/`.

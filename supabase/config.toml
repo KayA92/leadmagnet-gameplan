@@ -23,7 +23,7 @@ pop3_port = 54326
 file_size_limit = "50MiB"
 
 [auth]
-site_url = "https://workiro-ai.com/app/plan/"
-additional_redirect_urls = ["https://workiro-ai.com/app/plan/"]
+site_url = "https://autoevent.io/plan/"
+additional_redirect_urls = ["https://autoevent.io/plan/"]
 jwt_expiry = 3600
 enable_signup = true

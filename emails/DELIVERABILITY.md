@@ -112,17 +112,17 @@ Pick whatever Workiro's existing IT prefers. Just needs:
 **Owner:** Dev
 
 Currently the templates in `emails/` say
-`From: AutoEvent <hello@workiro-ai.com>`. Switch to
+`From: AutoEvent <hello@autoevent.io>`. Switch to
 `AutoEvent <hello@autoevent.io>` everywhere:
 - All 7 email template comment headers
 - Supabase Auth SMTP sender setting
 - The "sender" line in the in-app *"Check your inbox"* screen
   (`index.html` stage email-sent — the bit that says
-  *"Sender: hello@workiro-ai.com"*)
+  *"Sender: hello@autoevent.io"*)
 - The *"mark not junk"* reminder text in the welcome email
 
 Search-and-replace across `emails/` + `index.html` + `js/wizard.js`:
-- `hello@workiro-ai.com` → `hello@autoevent.io`
+- `hello@autoevent.io` → `hello@autoevent.io`
 
 ---
 

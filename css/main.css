@@ -6191,11 +6191,11 @@ button.app-pill.purple.clickable:hover {
 }
 .save-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 600;
+  color: var(--text);
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;

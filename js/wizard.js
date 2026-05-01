@@ -576,7 +576,12 @@ export async function initWizard() {
     updateCharCount('');
   }
   document.querySelectorAll('[data-chip]').forEach(btn => {
-    btn.addEventListener('click', () => addPromptChip(btn.dataset.chip));
+    btn.addEventListener('click', () => {
+      // Don't re-add the same chip's text twice — keep the textarea clean
+      if (btn.classList.contains('added')) return;
+      addPromptChip(btn.dataset.chip);
+      btn.classList.add('added');
+    });
   });
   $('problem-back')?.addEventListener('click', () => history.back());
   $('problem-next')?.addEventListener('click', () => {

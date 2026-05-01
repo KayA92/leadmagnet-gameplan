@@ -62,7 +62,13 @@ function goToStage(n, fromHistory = false) {
   if (id === '0') document.body.classList.add('hero-active', 'flow-active');
   if (FLOW_STAGES.has(id)) document.body.classList.add('flow-active');
 
+  // Reset scroll on both window and the stage element itself (covers fixed + absolute stages,
+  // and works around iOS Safari ignoring synchronous window.scrollTo during layout changes).
+  if (next) next.scrollTop = 0;
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
   window.scrollTo(0, 0);
+  setTimeout(() => { window.scrollTo(0, 0); document.body.scrollTop = 0; }, 0);
   updateProgress();
 
   // Push/replace URL hash so browser back works (stages 6 and email-sent are excluded)

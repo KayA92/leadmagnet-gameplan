@@ -545,7 +545,10 @@ function updateCharCount(val) {
     fillEl.style.width = Math.min((len / 1000) * 100, 100) + '%';
     fillEl.className = 'char-progress-fill' + (len >= 20 ? ' ok' : '');
   }
-  if (minNote) minNote.className = 'min-note' + (len >= 20 ? ' ok' : '');
+  if (minNote) {
+    minNote.className = 'min-note' + (len >= 20 ? ' ok' : '');
+    minNote.hidden = len >= 20;
+  }
   const btn = $('problem-next');
   if (btn) btn.disabled = len < 20;
 }

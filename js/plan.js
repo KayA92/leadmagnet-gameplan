@@ -701,9 +701,9 @@ function renderChecklistTab() {
           <p class="checklist-webinar-card-body">
             Francesca McClory, Robyn Milstead and Rachel Gregory walk through the before / during / after flow — with Alex Hayter demoing every tab. <strong>Watch once, plan better.</strong>
           </p>
-          <a class="checklist-webinar-card-btn" href="https://workiro.com/accountex-webinar" target="_blank" rel="noopener">
+          <a class="checklist-webinar-card-btn" href="https://getbusy.zoom.us/webinar/register/8417768602832/WN_b9JOGulrQfWbD1FUeRKjmg#/registration" target="_blank" rel="noopener">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Watch the recording
+            Join the webinar
           </a>
         </div>
         <div class="checklist-webinar-card-right">

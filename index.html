@@ -29,40 +29,23 @@
     <div class="brand-mark"></div>
     <div class="brand-text">The Accountex <em>Game Plan</em></div>
   </a>
-  <button class="login-btn" id="login-btn">Return to my plan</button>
+  <a class="login-btn" href="/login/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    Log in to your plan
+  </a>
 </nav>
-
-<div class="login-overlay" id="login-overlay" hidden>
-  <div class="login-card">
-    <p class="login-card-title">Return to your plan</p>
-    <p class="login-card-sub">Enter your email and we'll send a new magic link — no password needed.</p>
-    <input class="login-card-input" type="email" id="login-email" placeholder="you@yourfirm.co.uk" maxlength="120">
-    <div class="login-card-actions">
-      <button class="login-card-submit" id="login-submit">Send link</button>
-      <button class="login-card-cancel" id="login-cancel">Cancel</button>
-    </div>
-    <p class="login-card-msg" id="login-msg" style="display:none;"></p>
-  </div>
-</div>
 
 <!-- Stage 0: Hero (flow-mode so how-it-works + panellists extend below fold) -->
 <section class="stage active flow-mode" id="stage-0" data-stage="0">
   <div style="display:flex;flex-direction:column;align-items:center;width:100%;text-align:center;">
-    <div class="sponsors-strip">
-      <div class="sponsors-strip-label">BROUGHT TO YOU BY</div>
-      <div class="sponsors-strip-logos">
-        <img class="sponsor-img xu-img" src="./images/XU%20Magazine.webp" alt="XU Magazine">
-        <img class="sponsor-img workiro-img" src="./images/workiro-logo.svg" alt="Workiro">
-      </div>
-    </div>
     <div class="hero-brand-lockup">
-      <div class="hero-brand-wordmark">Accountex 2026 <em>Free AI Planner</em></div>
+      <div class="hero-brand-wordmark"><span class="hero-brand-free">Free</span> <em>Accountex 2026 AI Planner</em></div>
     </div>
     <h1 class="hero-title">
-      We use AI to match 250+ Accountex sessions to the <em>problems in your accounting practice.</em>
+      Use AI to match all 250+ Accountex sessions to<br><em>the problems in your<br>accounting practice.</em>
     </h1>
     <p class="hero-sub">
-      No more walking Accountex lost. You and your team leave with a plan, live notes, and a full debrief report — done before you leave ExCeL.
+      <strong>No more walking Accountex lost.</strong> You and your team enter with a personalised plan with live notes – and leave a CPD log and full PDF debrief report.
     </p>
     <button class="cta-primary" id="hero-start">
       Get my plan in 60 seconds
@@ -80,34 +63,67 @@
     <h2 class="how-it-works-title">Before. During. <em>After.</em></h2>
     <div class="hiw-cards">
       <div class="hiw-card before">
-        <div class="hiw-card-stage"><span class="hiw-card-stage-dot"></span>Before the show</div>
-        <div class="hiw-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16h.01M13 16h.01M17 16h.01"/></svg>
+        <div class="hiw-card-head">
+          <div class="hiw-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06L2.36 12.48a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0Z"/><path d="M20 3v4M22 5h-4M4 17v2M5 18H3"/></svg>
+          </div>
+          <div class="hiw-card-stage">Before the show</div>
         </div>
-        <div class="hiw-card-title">AI reads the whole programme for you.</div>
+        <div class="hiw-card-title">AI matches every session + stand to your firm's problems.</div>
         <div class="hiw-card-body">
-          Drop in your team's problems. We score every session across the <strong>16 theatres</strong> and every stand in the exhibitor hall — then hand each teammate a plan that fits <strong>alongside</strong> the others, not on top.
+          Walk in with a personalised plan that lines up sessions, booths and your team's priorities.
         </div>
       </div>
       <div class="hiw-card during">
-        <div class="hiw-card-stage"><span class="hiw-card-stage-dot"></span>During the show</div>
-        <div class="hiw-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <div class="hiw-card-head">
+          <div class="hiw-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="hiw-card-stage">During the show</div>
         </div>
-        <div class="hiw-card-title">Capture what you heard, attributed to who heard it.</div>
+        <div class="hiw-card-title">Live team notes + ratings on every session.</div>
         <div class="hiw-card-body">
-          Tap a session → type or dictate a takeaway. Teammates see it live. <strong>No more "what did Dave think of the AI panel?"</strong> on Monday morning.
+          Tap a session to rate it or add a note, and your team sees it on their plan as it happens.
         </div>
       </div>
       <div class="hiw-card after">
-        <div class="hiw-card-stage"><span class="hiw-card-stage-dot"></span>After the show</div>
-        <div class="hiw-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        <div class="hiw-card-head">
+          <div class="hiw-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+          </div>
+          <div class="hiw-card-stage">After the show</div>
         </div>
-        <div class="hiw-card-title">Your post-show report. Already drafted.</div>
+        <div class="hiw-card-title">Your team debrief in one click.</div>
         <div class="hiw-card-body">
-          A shareable summary with top vendors, team decisions, and action items — <strong>ready before you leave ExCeL</strong>. CPD logs auto-filled too.
+          One click pulls every team note into a PDF debrief, with your CPD log already filled in.
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sponsors / co-production strip -->
+  <section class="sponsors-footer" style="max-width:760px;">
+    <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
+    <div class="sponsors-grid">
+      <div class="sponsor-card">
+        <div class="sponsor-card-logo">
+          <img src="./images/XU%20Magazine.webp" alt="XU Magazine">
+        </div>
+        <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+        <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+          xumagazine.com
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+      <div class="sponsor-card">
+        <div class="sponsor-card-logo">
+          <img src="./images/workiro-logo.svg" alt="Workiro">
+        </div>
+        <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants.</p>
+        <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
+          workiro.com
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
       </div>
     </div>
   </section>
@@ -115,10 +131,14 @@
   <!-- Panellists strip -->
   <section class="panellists">
     <div class="panellists-inner">
-      <div class="panellists-label">Featured on the panel · 6 May webinar</div>
-      <h2 class="panellists-title">Created with insights from <em>accountants who've done it well.</em></h2>
+      <div class="webinar-countdown" id="webinar-countdown" data-start="2026-05-06T11:00:00+01:00" data-end="2026-05-06T11:45:00+01:00">
+        <span class="webinar-countdown-label" id="webinar-countdown-label">Live in</span>
+        <span class="webinar-countdown-value" id="webinar-countdown-value">— d — h — m</span>
+      </div>
+      <div class="panellists-label">Free 30-min webinar · Tue 6 May, 11am</div>
+      <h2 class="panellists-title">Bonus: Join a <em>masterclass</em> webinar on getting the most out of Accountex, and this app.</h2>
       <p class="panellists-sub">
-        We didn't build this in a marketing room. The shape of the tool — what the onboarding asks, what the debrief surfaces, what gets captured on the floor — came from the three people below. They'll walk through it live on the <a href="https://workiro.com/accountex-webinar" target="_blank" rel="noopener" class="panellists-sub-link"><strong>6 May panel webinar</strong></a>.
+        Join 4 experts for a free 30-min panel — how to prepare your team, prioritise your time on the day, and turn your Game Plan into action.
       </p>
       <div class="panellists-grid">
         <div class="panellist-card">
@@ -144,12 +164,12 @@
         </div>
       </div>
       <div class="panellists-register">
-        <a href="https://workiro.com/accountex-webinar" target="_blank" rel="noopener" class="panellists-register-btn">
+        <a href="https://getbusy.zoom.us/webinar/register/8417768602832/WN_b9JOGulrQfWbD1FUeRKjmg#/registration" target="_blank" rel="noopener" class="panellists-register-btn" id="webinar-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Watch the webinar recording
+          <span id="webinar-btn-text">Join the webinar</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <div class="panellists-register-note">Free · 45 minutes · Q&amp;A at the end</div>
+        <div class="panellists-register-note" id="webinar-register-note">Free · 30 minutes · Q&amp;A at the end</div>
       </div>
       <div class="panellists-host">
         <div class="panellists-host-photo">
@@ -170,43 +190,20 @@
       <div class="launch-card plan-card">
         <div class="launch-card-eyebrow">
           <span class="launch-eyebrow-dot plan-dot"></span>
-          <span>Ready to build yours?</span>
+          <span>Start now</span>
         </div>
-        <h3 class="launch-card-title">Your Accountex game plan, <em>one tap away.</em></h3>
+        <h3 class="launch-card-title">Get your plan in<br><em>60 seconds.</em></h3>
         <p class="launch-card-body">
-          60 seconds from here to a live plan with matched sessions, matched booths, and a team workspace if you're bringing colleagues.
+          Free. No sign-up dance. AI matches every session and booth to the problems in your firm.
         </p>
         <button class="launch-card-btn plan-btn" onclick="document.getElementById('hero-start').click()">
-          Get my AI plan <span class="cta-secs">(60s)</span>
+          Build my plan <span class="cta-secs">(60s)</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
-        <div class="launch-card-note">Takes 60 seconds · Works solo or team</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="sponsors-footer" style="max-width:640px;">
-    <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
-    <div class="sponsors-grid">
-      <div class="sponsor-card">
-        <div class="sponsor-card-logo" style="justify-content:center;">
-          <img src="./images/XU%20Magazine.webp" alt="XU Magazine" style="width:100%;height:auto;max-height:80px;object-fit:contain;">
+        <div class="hero-footnote launch-card-footnote">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Built for 13–14 May</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Works solo or team</span>
         </div>
-        <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-        <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener" style="justify-content:center;">
-          xumagazine.com
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
-      <div class="sponsor-card">
-        <div class="sponsor-card-logo" style="justify-content:center;">
-          <img src="./images/workiro-logo.svg" alt="Workiro" style="width:100%;height:auto;max-height:80px;object-fit:contain;">
-        </div>
-        <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants.</p>
-        <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener" style="justify-content:center;">
-          workiro.com
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
       </div>
     </div>
   </section>
@@ -501,7 +498,7 @@
           <span class="magic-install-step-num">3</span>
           <div class="magic-install-step-body">
             <div class="magic-install-step-head">WATCH THE RECORDING</div>
-            <div class="magic-install-step-sub">We'll send a second email with a <strong>45-minute webinar recording</strong> — Francesca, Robyn and Rachel on how top UK firms actually use this at the show.</div>
+            <div class="magic-install-step-sub">We'll send a second email with a <strong>30-minute webinar recording</strong> — Francesca, Robyn and Rachel on how top UK firms actually use this at the show.</div>
           </div>
         </li>
       </ol>
@@ -541,49 +538,55 @@
 
 <script type="module">
   import { initWizard } from './js/wizard.js';
-  import { sendMagicLink } from './js/auth.js';
   document.addEventListener('DOMContentLoaded', () => {
     initWizard();
 
-    const overlay = document.getElementById('login-overlay');
-    const emailInput = document.getElementById('login-email');
-    const submitBtn = document.getElementById('login-submit');
-    const msg = document.getElementById('login-msg');
+    // Webinar countdown — scarcity timer that flips state at start/end
+    const cdEl = document.getElementById('webinar-countdown');
+    if (cdEl) {
+      const startTs = Date.parse(cdEl.dataset.start);
+      const endTs = Date.parse(cdEl.dataset.end);
+      const labelEl = document.getElementById('webinar-countdown-label');
+      const valueEl = document.getElementById('webinar-countdown-value');
+      const btnTextEl = document.getElementById('webinar-btn-text');
+      const noteEl = document.getElementById('webinar-register-note');
 
-    document.getElementById('login-btn').addEventListener('click', () => {
-      overlay.hidden = false;
-      emailInput.value = '';
-      msg.style.display = 'none';
-      emailInput.focus();
-    });
-
-    document.getElementById('login-cancel').addEventListener('click', () => {
-      overlay.hidden = true;
-    });
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.hidden = true;
-    });
-
-    submitBtn.addEventListener('click', async () => {
-      const email = emailInput.value.trim();
-      if (!email) { emailInput.focus(); return; }
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending…';
-      msg.style.display = 'none';
-      const { error } = await sendMagicLink(email, `${window.location.origin}/plan/`);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Send link';
-      msg.style.display = 'block';
-      if (error) {
-        msg.className = 'login-card-msg error';
-        msg.textContent = 'Something went wrong — please try again.';
-      } else {
-        msg.className = 'login-card-msg success';
-        msg.textContent = `Magic link sent to ${email} — check your inbox.`;
-        emailInput.value = '';
-      }
-    });
+      const tick = () => {
+        const now = Date.now();
+        if (now < startTs) {
+          // Pre-show — countdown
+          const diff = startTs - now;
+          const d = Math.floor(diff / 86400000);
+          const h = Math.floor((diff % 86400000) / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          let str;
+          if (d >= 1) str = `${d}d ${h}h ${m}m`;
+          else if (h >= 1) str = `${h}h ${m}m ${s}s`;
+          else str = `${m}m ${s}s`;
+          cdEl.classList.remove('live', 'ended');
+          labelEl.textContent = 'Live in';
+          valueEl.textContent = str;
+        } else if (now < endTs) {
+          // Live now
+          cdEl.classList.add('live');
+          cdEl.classList.remove('ended');
+          labelEl.textContent = '● Live now';
+          valueEl.textContent = 'Join in progress';
+          if (btnTextEl) btnTextEl.textContent = 'Join the webinar — live now';
+        } else {
+          // Ended — recording soon
+          cdEl.classList.add('ended');
+          cdEl.classList.remove('live');
+          labelEl.textContent = 'Webinar finished';
+          valueEl.textContent = 'Recording on the way';
+          if (btnTextEl) btnTextEl.textContent = 'Get the recording';
+          if (noteEl) noteEl.textContent = 'We’ll email you when the recording is live';
+        }
+      };
+      tick();
+      setInterval(tick, 1000);
+    }
   });
 </script>
 </body>

@@ -49,10 +49,6 @@
       <strong>One click in.</strong> Enter your email and we'll send a magic link — no password, no sign-up dance.
     </p>
 
-    <div class="login-page-invite-banner" id="login-page-invite-banner" hidden>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>You've been invited to join a team — log in to accept.</span>
-    </div>
 
     <form class="login-page-form" id="login-form" novalidate>
       <label class="login-page-input-label" for="login-email">Your email:</label>
@@ -139,7 +135,6 @@
   const emailInput = document.getElementById('login-email');
   const submitBtn = document.getElementById('login-submit');
   const msg = document.getElementById('login-msg');
-  const inviteBanner = document.getElementById('login-page-invite-banner');
   const resendEl = document.getElementById('login-page-resend');
   const resendBtn = document.getElementById('login-page-resend-btn');
 
@@ -147,8 +142,6 @@
   // flow when emails point at /login/?invite=TOKEN
   const params = new URLSearchParams(window.location.search);
   const inviteToken = params.get('invite');
-  if (inviteToken) inviteBanner.hidden = false;
-
   const originalBtnContent = submitBtn.innerHTML;
 
   // Resend state — populated after a successful first send.

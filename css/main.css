@@ -7611,6 +7611,7 @@ button.app-pill.purple.clickable:hover {
   .brand-event { font-size: 10px; letter-spacing: 0.14em; padding-top: 0; }
   .top-bar-right { gap: 14px; }
   .cta-primary { font-size: 15px; padding: 16px 24px; gap: 10px; white-space: nowrap; }
+  .launch-card-btn { font-size: 15px; padding: 15px 22px; gap: 8px; white-space: nowrap; }
   .top-bar-link { display: none; }
   .stage { padding: 70px 20px 40px; }
   .stage.flow-mode { padding: 96px 18px 40px; }
@@ -7684,11 +7685,14 @@ button.app-pill.purple.clickable:hover {
   .panellists-host-text { text-align: center; }
   .panellists-host-photo { width: 64px; height: 64px; }
   .hero-footnote { font-size: 14px; gap: 20px; margin-top: 24px; }
+  /* Ticker: 2-row layout so session name gets its own full-width row */
+  .ticker-item { grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; gap: 3px 10px; padding: 10px 12px; }
+  .ticker-title { grid-column: 1 / -1; grid-row: 1; }
+  .ticker-theatre { grid-row: 2; grid-column: 1; }
+  .ticker-speaker { grid-row: 2; grid-column: 2; }
+  .ticker-score { grid-row: 2; grid-column: 3; }
 }
 
-@media (max-width: 380px) {
-  .brand-event { display: none; }
-}
 
 /* Solo invite nudge chip — appears on checklist when not in a team */
 .solo-nudge-chip {
@@ -8300,6 +8304,6 @@ button.app-pill.purple.clickable:hover {
   .login-page { padding: 96px 18px 48px; }
   .login-page-title { font-size: 32px; }
   .login-page-sub { font-size: 16px; }
-  .login-page-input { font-size: 16px; padding: 16px 18px; }
+  .login-page-input { font-size: 16px; padding: 16px 18px 16px 50px; }
   .login-page-divider { margin: 36px auto 24px; }
 }

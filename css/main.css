@@ -521,6 +521,22 @@ body::before {
 
 /* Tag pills (role + problem prompts + quirk prompts) */
 .tag-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Role groups (Stage 5) — splits sector from seniority so users in
+   adjacent roles (bookkeeper, tax advisor) don't have to fit themselves
+   into a seniority ladder, and partners don't have to mentally untangle
+   their identity from their job title. Single-select still — picking one
+   pill in any group is the answer. */
+.role-groups { display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.role-group { display: flex; flex-direction: column; gap: 12px; }
+.role-group-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding-left: 2px;
+}
 .tag-pill {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 11px 18px;

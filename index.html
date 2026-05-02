@@ -235,41 +235,84 @@
 
 </section>
 
-<!-- Stage 2: Problem -->
+<!-- Stage 2: Problem (heat-banded pain tags) -->
 <section class="stage flow-mode" id="stage-2" data-stage="2">
   <div class="q-container">
-    <div class="q-number"><span>01 / 04</span><div class="q-progress"><span class="q-progress-seg current"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span></div></div>
+    <div class="q-number"><span>01 / 05</span><div class="q-progress"><span class="q-progress-seg current"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span></div></div>
+    <div class="pain-eyebrow">
+      <span class="pain-eyebrow-dot"></span>
+      <span class="pain-eyebrow-text">HEAT-RANKED · ICAEW · ACCA · HAYS · WOLTERS KLUWER · 12 SURVEYS</span>
+    </div>
     <h2 class="q-title">Tap your firm's <em>pain points.</em></h2>
-    <p class="q-sub">Most-covered at the show first. Pick as many as hit home — the AI uses these to match sessions and booths.</p>
-    <div class="prompt-section">
-      <div class="tag-grid">
-        <button class="prompt-chip" data-cat="practice-management" data-chip="Workflow and task management is fragmented across three tools and email.">Practice management</button>
-        <button class="prompt-chip" data-cat="ai-automation" data-chip="We know AI can help but have no idea where to start or what's hype.">AI &amp; automation</button>
-        <button class="prompt-chip" data-cat="bookkeeping" data-chip="Cloud accounting adoption is patchy across our client base and reconciliations take too long.">Bookkeeping / cloud accounting</button>
-        <button class="prompt-chip" data-cat="tax-mtd" data-chip="MTD for Income Tax went live in April and our clients aren't ready.">Tax / MTD / compliance</button>
-        <button class="prompt-chip" data-cat="doc-management" data-chip="Our documents and client files live in a mess across email, drives and desktops.">Document management / portals</button>
-        <button class="prompt-chip" data-cat="payroll" data-chip="Payroll processing is time-consuming and error-prone — we need a more streamlined solution.">Payroll</button>
-        <button class="prompt-chip" data-cat="data-analytics" data-chip="Margin visibility is poor — we don't know which clients are profitable or what to charge.">Data analytics &amp; reporting</button>
-        <button class="prompt-chip" data-cat="cyber-security" data-chip="Cyber threats worry me and we don't have formal defences in place.">Cyber security &amp; MFA</button>
-        <button class="prompt-chip" data-cat="aml-kyc" data-chip="AML compliance pressure is increasing and we need tighter, more automated processes.">AML / KYC &amp; verification</button>
-        <button class="prompt-chip" data-cat="hr-people" data-chip="Struggling to hire and retain qualified staff in a competitive market.">HR &amp; leadership</button>
-        <button class="prompt-chip" data-cat="banking-payments" data-chip="Bank feeds keep breaking and reconciliations take hours every week.">Banking &amp; bank feeds</button>
-        <button class="prompt-chip" data-cat="outsourcing" data-chip="We're considering outsourcing or offshoring to manage capacity without adding headcount.">Outsourcing &amp; offshore</button>
-        <button class="prompt-chip" data-cat="marketing-growth" data-chip="We need to grow the practice but lack a clear marketing and lead generation strategy.">Marketing &amp; growth</button>
-        <button class="prompt-chip" data-cat="esign" data-chip="We need to streamline e-signatures and client approvals — too much paper and chasing.">E-signature &amp; approvals</button>
-        <button class="prompt-chip" data-cat="crm-comms" data-chip="Client comms are scattered across email and we need a proper CRM for the practice.">CRM &amp; client comms</button>
-        <button class="prompt-chip" data-cat="expenses" data-chip="Expense management and receipt capture is a manual mess for clients and us.">Expenses &amp; receipts</button>
-        <button class="prompt-chip" data-cat="doc-automation" data-chip="We need OCR and data extraction to stop manually keying numbers from invoices.">OCR &amp; data extraction</button>
+    <p class="q-sub">Heat-ranked by how loudly the profession is screaming about each one. Pick as many as hit home.</p>
+
+    <div class="pain-band band-scorching">
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>SCORCHING</span></div>
+      <div class="pain-tags">
+        <button class="pain-tag" data-pain="mtd-volume">MTD volume crunch (Apr 2026)</button>
+        <button class="pain-tag" data-pain="ai-start">AI: where the hell to start</button>
+        <button class="pain-tag" data-pain="hiring">Hiring &amp; retention squeeze</button>
+        <button class="pain-tag" data-pain="chasing">Chasing clients for everything</button>
+        <button class="pain-tag" data-pain="burnout">Team burnout / capacity</button>
       </div>
     </div>
-    <div class="text-input-wrap text-input-wrap--optional">
-      <label class="text-input-optional-label" for="problem-input">
-        <span>Anything specific to add?</span>
-        <span class="text-input-optional-tag">Optional</span>
-      </label>
-      <textarea class="text-input" id="problem-input" placeholder="e.g. 'We're a 12-person firm scaling to 25 — onboarding's the bottleneck.'" maxlength="1000" rows="2"></textarea>
-      <div class="text-input-min-note" id="char-min">Tap a topic above, or write at least 20 characters of your own.</div>
+
+    <div class="pain-band band-hot">
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>HOT</span></div>
+      <div class="pain-tags">
+        <button class="pain-tag" data-pain="mtd-clients">MTD client readiness</button>
+        <button class="pain-tag" data-pain="ai-roi">AI ROI without the hype</button>
+        <button class="pain-tag" data-pain="ai-team">Getting the team to use AI</button>
+        <button class="pain-tag" data-pain="margin">Margin &amp; profitability visibility</button>
+        <button class="pain-tag" data-pain="retention">Talent retention plan</button>
+        <button class="pain-tag" data-pain="advisory">Advisory pivot at scale</button>
+        <button class="pain-tag" data-pain="disconnected">Disconnected tech stack</button>
+        <button class="pain-tag" data-pain="aml">AML / KYC pressure</button>
+        <button class="pain-tag" data-pain="winning">Winning new clients</button>
+      </div>
     </div>
+
+    <div class="pain-band band-warm">
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>WARM</span></div>
+      <div class="pain-tags">
+        <button class="pain-tag" data-pain="cyber">Cyber security gap</button>
+        <button class="pain-tag" data-pain="frs102">FRS 102 transition</button>
+        <button class="pain-tag" data-pain="docs">Document management chaos</button>
+        <button class="pain-tag" data-pain="penalties">MTD penalty regime</button>
+        <button class="pain-tag" data-pain="advisory-charge">How to charge for advisory</button>
+        <button class="pain-tag" data-pain="ai-govern">AI governance &amp; policy</button>
+        <button class="pain-tag" data-pain="ai-skills">AI skills gap</button>
+        <button class="pain-tag" data-pain="onboarding">Client onboarding friction</button>
+        <button class="pain-tag" data-pain="month-end">Month-end speed</button>
+        <button class="pain-tag" data-pain="bankfeeds">Bank feed reliability</button>
+        <button class="pain-tag" data-pain="portal">Client portal experience</button>
+      </div>
+    </div>
+
+    <div class="pain-band band-specialist">
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>SPECIALIST</span></div>
+      <div class="pain-tags">
+        <button class="pain-tag" data-pain="cpd">CPD planning</button>
+        <button class="pain-tag" data-pain="career">Career direction</button>
+        <button class="pain-tag" data-pain="leadership">Leadership &amp; people development</button>
+        <button class="pain-tag" data-pain="cashflow">Cash flow forecasting</button>
+        <button class="pain-tag" data-pain="pe">PE / consolidation</button>
+        <button class="pain-tag" data-pain="exit">Succession / exit planning</button>
+        <button class="pain-tag" data-pain="outsource">Outsourcing decisions</button>
+        <button class="pain-tag" data-pain="niche">Niching the practice</button>
+        <button class="pain-tag" data-pain="cross-border">Cross-border / international</button>
+        <button class="pain-tag" data-pain="rd">R&amp;D tax credits</button>
+      </div>
+    </div>
+
+    <div class="precision-bar" id="precision-bar-stage1">
+      <div class="precision-bar-row">
+        <span class="precision-bar-label">AI MATCH PRECISION</span>
+        <span class="precision-bar-state">Pick 1+ to begin</span>
+      </div>
+      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
+    </div>
+
     <div class="q-actions">
       <button class="btn-next" id="problem-next" disabled>Next <span class="keybind">↵</span></button>
       <button class="btn-back" id="problem-back">← Back</button>
@@ -280,7 +323,7 @@
 <!-- Stage 3: Categories -->
 <section class="stage flow-mode" id="stage-3" data-stage="3">
   <div class="q-container">
-    <div class="q-number"><span>02 / 04</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span></div></div>
+    <div class="q-number"><span>02 / 05</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span></div></div>
     <h2 class="q-title">Any <em>software categories</em><br>you're scouting?</h2>
     <p class="q-sub"><strong>Pick as many as you like.</strong> We'll prioritise the booths in your floor-walk, with notes on who's worth queuing for.</p>
     <div class="options">
@@ -308,7 +351,7 @@
 <!-- Stage 4: Availability -->
 <section class="stage flow-mode" id="stage-4" data-stage="4">
   <div class="q-container">
-    <div class="q-number"><span>03 / 04</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span><span class="q-progress-seg"></span></div></div>
+    <div class="q-number"><span>03 / 05</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span></div></div>
     <h2 class="q-title">When are you <em>there?</em></h2>
     <p class="q-sub">Pick one or more — we'll pack matched sessions into the time you've got.</p>
     <div class="time-grid">
@@ -353,22 +396,32 @@
 <!-- Stage 5: Role -->
 <section class="stage flow-mode" id="stage-5" data-stage="5">
   <div class="q-container">
-    <div class="q-number"><span>04 / 04</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span></div></div>
+    <div class="q-number"><span>04 / 05</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span><span class="q-progress-seg"></span></div></div>
     <h2 class="q-title">Which best describes <em>you?</em></h2>
     <p class="q-sub">We'll tailor matches and the language we use to fit who you are.</p>
     <div class="role-groups">
       <div class="role-group">
         <div class="role-group-label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
-          <span>Accounting practice</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+          <span>Practice owner / leader</span>
         </div>
         <div class="tag-grid">
-          <button class="tag-pill" data-role="founder">Founder</button>
-          <button class="tag-pill" data-role="partner">Partner</button>
-          <button class="tag-pill" data-role="director">Director</button>
-          <button class="tag-pill" data-role="senior">Senior accountant / manager</button>
-          <button class="tag-pill" data-role="accountant">Accountant</button>
-          <button class="tag-pill" data-role="ops-admin">Practice manager</button>
+          <button class="tag-pill" data-role="founder" data-bucket="owner"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span>Founder</button>
+          <button class="tag-pill" data-role="partner" data-bucket="owner"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17a4 4 0 0 1-8 0V9l5-5 4 4-5 5v4z"/><path d="M13 7l4-4 5 5v8a4 4 0 0 1-8 0v-4l-1-1"/></svg></span>Partner</button>
+          <button class="tag-pill" data-role="director" data-bucket="owner"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg></span>Director</button>
+        </div>
+      </div>
+      <div class="role-group">
+        <div class="role-group-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+          <span>Practice professional</span>
+        </div>
+        <div class="tag-grid">
+          <button class="tag-pill" data-role="senior" data-bucket="professional"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg></span>Senior accountant / manager</button>
+          <button class="tag-pill" data-role="accountant" data-bucket="professional"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M8 14h.01M12 14h.01M8 18h.01M12 18h.01M8 10h.01M12 10h.01M16 10h.01"/></svg></span>Accountant</button>
+          <button class="tag-pill" data-role="ops-admin" data-bucket="professional"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg></span>Practice manager</button>
+          <button class="tag-pill" data-role="bookkeeper" data-bucket="professional"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Bookkeeper</button>
+          <button class="tag-pill" data-role="advisor" data-bucket="professional"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span>Tax advisor</button>
         </div>
       </div>
       <div class="role-group">
@@ -377,17 +430,9 @@
           <span>In-house finance</span>
         </div>
         <div class="tag-grid">
-          <button class="tag-pill" data-role="industry">CFO / Finance Director</button>
-        </div>
-      </div>
-      <div class="role-group">
-        <div class="role-group-label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>Bookkeeping &amp; advisory</span>
-        </div>
-        <div class="tag-grid">
-          <button class="tag-pill" data-role="bookkeeper">Bookkeeper</button>
-          <button class="tag-pill" data-role="advisor">Tax advisor</button>
+          <button class="tag-pill" data-role="industry" data-bucket="finance"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>CFO / Finance Director</button>
+          <button class="tag-pill" data-role="finance-manager" data-bucket="finance"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></span>Finance manager</button>
+          <button class="tag-pill" data-role="controller" data-bucket="finance"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg></span>Controller</button>
         </div>
       </div>
       <div class="role-group">
@@ -396,13 +441,72 @@
           <span>Other</span>
         </div>
         <div class="tag-grid">
-          <button class="tag-pill" data-role="other">Something else</button>
+          <button class="tag-pill" data-role="other" data-bucket="other"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>Something else</button>
         </div>
       </div>
     </div>
+
+    <div class="precision-bar" id="precision-bar-stage4">
+      <div class="precision-bar-row">
+        <span class="precision-bar-label">AI MATCH PRECISION</span>
+        <span class="precision-bar-state">Pick 1+ to begin</span>
+      </div>
+      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
+    </div>
     <div class="q-actions">
-      <button class="btn-next" id="role-next" disabled>Build my plan <span class="keybind">↵</span></button>
+      <button class="btn-next" id="role-next" disabled>Next <span class="keybind">↵</span></button>
       <button class="btn-back" id="role-back">← Back</button>
+    </div>
+  </div>
+</section>
+
+<!-- Stage 5b: Firm size + (conditional) mode -->
+<section class="stage flow-mode" id="stage-5b" data-stage="5b">
+  <div class="q-container">
+    <div class="q-number"><span>05 / 05</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span></div></div>
+    <h2 class="q-title">Sketch your <em>setup.</em></h2>
+    <p class="q-sub">Last bit. Tells the AI what scale of advice will land — and we'll suggest the smart pick for your role.</p>
+
+    <div class="firm-context-strip" id="firm-context-strip" data-bucket="">
+      <span class="firm-context-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+      </span>
+      <span class="firm-context-text" id="firm-context-text">Tell us your firm size to tailor the match.</span>
+    </div>
+
+    <div class="firm-section">
+      <div class="firm-section-label">FIRM SIZE</div>
+      <div class="tag-grid firm-tags">
+        <button class="tag-pill firm-pill" data-firm="solo"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Solo / sole trader<span class="smart-suggest-badge">Suggested</span></button>
+        <button class="tag-pill firm-pill" data-firm="micro"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>2–10 people<span class="smart-suggest-badge">Suggested</span></button>
+        <button class="tag-pill firm-pill" data-firm="small"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>11–25 people<span class="smart-suggest-badge">Suggested</span></button>
+        <button class="tag-pill firm-pill" data-firm="mid"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></span>26–100 people<span class="smart-suggest-badge">Suggested</span></button>
+        <button class="tag-pill firm-pill" data-firm="large"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg></span>100+ people<span class="smart-suggest-badge">Suggested</span></button>
+      </div>
+    </div>
+
+    <div class="firm-mode-section locked" id="firm-mode-section">
+      <div class="firm-section-label">
+        <span>HOW DO YOU WANT TO USE THE SHOW?</span>
+        <span class="firm-section-optional">Optional</span>
+      </div>
+      <div class="tag-grid">
+        <button class="tag-pill mode-pill" data-mode="focused"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>Focused — solve the urgent stuff</button>
+        <button class="tag-pill mode-pill" data-mode="exploratory"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span>Exploratory — see what's out there</button>
+      </div>
+    </div>
+
+    <div class="precision-bar" id="precision-bar-stage5b">
+      <div class="precision-bar-row">
+        <span class="precision-bar-label">AI MATCH PRECISION</span>
+        <span class="precision-bar-state">Pick 1+ to begin</span>
+      </div>
+      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
+    </div>
+
+    <div class="q-actions">
+      <button class="btn-next" id="firm-next" disabled>Build my plan <span class="keybind">↵</span></button>
+      <button class="btn-back" id="firm-back">← Back</button>
     </div>
   </div>
 </section>

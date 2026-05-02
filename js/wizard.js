@@ -9,9 +9,14 @@ const state = {
   answers: {
     attendMode: 'team-lead',
     problem: '',
+    pains: [],
     categories: [],
     time: [],
     role: null,
+    roleBucket: null,
+    firmSize: null,
+    mode: null,
+    precisionScore: 0,
   },
   user: { firstName: '', lastName: '', email: '', company: '' },
   plan: null,
@@ -22,9 +27,9 @@ const state = {
   allExhibitors: [],
 };
 
-const FLOW_STAGES = new Set(['0', '2', '7']);
-const Q_STAGES    = ['1', '2', '3', '4', '5']; // for progress dots
-const STAGE_HASH  = { '1':'q1','2':'q2','3':'q3','4':'q4','5':'q5','7':'preview','75':'save' };
+const FLOW_STAGES = new Set(['0', '2', '5b', '7']);
+const Q_STAGES    = ['1', '2', '3', '4', '5', '5b']; // for progress dots
+const STAGE_HASH  = { '1':'q1','2':'q2','3':'q3','4':'q4','5':'q5','5b':'q5b','7':'preview','75':'save' };
 const HASH_STAGE  = Object.fromEntries(Object.entries(STAGE_HASH).map(([k,v]) => [v, k]));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -81,6 +86,7 @@ function goToStage(n, fromHistory = false) {
     }
   }
 
+  if (id === '5b') prepareStage5b();
   if (id === '6') startReveal();
   if (id === '7') renderPlanPreview();
 }
@@ -534,16 +540,120 @@ async function handleSaveSubmit(e) {
 
 }
 
-// ── Problem textarea helpers ──────────────────────────────────────────────────
-function updateCharCount(val) {
-  const len = val.length;
-  const minNote = $('char-min');
-  if (minNote) {
-    if (len >= 20) minNote.classList.add('hidden');
-    else minNote.classList.remove('hidden');
+// ── Pain tags + precision bar (Stage 1) ────────────────────────────────────────
+// Synthesises state.answers.problem from selected pain labels so the existing
+// matcher payload still receives semantic context without changing the API.
+const PAIN_LABELS = {
+  'mtd-volume':'MTD volume crunch (Apr 2026)','ai-start':'AI: where the hell to start',
+  'hiring':'Hiring & retention squeeze','chasing':'Chasing clients for everything',
+  'burnout':'Team burnout / capacity','mtd-clients':'MTD client readiness',
+  'ai-roi':'AI ROI without the hype','ai-team':'Getting the team to use AI',
+  'margin':'Margin & profitability visibility','retention':'Talent retention plan',
+  'advisory':'Advisory pivot at scale','disconnected':'Disconnected tech stack',
+  'aml':'AML / KYC pressure','winning':'Winning new clients',
+  'cyber':'Cyber security gap','frs102':'FRS 102 transition',
+  'docs':'Document management chaos','penalties':'MTD penalty regime',
+  'advisory-charge':'How to charge for advisory','ai-govern':'AI governance & policy',
+  'ai-skills':'AI skills gap','onboarding':'Client onboarding friction',
+  'month-end':'Month-end speed','bankfeeds':'Bank feed reliability',
+  'portal':'Client portal experience','cpd':'CPD planning',
+  'career':'Career direction','leadership':'Leadership & people development',
+  'cashflow':'Cash flow forecasting','pe':'PE / consolidation',
+  'exit':'Succession / exit planning','outsource':'Outsourcing decisions',
+  'niche':'Niching the practice','cross-border':'Cross-border / international',
+  'rd':'R&D tax credits',
+};
+
+function togglePain(slug) {
+  const idx = state.answers.pains.indexOf(slug);
+  if (idx >= 0) state.answers.pains.splice(idx, 1);
+  else state.answers.pains.push(slug);
+  document.querySelectorAll('.pain-tag').forEach(btn => {
+    btn.classList.toggle('selected', state.answers.pains.includes(btn.dataset.pain));
+  });
+  // Synthesise problem string for backwards-compatible matcher input
+  state.answers.problem = state.answers.pains.map(p => PAIN_LABELS[p] || p).join(', ');
+  $('problem-next') && ($('problem-next').disabled = state.answers.pains.length === 0);
+  updatePrecisionBars();
+}
+
+// Score model: pains 0..40, role bucket +25, firm size +20, mode +10. Capped 95.
+function computePrecisionScore() {
+  const a = state.answers;
+  let s = 0;
+  const n = a.pains.length;
+  if (n >= 1) s += 12;
+  if (n >= 2) s += 10;
+  if (n >= 3) s += 8;
+  if (n >= 4) s += 6;
+  if (n >= 5) s += 4;
+  if (a.roleBucket) s += 25;
+  if (a.firmSize) s += 20;
+  if (a.mode) s += 10;
+  return Math.min(95, s);
+}
+
+function precisionStateLabel(score, stage) {
+  if (stage === '2' && state.answers.pains.length === 0) return 'Pick 1+ to begin';
+  if (score < 25) return 'Warming up';
+  if (score < 50) return 'Tuning in';
+  if (score < 75) return 'Locked on';
+  return 'Razor-sharp';
+}
+
+// Bucket → context strip copy + smart firm-size suggestion
+const BUCKET_CONTEXT = {
+  owner:        { text: "Practice owner — we'll surface revenue, hiring and scaling tracks.", suggest: 'micro' },
+  professional: { text: "Practice professional — we'll prioritise skill-building + workflow sessions.", suggest: 'small' },
+  finance:      { text: "In-house finance — we'll surface CFO, reporting and FP&A tracks.", suggest: 'mid' },
+  other:        { text: "We'll match you with broad-coverage sessions across the show.", suggest: 'micro' },
+};
+
+function prepareStage5b() {
+  const bucket = state.answers.roleBucket || 'other';
+  const cfg = BUCKET_CONTEXT[bucket] || BUCKET_CONTEXT.other;
+  const strip = $('firm-context-strip');
+  const txt = $('firm-context-text');
+  if (strip) strip.dataset.bucket = bucket;
+  if (txt) txt.textContent = cfg.text;
+  // Smart-suggest badge — only shown if user hasn't already picked a firm size
+  document.querySelectorAll('.firm-pill').forEach(b => b.classList.remove('smart-suggest-active'));
+  if (!state.answers.firmSize) {
+    const target = document.querySelector(`.firm-pill[data-firm="${cfg.suggest}"]`);
+    if (target) target.classList.add('smart-suggest-active');
   }
-  const btn = $('problem-next');
-  if (btn) btn.disabled = len < 20;
+  // Mode section: only "unlocked" (full opacity) for owners. Others still see it
+  // but it stays subdued — a softer reveal once they pick a firm size.
+  const modeEl = $('firm-mode-section');
+  if (modeEl) {
+    modeEl.classList.toggle('locked', !state.answers.firmSize);
+    modeEl.style.display = bucket === 'owner' ? '' : 'none';
+  }
+  // Re-apply visual selection state on revisits
+  document.querySelectorAll('.firm-pill').forEach(b => {
+    b.classList.toggle('selected', b.dataset.firm === state.answers.firmSize);
+  });
+  document.querySelectorAll('.mode-pill').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === state.answers.mode);
+  });
+  const nextBtn = $('firm-next');
+  if (nextBtn) nextBtn.disabled = !state.answers.firmSize;
+}
+
+function updatePrecisionBars() {
+  const score = computePrecisionScore();
+  state.answers.precisionScore = score;
+  const bars = document.querySelectorAll('.precision-bar');
+  bars.forEach(bar => {
+    const fill = bar.querySelector('.precision-bar-fill');
+    const stateEl = bar.querySelector('.precision-bar-state');
+    if (fill) fill.style.width = score + '%';
+    if (stateEl) {
+      const stage = bar.id.includes('stage1') ? '2' : bar.id.includes('stage4') ? '5' : '5b';
+      stateEl.textContent = score > 0 ? `${score}% · ${precisionStateLabel(score, stage)}` : precisionStateLabel(score, stage);
+    }
+    bar.classList.toggle('active', score > 0);
+  });
 }
 
 // ── Popularity ranking ────────────────────────────────────────────────────────
@@ -607,20 +717,9 @@ function decorateAndRankByCategory() {
     });
   };
 
-  // Stage 2 chips: flame on hot tier
-  decorate('#stage-2 .prompt-chip[data-cat]', true);
   // Stage 3 options: tier styling only (the existing option-icon already
   // visualises the category — adding a flame would clutter)
   decorate('#stage-3 .option[data-cat]', false);
-}
-
-function addPromptChip(text) {
-  const ta = $('problem-input');
-  if (!ta) return;
-  const sep = ta.value.length > 0 && !ta.value.endsWith(' ') ? ' ' : '';
-  ta.value += sep + text;
-  ta.dispatchEvent(new Event('input'));
-  ta.focus();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -653,33 +752,17 @@ export async function initWizard() {
   // ── Stage 0: hero CTA
   $('hero-start')?.addEventListener('click', () => goToStage(2));
 
-  // ── Stage 2: problem statement
-  const ta = $('problem-input');
-  if (ta) {
-    ta.addEventListener('input', () => {
-      state.answers.problem = ta.value;
-      updateCharCount(ta.value);
-    });
-    updateCharCount('');
-  }
-  document.querySelectorAll('[data-chip]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Don't re-add the same chip's text twice — keep the textarea clean
-      if (btn.classList.contains('added')) return;
-      addPromptChip(btn.dataset.chip);
-      btn.classList.add('added');
-    });
+  // ── Stage 2: pain points (heat-banded tag selection)
+  document.querySelectorAll('.pain-tag').forEach(btn => {
+    btn.addEventListener('click', () => togglePain(btn.dataset.pain));
   });
   $('problem-back')?.addEventListener('click', () => history.back());
   $('problem-next')?.addEventListener('click', () => {
-    if (state.answers.problem.length >= 20) {
-      goToStage(3);
-    }
+    if (state.answers.pains.length > 0) goToStage(3);
   });
+  updatePrecisionBars();
 
   // ── Stage 3: categories
-  // Scoped to .option to avoid matching the .prompt-chip elements on stage 2
-  // which now also carry data-cat (used for popularity ranking, NOT selection).
   document.querySelectorAll('.option[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => toggleCategory(btn.dataset.cat));
   });
@@ -712,20 +795,53 @@ export async function initWizard() {
   });
   $('time-next') && ($('time-next').disabled = true);
 
-  // ── Stage 5: role
+  // ── Stage 5: role (single-select with bucket capture)
   document.querySelectorAll('[data-role]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-role]').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       state.answers.role = btn.dataset.role;
+      state.answers.roleBucket = btn.dataset.bucket || null;
       $('role-next').disabled = false;
+      updatePrecisionBars();
     });
   });
   $('role-back')?.addEventListener('click', () => history.back());
   $('role-next')?.addEventListener('click', () => {
-    if (state.answers.role) goToStage(6);
+    if (state.answers.role) {
+      prepareStage5b();
+      goToStage('5b');
+    }
   });
   $('role-next') && ($('role-next').disabled = true);
+
+  // ── Stage 5b: firm size + (conditional) mode
+  document.querySelectorAll('[data-firm]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-firm]').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.answers.firmSize = btn.dataset.firm;
+      // Smart-suggest badge only matters until first interaction; clear it everywhere.
+      document.querySelectorAll('.firm-pill').forEach(b => b.classList.remove('smart-suggest-active'));
+      // Unlock mode section (owners only see mode prompt visually but logic is uniform)
+      const modeEl = $('firm-mode-section');
+      if (modeEl) modeEl.classList.remove('locked');
+      $('firm-next').disabled = false;
+      updatePrecisionBars();
+    });
+  });
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.answers.mode = btn.dataset.mode;
+      updatePrecisionBars();
+    });
+  });
+  $('firm-back')?.addEventListener('click', () => history.back());
+  $('firm-next')?.addEventListener('click', () => {
+    if (state.answers.firmSize) goToStage(6);
+  });
 
   // ── Stage 7: save CTA
   $('preview-save')?.addEventListener('click', () => goToStage(75));

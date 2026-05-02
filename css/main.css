@@ -526,16 +526,29 @@ body::before {
    into a seniority ladder, and partners don't have to mentally untangle
    their identity from their job title. Single-select still — picking one
    pill in any group is the answer. */
-.role-groups { display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.role-groups { display: flex; flex-direction: column; gap: 24px; width: 100%; }
 .role-group { display: flex; flex-direction: column; gap: 12px; }
 .role-group-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text);
   font-weight: 700;
-  padding-left: 2px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ink-3);
+  border-radius: 10px;
+  width: fit-content;
+}
+.role-group-label svg {
+  width: 15px;
+  height: 15px;
+  color: var(--mint);
+  flex-shrink: 0;
 }
 .tag-pill {
   display: inline-flex; align-items: center; gap: 8px;

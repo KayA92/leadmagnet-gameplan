@@ -745,6 +745,37 @@ body::before {
 
 .text-input-wrap { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; padding: 0; transition: all 0.2s; }
 .text-input-wrap:focus-within { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255,94,132,0.12); }
+/* Optional textarea — visually demoted (lighter border, smaller initial
+   height, "Optional" tag in the label) so users see it as enrichment,
+   not a required input after they've already picked chips above. */
+.text-input-wrap--optional {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.08);
+}
+.text-input-optional-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.text-input-optional-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-faint);
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--ink-3);
+  background: var(--ink-2);
+}
+.text-input-wrap--optional .text-input { padding-top: 8px; }
 .text-input { width: 100%; background: transparent; border: none; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 18px; padding: 18px 20px 14px; outline: none; line-height: 1.5; resize: none; min-height: 96px; display: block; box-sizing: border-box; }
 .text-input.short { min-height: 64px; }
 .text-input::placeholder { color: var(--text-faint); }

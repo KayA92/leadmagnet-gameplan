@@ -544,24 +544,28 @@ async function handleSaveSubmit(e) {
 // Synthesises state.answers.problem from selected pain labels so the existing
 // matcher payload still receives semantic context without changing the API.
 const PAIN_LABELS = {
-  'mtd-volume':'MTD volume crunch (Apr 2026)','ai-start':'AI: where the hell to start',
-  'hiring':'Hiring & retention squeeze','chasing':'Chasing clients for everything',
-  'burnout':'Team burnout / capacity','mtd-clients':'MTD client readiness',
-  'ai-roi':'AI ROI without the hype','ai-team':'Getting the team to use AI',
-  'margin':'Margin & profitability visibility','retention':'Talent retention plan',
-  'advisory':'Advisory pivot at scale','disconnected':'Disconnected tech stack',
+  // SCORCHING (7)
+  'mtd-volume':'MTD volume problem','mtd-clients':'Clients not MTD-ready',
+  'hiring':"Can't find good staff",'retention':'Losing staff to other firms',
+  'margin':'Margin squeeze','burnout':'Workload & burnout',
+  'ai-start':'AI — where to even start',
+  // HOT (12)
+  'ai-roi':'AI — proving the ROI','ai-team':'AI — getting team to use it',
+  'chasing':'Chasing clients for records','advisory':'Stuck in compliance, want advisory',
+  'advisory-charge':"Can't get clients to pay for advice",'disconnected':'Disconnected tech stack',
   'aml':'AML / KYC pressure','winning':'Winning new clients',
-  'cyber':'Cyber security gap','frs102':'FRS 102 transition',
-  'docs':'Document management chaos','penalties':'MTD penalty regime',
-  'advisory-charge':'How to charge for advisory','ai-govern':'AI governance & policy',
-  'ai-skills':'AI skills gap','onboarding':'Client onboarding friction',
-  'month-end':'Month-end speed','bankfeeds':'Bank feed reliability',
-  'portal':'Client portal experience','cpd':'CPD planning',
-  'career':'Career direction','leadership':'Leadership & people development',
-  'cashflow':'Cash flow forecasting','pe':'PE / consolidation',
-  'exit':'Succession / exit planning','outsource':'Outsourcing decisions',
-  'niche':'Niching the practice','cross-border':'Cross-border / international',
-  'rd':'R&D tax credits',
+  'cyber':'Cyber threats / phishing','frs102':'FRS 102 transition',
+  'docs':'Document chaos','penalties':'New MTD penalty regime',
+  // WARM (10)
+  'ai-govern':'AI governance & risk','ai-skills':'AI skills gap on the team',
+  'onboarding':'Client onboarding too slow','month-end':'Month-end close is brutal',
+  'bankfeeds':'Bank feeds keep breaking','portal':'Portal adoption / clients hate it',
+  'cpd':'CPD & team development','career':'My own career path is murky',
+  'leadership':'Leadership skills gap','cashflow':'Late payments / debtor days',
+  // SPECIALIST (6)
+  'pe':'PE consolidation closing in','exit':'Exit / succession planning',
+  'outsource':'Outsourcing & offshore','niche':'Should I niche?',
+  'cross-border':'Cross-border clients','rd':'R&D claims / specialist tax',
 };
 
 function togglePain(slug) {

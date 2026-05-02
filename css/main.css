@@ -526,8 +526,8 @@ body::before {
 .tag-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 /* Role groups (Stage 5) — quiet text-only section dividers, no pill, no icon.
    Single-select. Picking one pill in any group is the answer. */
-.role-groups { display: flex; flex-direction: column; gap: 22px; width: 100%; }
-.role-group { display: flex; flex-direction: column; gap: 10px; }
+.role-groups { display: flex; flex-direction: column; gap: 36px; width: 100%; }
+.role-group { display: flex; flex-direction: column; gap: 12px; }
 .role-group-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
@@ -658,32 +658,9 @@ body::before {
 }
 .prompt-chip.cat-tier-cool:hover { opacity: 1; }
 
-/* ── Stage 3 options — tier styling on the option itself ── */
-.option.cat-tier-hot {
-  border-color: var(--mint);
-  background: rgba(34,230,168,0.08);
-  box-shadow: 0 0 16px rgba(34,230,168,0.18);
-}
-.option.cat-tier-hot .option-icon {
-  border-color: var(--mint);
-  color: var(--mint);
-  background: rgba(34,230,168,0.12);
-}
-.option.cat-tier-warm {
-  border-color: rgba(34,230,168,0.30);
-}
-.option.cat-tier-warm .option-icon {
-  border-color: rgba(34,230,168,0.40);
-  color: var(--mint);
-}
-.option.cat-tier-cool {
-  opacity: 0.72;
-}
-.option.cat-tier-cool:hover { opacity: 1; }
-
-/* When a chip / option is added or selected, the tier styling steps aside —
-   the "selected" state is the dominant signal at that point. */
-.prompt-chip.added { background: rgba(34,230,168,0.18); border-color: var(--mint); color: var(--mint); opacity: 1; box-shadow: none; }
+/* Stage 3 options — popularity sort still reorders, but no per-tier highlight.
+   All software-category options share the same neutral pre-click styling so
+   the top 3 don't visually scream over the rest. */
 .option.selected { opacity: 1; }
 
 /* ═══ PAIN HEAT BANDS (Stage 1) ═══
@@ -752,30 +729,102 @@ body::before {
 .pain-tag:hover { transform: translateY(-1px); }
 .pain-tag.selected::before { content: '✓ '; font-weight: 700; }
 
-/* All bands share the same visual treatment — the SCORCHING/HOT/WARM/SPECIALIST
-   labels still convey priority order, but the pills look identical. Top-to-bottom
-   ranking carries the meaning, not colour. */
-.pain-band-label {
+/* SCORCHING — pink heat (top tier, this is the bell-ringer) */
+.band-scorching .pain-band-label {
+  background: rgba(255,94,132,0.10);
+  border-color: rgba(255,94,132,0.35);
+  color: var(--pink);
+}
+.band-scorching .pain-band-dot {
+  background: var(--pink);
+  box-shadow: 0 0 10px var(--pink);
+  animation: pulse 2s ease-in-out infinite;
+}
+.band-scorching .pain-tag {
+  border-color: rgba(255,94,132,0.40);
+  background: rgba(255,94,132,0.05);
+  font-weight: 600;
+}
+.band-scorching .pain-tag:hover {
+  border-color: var(--pink);
+  background: rgba(255,94,132,0.12);
+  box-shadow: 0 0 14px rgba(255,94,132,0.20);
+}
+.band-scorching .pain-tag.selected {
+  border-color: var(--pink);
+  background: rgba(255,94,132,0.18);
+  color: var(--pink);
+  box-shadow: 0 0 14px rgba(255,94,132,0.30);
+}
+
+/* HOT — coral */
+.band-hot .pain-band-label {
+  background: rgba(255,138,92,0.10);
+  border-color: rgba(255,138,92,0.32);
+  color: var(--coral);
+}
+.band-hot .pain-band-dot {
+  background: var(--coral);
+  box-shadow: 0 0 8px var(--coral);
+}
+.band-hot .pain-tag { border-color: rgba(255,138,92,0.30); }
+.band-hot .pain-tag:hover {
+  border-color: var(--coral);
+  background: rgba(255,138,92,0.10);
+}
+.band-hot .pain-tag.selected {
+  border-color: var(--coral);
+  background: rgba(255,138,92,0.16);
+  color: var(--coral);
+  box-shadow: 0 0 12px rgba(255,138,92,0.25);
+}
+
+/* WARM — amber */
+.band-warm .pain-band-label {
+  background: rgba(251,191,36,0.10);
+  border-color: rgba(251,191,36,0.30);
+  color: var(--amber);
+}
+.band-warm .pain-band-dot {
+  background: var(--amber);
+  box-shadow: 0 0 6px rgba(251,191,36,0.7);
+}
+.band-warm .pain-tag { border-color: rgba(251,191,36,0.22); }
+.band-warm .pain-tag:hover {
+  border-color: var(--amber);
+  background: rgba(251,191,36,0.08);
+}
+.band-warm .pain-tag.selected {
+  border-color: var(--amber);
+  background: rgba(251,191,36,0.14);
+  color: var(--amber);
+  box-shadow: 0 0 10px rgba(251,191,36,0.20);
+}
+
+/* SPECIALIST — cool blue (lower attention, but real) */
+.band-specialist .pain-band-label {
+  background: rgba(106,169,255,0.08);
+  border-color: rgba(106,169,255,0.28);
+  color: var(--cool-blue);
+}
+.band-specialist .pain-band-dot {
+  background: var(--cool-blue);
+  box-shadow: 0 0 6px rgba(106,169,255,0.6);
+}
+.band-specialist .pain-tag {
+  border-color: rgba(255,255,255,0.08);
   color: var(--text-muted);
 }
-.pain-band-dot {
-  background: var(--mint);
-  box-shadow: 0 0 6px rgba(34,230,168,0.5);
-}
-.pain-tag {
-  border-color: var(--ink-3);
-  background: var(--ink-2);
+.band-specialist .pain-tag:hover {
+  border-color: var(--cool-blue);
+  background: rgba(106,169,255,0.08);
   color: var(--text);
 }
-.pain-tag:hover {
-  border-color: var(--mint);
-  background: rgba(34,230,168,0.06);
-}
-.pain-tag.selected {
-  border-color: var(--mint);
-  background: rgba(34,230,168,0.14);
-  color: var(--mint);
-  box-shadow: 0 0 10px rgba(34,230,168,0.20);
+.band-specialist .pain-tag.selected {
+  border-color: var(--cool-blue);
+  background: rgba(106,169,255,0.14);
+  color: var(--cool-blue);
+  box-shadow: 0 0 10px rgba(106,169,255,0.18);
 }
 
 /* ═══ FIXED CTA STACK (precision bar + next/back) ═══
@@ -816,12 +865,10 @@ body::before {
   width: 100%;
   max-width: 720px;
 }
-/* Stages with the fixed CTA stack need extra bottom breathing room so the
-   last tag/section is fully visible above the floating bar. Existing
-   .stage.flow-mode .q-container { padding-bottom: 110px } applies elsewhere. */
-.stage.flow-mode#stage-2 .q-container,
-.stage.flow-mode#stage-5 .q-container,
-.stage.flow-mode#stage-5b .q-container {
+/* Stage 2 has the fixed CTA stack (precision bar + actions) — extra bottom
+   breathing room so the last specialist tag clears the floating bar.
+   Other stages keep the 110px from .stage.flow-mode .q-container elsewhere. */
+.stage.flow-mode#stage-2 .q-container {
   padding-bottom: 200px;
 }
 
@@ -888,97 +935,6 @@ body::before {
   background-size: 220% 100%;
   background-position: 220% 0;
   animation: q-progress-shimmer 2.4s ease-in-out infinite;
-}
-
-/* ═══ STAGE 5b — FIRM SETUP ═══ */
-.firm-context-strip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  background: rgba(168,85,247,0.06);
-  border: 1px solid rgba(168,85,247,0.25);
-  border-radius: 12px;
-  font-size: 14px;
-  color: var(--text);
-  transition: border-color 0.3s, background 0.3s;
-}
-.firm-context-strip[data-bucket="owner"] {
-  background: rgba(255,94,132,0.06);
-  border-color: rgba(255,94,132,0.30);
-}
-.firm-context-strip[data-bucket="professional"] {
-  background: rgba(34,230,168,0.06);
-  border-color: rgba(34,230,168,0.30);
-}
-.firm-context-strip[data-bucket="finance"] {
-  background: rgba(106,169,255,0.06);
-  border-color: rgba(106,169,255,0.30);
-}
-.firm-context-icon {
-  display: inline-flex;
-  width: 18px; height: 18px;
-  color: var(--purple);
-  flex-shrink: 0;
-}
-.firm-context-strip[data-bucket="owner"] .firm-context-icon { color: var(--pink); }
-.firm-context-strip[data-bucket="professional"] .firm-context-icon { color: var(--mint); }
-.firm-context-strip[data-bucket="finance"] .firm-context-icon { color: var(--cool-blue); }
-.firm-context-icon svg { width: 100%; height: 100%; }
-
-.firm-section { margin-top: 22px; }
-.firm-section-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-.firm-section-optional {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  padding: 2px 8px;
-  background: var(--ink-2);
-  border: 1px solid var(--ink-3);
-  border-radius: 100px;
-  color: var(--text-faint);
-}
-
-.firm-pill { position: relative; }
-.smart-suggest-badge {
-  display: none;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  margin-left: 4px;
-  border-radius: 100px;
-  background: var(--grad);
-  color: white;
-  white-space: nowrap;
-}
-.firm-pill.smart-suggest-active .smart-suggest-badge {
-  display: inline-flex;
-  align-items: center;
-  animation: smart-pulse 2s ease-in-out infinite;
-}
-@keyframes smart-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.5); }
-  50%      { box-shadow: 0 0 0 4px rgba(168,85,247,0); }
-}
-.firm-pill.smart-suggest-active {
-  border-color: rgba(168,85,247,0.50);
-  background: rgba(168,85,247,0.06);
 }
 
 

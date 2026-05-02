@@ -581,50 +581,24 @@ function togglePain(slug) {
   updatePrecisionBars();
 }
 
-// Score model: pains 0..40, role bucket +25, firm size +20. Capped 95.
-function computePrecisionScore() {
-  const a = state.answers;
-  let s = 0;
-  const n = a.pains.length;
-  if (n >= 1) s += 12;
-  if (n >= 2) s += 10;
-  if (n >= 3) s += 8;
-  if (n >= 4) s += 6;
-  if (n >= 5) s += 4;
-  if (a.roleBucket) s += 25;
-  if (a.firmSize) s += 20;
-  return Math.min(95, s);
+// Stage-1 pain-only progress model. 3 pains = 100% (strong matches unlocked);
+// extra taps don't push the bar further, but the label evolves to reward
+// heavy tappers. Next button still gates on 1+ pain (not on this score).
+function computePainProgress() {
+  const n = state.answers.pains.length;
+  const percent = n === 0 ? 0 : n === 1 ? 33 : n === 2 ? 66 : 100;
+  let label;
+  if (n === 0) label = 'Tap pains that hit home — 3+ unlocks strong matches';
+  else if (n === 1) label = '1 pain · 2 more unlocks strong matches';
+  else if (n === 2) label = '2 pains · 1 more unlocks strong matches';
+  else if (n === 3) label = '✓ Strong matches unlocked · keep tapping for sharper picks';
+  else if (n <= 5) label = `✓ Strong matches · ${n} pains captured`;
+  else if (n <= 8) label = `✓ Razor-sharp · ${n} pains captured`;
+  else label = `✓ Top 1% · ${n} pains — laser-focused matching`;
+  return { percent, label };
 }
-
-function precisionStateLabel(score, stage) {
-  if (stage === '2' && state.answers.pains.length === 0) return 'Pick 1+ to begin';
-  if (score < 25) return 'Warming up';
-  if (score < 50) return 'Tuning in';
-  if (score < 75) return 'Locked on';
-  return 'Razor-sharp';
-}
-
-// Bucket → context strip copy + smart firm-size suggestion
-const BUCKET_CONTEXT = {
-  owner:        { text: "Practice owner — we'll surface revenue, hiring and scaling tracks.", suggest: 'micro' },
-  professional: { text: "Practice professional — we'll prioritise skill-building + workflow sessions.", suggest: 'small' },
-  finance:      { text: "In-house finance — we'll surface CFO, reporting and FP&A tracks.", suggest: 'mid' },
-  other:        { text: "We'll match you with broad-coverage sessions across the show.", suggest: 'micro' },
-};
 
 function prepareStage5b() {
-  const bucket = state.answers.roleBucket || 'other';
-  const cfg = BUCKET_CONTEXT[bucket] || BUCKET_CONTEXT.other;
-  const strip = $('firm-context-strip');
-  const txt = $('firm-context-text');
-  if (strip) strip.dataset.bucket = bucket;
-  if (txt) txt.textContent = cfg.text;
-  // Smart-suggest badge — only shown if user hasn't already picked a firm size
-  document.querySelectorAll('.firm-pill').forEach(b => b.classList.remove('smart-suggest-active'));
-  if (!state.answers.firmSize) {
-    const target = document.querySelector(`.firm-pill[data-firm="${cfg.suggest}"]`);
-    if (target) target.classList.add('smart-suggest-active');
-  }
   // Re-apply visual selection state on revisits
   document.querySelectorAll('.firm-pill').forEach(b => {
     b.classList.toggle('selected', b.dataset.firm === state.answers.firmSize);
@@ -634,19 +608,15 @@ function prepareStage5b() {
 }
 
 function updatePrecisionBars() {
-  const score = computePrecisionScore();
-  state.answers.precisionScore = score;
-  const bars = document.querySelectorAll('.precision-bar');
-  bars.forEach(bar => {
-    const fill = bar.querySelector('.precision-bar-fill');
-    const stateEl = bar.querySelector('.precision-bar-state');
-    if (fill) fill.style.width = score + '%';
-    if (stateEl) {
-      const stage = bar.id.includes('stage1') ? '2' : bar.id.includes('stage4') ? '5' : '5b';
-      stateEl.textContent = score > 0 ? `${score}% · ${precisionStateLabel(score, stage)}` : precisionStateLabel(score, stage);
-    }
-    bar.classList.toggle('active', score > 0);
-  });
+  const { percent, label } = computePainProgress();
+  state.answers.precisionScore = percent;
+  const bar = $('precision-bar-stage1');
+  if (!bar) return;
+  const fill = bar.querySelector('.precision-bar-fill');
+  const stateEl = bar.querySelector('.precision-bar-state');
+  if (fill) fill.style.width = percent + '%';
+  if (stateEl) stateEl.textContent = label;
+  bar.classList.toggle('active', percent > 0);
 }
 
 // ── Popularity ranking ────────────────────────────────────────────────────────
@@ -796,15 +766,11 @@ export async function initWizard() {
       state.answers.role = btn.dataset.role;
       state.answers.roleBucket = btn.dataset.bucket || null;
       $('role-next').disabled = false;
-      updatePrecisionBars();
     });
   });
   $('role-back')?.addEventListener('click', () => history.back());
   $('role-next')?.addEventListener('click', () => {
-    if (state.answers.role) {
-      prepareStage5b();
-      goToStage('5b');
-    }
+    if (state.answers.role) goToStage('5b');
   });
   $('role-next') && ($('role-next').disabled = true);
 
@@ -814,10 +780,7 @@ export async function initWizard() {
       document.querySelectorAll('[data-firm]').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       state.answers.firmSize = btn.dataset.firm;
-      // Smart-suggest badge only matters until first interaction; clear it everywhere.
-      document.querySelectorAll('.firm-pill').forEach(b => b.classList.remove('smart-suggest-active'));
       $('firm-next').disabled = false;
-      updatePrecisionBars();
     });
   });
   $('firm-back')?.addEventListener('click', () => history.back());

@@ -308,8 +308,7 @@
   <div class="cta-fixed-stack">
     <div class="precision-bar" id="precision-bar-stage1">
       <div class="precision-bar-row">
-        <span class="precision-bar-label">AI MATCH PRECISION</span>
-        <span class="precision-bar-state">Pick 1+ to begin</span>
+        <span class="precision-bar-state">Tap pains that hit home — 3+ unlocks strong matches</span>
       </div>
       <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
     </div>
@@ -397,8 +396,8 @@
 <section class="stage flow-mode" id="stage-5" data-stage="5">
   <div class="q-container">
     <div class="q-number"><span>04 / 05</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span><span class="q-progress-seg"></span></div></div>
-    <h2 class="q-title">Which best describes <em>you?</em></h2>
-    <p class="q-sub">We'll tailor matches and the language we use to fit who you are.</p>
+    <h2 class="q-title">Pick the <em>one</em> that best describes you.</h2>
+    <p class="q-sub">Just one — we'll tailor matches and language to fit.</p>
     <div class="role-groups">
       <div class="role-group">
         <div class="role-group-label">Practice owner / leader</div>
@@ -429,15 +428,6 @@
       </div>
     </div>
 
-  </div>
-  <div class="cta-fixed-stack">
-    <div class="precision-bar" id="precision-bar-stage4">
-      <div class="precision-bar-row">
-        <span class="precision-bar-label">AI MATCH PRECISION</span>
-        <span class="precision-bar-state">Pick 1+ to begin</span>
-      </div>
-      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
-    </div>
     <div class="q-actions">
       <button class="btn-next" id="role-next" disabled>Next <span class="keybind">↵</span></button>
       <button class="btn-back" id="role-back">← Back</button>
@@ -445,40 +435,21 @@
   </div>
 </section>
 
-<!-- Stage 5b: Firm size + (conditional) mode -->
+<!-- Stage 5b: Firm size -->
 <section class="stage flow-mode" id="stage-5b" data-stage="5b">
   <div class="q-container">
     <div class="q-number"><span>05 / 05</span><div class="q-progress"><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg done"></span><span class="q-progress-seg current"></span></div></div>
-    <h2 class="q-title">Sketch your <em>setup.</em></h2>
-    <p class="q-sub">Last bit. Tells the AI what scale of advice will land — and we'll suggest the smart pick for your role.</p>
+    <h2 class="q-title">How big is <em>your firm?</em></h2>
+    <p class="q-sub">Pick one.</p>
 
-    <div class="firm-context-strip" id="firm-context-strip" data-bucket="">
-      <span class="firm-context-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-      </span>
-      <span class="firm-context-text" id="firm-context-text">Tell us your firm size to tailor the match.</span>
+    <div class="tag-grid firm-tags">
+      <button class="tag-pill firm-pill" data-firm="solo"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Solo / sole trader</button>
+      <button class="tag-pill firm-pill" data-firm="micro"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>2–10 people</button>
+      <button class="tag-pill firm-pill" data-firm="small"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>11–25 people</button>
+      <button class="tag-pill firm-pill" data-firm="mid"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></span>26–100 people</button>
+      <button class="tag-pill firm-pill" data-firm="large"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg></span>100+ people</button>
     </div>
 
-    <div class="firm-section">
-      <div class="firm-section-label">FIRM SIZE</div>
-      <div class="tag-grid firm-tags">
-        <button class="tag-pill firm-pill" data-firm="solo"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Solo / sole trader<span class="smart-suggest-badge">Suggested</span></button>
-        <button class="tag-pill firm-pill" data-firm="micro"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>2–10 people<span class="smart-suggest-badge">Suggested</span></button>
-        <button class="tag-pill firm-pill" data-firm="small"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>11–25 people<span class="smart-suggest-badge">Suggested</span></button>
-        <button class="tag-pill firm-pill" data-firm="mid"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></span>26–100 people<span class="smart-suggest-badge">Suggested</span></button>
-        <button class="tag-pill firm-pill" data-firm="large"><span class="tag-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg></span>100+ people<span class="smart-suggest-badge">Suggested</span></button>
-      </div>
-    </div>
-
-  </div>
-  <div class="cta-fixed-stack">
-    <div class="precision-bar" id="precision-bar-stage5b">
-      <div class="precision-bar-row">
-        <span class="precision-bar-label">AI MATCH PRECISION</span>
-        <span class="precision-bar-state">Pick 1+ to begin</span>
-      </div>
-      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
-    </div>
     <div class="q-actions">
       <button class="btn-next" id="firm-next" disabled>Build my plan <span class="keybind">↵</span></button>
       <button class="btn-back" id="firm-back">← Back</button>

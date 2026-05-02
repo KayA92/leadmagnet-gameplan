@@ -606,62 +606,79 @@ body::before {
 .prompt-chip.added { background: rgba(34,230,168,0.15); border-color: var(--mint); color: var(--mint); }
 .prompt-chip.added::before { content: '✓ '; font-weight: 700; }
 
-/* Live category-popularity badge. Injected at runtime by wizard.js with the
-   total of (sessions + exhibitors) tagged with that canonical_category in
-   programme.json + exhibitors.json. Three tiers create a hot→cool heatmap:
-     .cat-tier-hot  — top 3 (mint, with flame icon, glow) → "go here first"
-     .cat-tier-warm — middle half (amber) → "solid options"
-     .cat-tier-cool — bottom half (grey, faded) → "thin coverage" */
-.cat-count {
+/* Hot → cool heatmap on chips + options.
+   Tier is set by wizard.js based on rank position in the popularity sort:
+     .cat-tier-hot  — top 3 (mint, glow, flame icon prefix on chips)
+     .cat-tier-warm — middle half (subtle mint tint)
+     .cat-tier-cool — bottom half (faded grey)
+   No numbers, no labels — the chip/option itself carries the temperature. */
+
+/* Inline flame SVG marker on hot chips — universal "this is hot" without
+   needing a caption. Animated with a slow flicker so the eye catches it. */
+.cat-flame {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 100px;
-  min-width: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-  border: 1px solid transparent;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  color: var(--pink);
+  vertical-align: -2px;
+  animation: cat-flame-flicker 2.4s ease-in-out infinite;
 }
-.cat-count svg {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
+.cat-flame svg { width: 100%; height: 100%; }
+@keyframes cat-flame-flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.78; transform: scale(0.92); }
 }
-.cat-count-num { line-height: 1; }
 
-/* HOT — top 3 most-covered categories. Mint pill + flame icon + glow.
-   Reads emotionally as "this is where the show is heaviest". */
-.cat-tier-hot .cat-count {
-  color: var(--mint);
+/* ── Stage 2 chips — tier styling on the chip itself ── */
+.prompt-chip.cat-tier-hot {
   background: rgba(34,230,168,0.14);
-  border-color: rgba(34,230,168,0.45);
-  box-shadow: 0 0 12px rgba(34,230,168,0.25);
+  border-color: var(--mint);
+  color: var(--text);
+  box-shadow: 0 0 14px rgba(34,230,168,0.25);
+  font-weight: 600;
 }
-/* WARM — middle half. Amber pill, no glow. Reads as "solid coverage". */
-.cat-tier-warm .cat-count {
-  color: var(--amber);
-  background: rgba(251,191,36,0.10);
-  border-color: rgba(251,191,36,0.30);
+.prompt-chip.cat-tier-warm {
+  background: rgba(34,230,168,0.04);
+  border-color: rgba(34,230,168,0.35);
 }
-/* COOL — bottom half. Faded grey pill. Reads as "thin pickings". */
-.cat-tier-cool .cat-count {
-  color: var(--text-muted);
-  background: rgba(255,255,255,0.04);
+.prompt-chip.cat-tier-cool {
+  background: var(--ink-2);
   border-color: rgba(255,255,255,0.08);
-  opacity: 0.8;
+  color: var(--text-muted);
+  opacity: 0.78;
 }
+.prompt-chip.cat-tier-cool:hover { opacity: 1; }
 
-/* Chip-specific spacing — chips are inline so the badge sits with a small gap */
-.prompt-chip .cat-count { margin-left: 8px; }
-/* Option-specific positioning — options are flex; push badge to the right
-   alongside the check tick, but a touch separated. */
-.option .cat-count { margin-left: auto; margin-right: 12px; }
+/* ── Stage 3 options — tier styling on the option itself ── */
+.option.cat-tier-hot {
+  border-color: var(--mint);
+  background: rgba(34,230,168,0.08);
+  box-shadow: 0 0 16px rgba(34,230,168,0.18);
+}
+.option.cat-tier-hot .option-icon {
+  border-color: var(--mint);
+  color: var(--mint);
+  background: rgba(34,230,168,0.12);
+}
+.option.cat-tier-warm {
+  border-color: rgba(34,230,168,0.30);
+}
+.option.cat-tier-warm .option-icon {
+  border-color: rgba(34,230,168,0.40);
+  color: var(--mint);
+}
+.option.cat-tier-cool {
+  opacity: 0.72;
+}
+.option.cat-tier-cool:hover { opacity: 1; }
+
+/* When a chip / option is added or selected, the tier styling steps aside —
+   the "selected" state is the dominant signal at that point. */
+.prompt-chip.added { background: rgba(34,230,168,0.18); border-color: var(--mint); color: var(--mint); opacity: 1; box-shadow: none; }
+.option.selected { opacity: 1; }
 
 /* Chunk 18: Mobile/desktop copy toggles */
 .mobile-only { display: none; }

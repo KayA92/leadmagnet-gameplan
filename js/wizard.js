@@ -566,52 +566,52 @@ function decorateAndRankByCategory() {
     for (const cat of e.canonical_categories || []) bump(cat, 'exhibitors');
   }
 
-  // Lucide-style flame SVG, inlined so each badge is self-contained.
-  const FLAME_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+  // Lucide-style flame SVG, used as the "hot" prefix marker on top-tier chips.
+  const FLAME_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
 
-  const decorate = (selector, badgeBeforeSelector) => {
+  const decorate = (selector, useFlamePrefix) => {
     const els = Array.from(document.querySelectorAll(selector));
     if (els.length === 0) return;
-    // Record count for each so we can sort
     for (const el of els) {
       const cat = el.dataset.cat;
       el.dataset.count = counts[cat]?.total || 0;
     }
-    // Sort by descending count, re-insert in DOM order
+    // Sort descending by count, then re-attach in order.
     const sorted = [...els].sort((a, b) =>
       (Number(b.dataset.count) || 0) - (Number(a.dataset.count) || 0),
     );
     const parent = els[0].parentNode;
     for (const el of sorted) parent.appendChild(el);
 
-    // Tier the sorted list: hot (top 3) / warm (next ~half) / cool (bottom)
-    // — gives the user a hot-to-cold heatmap where the "where to start" call
-    //   is obvious at a glance, with the exact count as proof.
+    // Three rank-based tiers — hot top 3, then 50/50 warm/cool below.
+    // The chip/option itself carries the heat (border, glow, opacity);
+    // hot chips also get an inline flame icon as the "go here first" marker.
     const len = sorted.length;
     const warmCutoff = Math.max(3, Math.ceil(len / 2));
     sorted.forEach((el, i) => {
-      // Reset previous tier classes (in case decorate runs more than once)
       el.classList.remove('cat-tier-hot', 'cat-tier-warm', 'cat-tier-cool');
       const tier = i < 3 ? 'hot' : i < warmCutoff ? 'warm' : 'cool';
       el.classList.add(`cat-tier-${tier}`);
 
-      // Inject (or refresh) the count badge
-      let badge = el.querySelector('.cat-count');
-      if (!badge) {
-        badge = document.createElement('span');
-        badge.className = 'cat-count';
-        const before = badgeBeforeSelector ? el.querySelector(badgeBeforeSelector) : null;
-        if (before) el.insertBefore(badge, before);
-        else el.appendChild(badge);
+      // Strip any previously-injected flame so re-renders don't stack
+      const oldFlame = el.querySelector('.cat-flame');
+      if (oldFlame) oldFlame.remove();
+      // Hot chips get a flame prefix — universal "this is hot" symbol,
+      // no caption needed.
+      if (useFlamePrefix && tier === 'hot') {
+        const flame = document.createElement('span');
+        flame.className = 'cat-flame';
+        flame.innerHTML = FLAME_SVG;
+        el.insertBefore(flame, el.firstChild);
       }
-      // Hot tier gets a flame icon prefix; others just show the number.
-      const flame = tier === 'hot' ? FLAME_SVG : '';
-      badge.innerHTML = `${flame}<span class="cat-count-num">${el.dataset.count}</span>`;
     });
   };
 
-  decorate('#stage-2 .prompt-chip[data-cat]', null);
-  decorate('#stage-3 .option[data-cat]', '.option-check');
+  // Stage 2 chips: flame on hot tier
+  decorate('#stage-2 .prompt-chip[data-cat]', true);
+  // Stage 3 options: tier styling only (the existing option-icon already
+  // visualises the category — adding a flame would clutter)
+  decorate('#stage-3 .option[data-cat]', false);
 }
 
 function addPromptChip(text) {

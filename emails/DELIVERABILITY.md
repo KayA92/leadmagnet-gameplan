@@ -5,7 +5,7 @@ reputation. Workiro security won't let us send via `workiro.com`. The
 welcome + login emails are critical — if they land in junk, users
 can't access the app at all.
 
-**The window:** ~2 weeks until Accountex (13–14 May).
+**The window:** Accountex is 13–14 May.
 
 **Realistic outcome with this plan in place:** ~85–90% inbox
 placement at launch, climbing as engagement builds. Users who hit
@@ -107,22 +107,15 @@ Pick whatever Workiro's existing IT prefers. Just needs:
 
 ---
 
-## 4. Update all email senders to `hello@autoevent.io`
+## 4. Update all email senders to `hello@autoevent.io` ✅ DONE
 
-**Owner:** Dev
+All sender / Reply-To references across the 7 templates,
+`index.html` stage email-sent screen, and the welcome email's
+"mark not junk" reminder are using `hello@autoevent.io`.
 
-Currently the templates in `emails/` say
-`From: AutoEvent <hello@autoevent.io>`. Switch to
-`AutoEvent <hello@autoevent.io>` everywhere:
-- All 7 email template comment headers
-- Supabase Auth SMTP sender setting
-- The "sender" line in the in-app *"Check your inbox"* screen
-  (`index.html` stage email-sent — the bit that says
-  *"Sender: hello@autoevent.io"*)
-- The *"mark not junk"* reminder text in the welcome email
-
-Search-and-replace across `emails/` + `index.html` + `js/wizard.js`:
-- `hello@autoevent.io` → `hello@autoevent.io`
+**Dev still needs to:** point Supabase Auth's SMTP sender setting at
+`hello@autoevent.io` (and at the Postmark host) once the mailbox
+exists per items 2 + 3.
 
 ---
 
@@ -187,39 +180,31 @@ mail"*. Far more valuable than the automated warmup.
 
 ---
 
-## 7. In-app mitigations — Days 7–10
+## 7. In-app mitigations ✅ DONE
 
-**Owner:** Dev
+All three in-app mitigations are live:
 
-The "Check your inbox" screen already includes a *"mark as not
-junk"* reminder. Two more high-value adds:
+### a) "Resend my login link" on `/login/` ✅
 
-### a) "Resend my login link" on `/login/`
+After successful submit, a *"Didn't get it in 60 seconds?"* prompt
+with a **Resend** button reveals after 60s. Click resends the magic
+link to the same email + redirect URL (preserves invite token).
+30s throttle between resends. If the user types a different email,
+the resend prompt clears so it never resends to a stale address.
 
-If a user requests a login link and doesn't get it, they need a
-button that resends. Currently the form just shows a success
-message. Add:
+### b) "Add to contacts" instruction ✅
 
-- After submit success, show: *"Didn't get the email in 60 seconds?"*
-  with a **Resend** button that re-fires the magic link request
-- Throttle: max 1 resend every 30s per email address (Supabase Auth
-  rate-limits magic-link requests anyway)
+Mint-tinted card on the in-app *"Check your inbox"* success screen
+(positioned above the junk-folder reminder) and a matching block in
+`emails/welcome.html`. Copy:
 
-Without this, anyone who misses the email is locked out — the
-resend is the safety net for everything we don't catch.
+> 💡 **Pro tip:** add `hello@autoevent.io` to your contacts so future
+> login links always land straight in your inbox.
 
-### b) "Add `hello@autoevent.io` to your contacts" instruction
+### c) "Mark not junk" reminder ✅ (was already in place)
 
-On the success screen (and in the welcome email itself), add a
-small instruction:
-
-> 💡 **Add `hello@autoevent.io` to your contacts** — every email
-> client treats messages from contacts as priority and skips spam
-> filtering.
-
-This is one of the strongest individual-user-side allowlist signals
-that exists. People will skip it, but the ones who do it are
-guaranteed inbox.
+Amber card on the success screen + reminder paragraph in the welcome
+email body.
 
 ---
 

@@ -5,16 +5,12 @@ opt-in field on the save form.
 
 ---
 
-## TL;DR — two things to do
+## TL;DR — what's left to do
 
-1. **Database:** add a column to `public.users`:
-
-   ```sql
-   ALTER TABLE public.users ADD COLUMN marketing_opt_in BOOLEAN DEFAULT FALSE;
-   ```
-
-   The wizard's save-form upsert at `js/wizard.js:464` already writes to
-   this column. Without the column, signup will error.
+1. **Database:** ✅ DONE — applied via
+   `supabase/migrations/20260501000000_add_marketing_opt_in.sql`.
+   Adds `marketing_opt_in BOOLEAN NOT NULL DEFAULT FALSE` to
+   `public.users`.
 
 2. **Email templates:** 7 HTML files live in this folder
    (`emails/`). Copy each one into Supabase Auth / Postmark / SendGrid
@@ -111,7 +107,7 @@ functional, not marketing: `welcome.html`, `login-link.html`,
 
 ## Checklist for dev
 
-- [ ] Schema: `marketing_opt_in` column added to `public.users`
+- [x] Schema: `marketing_opt_in` column added to `public.users` (migration `20260501000000`)
 - [ ] Subject lines configured per the table above
 - [ ] Sender + Reply-To: `AutoEvent <hello@autoevent.io>` (DMARC /
       SPF / DKIM aligned for `autoevent.io` to keep delivery clean)

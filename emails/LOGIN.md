@@ -97,6 +97,13 @@ takes over.
 ### ✅ User clicks magic link on different device/browser
 - Works fine — magic links are not device-bound. Supabase Auth
   attaches the session to whichever browser opens the link.
+- Cross-device handoff is covered by the new
+  `claim_anonymous_plan_by_email()` RPC (migration `20260501000002`):
+  if the user lands on `/plan/` without `localStorage.pendingPlanId`
+  (i.e. on a different device), the RPC finds the orphaned anonymous
+  user by matching email and transfers the plan to the now-authenticated
+  user. Without this, cross-device link-clicks would land on an empty
+  plan view.
 
 ### ⚠️ Magic link expired or already used
 - Supabase Auth redirects to the redirect URL with an `error`
@@ -117,12 +124,13 @@ takes over.
   get the generic *"Something went wrong"* error if our regex
   somehow lets through a malformed address.
 
-### ⚠️ User submits, doesn't get email
-- **Currently:** they sit there. No retry path other than refreshing
-  and re-submitting.
-- **Fix planned:** see *Outstanding work* below — Item 7a in
-  `DELIVERABILITY.md` calls for a "Resend my magic link" button
-  that appears 60s after the success message.
+### ✅ User submits, doesn't get email
+- After submit, a *"Didn't get it in 60 seconds?"* prompt with a
+  **Resend** button reveals after 60s. Click resends to the same
+  email + redirect URL. 30s throttle between resends.
+- If the user types a different email after the first send, the
+  resend prompt is hidden + timers cleared so it never resends to
+  a stale address.
 
 ### ⚠️ User has anonymous Supabase session from the wizard
 - Some users go to `/login/` while still signed in anonymously
@@ -152,53 +160,30 @@ These are intentional — they catch users who:
 The new login page **does not** change any of the team-invite or
 plan-loading behaviour on `/plan/`. Specifically:
 
-| RPC / function | Where | Untouched |
+| RPC / function | Where | Status |
 |---|---|---|
-| `accept_team_invite(p_invite_token)` | `js/plan.js` ~line 2132 | ✓ |
-| `get_invite_info(p_invite_token)` | `js/plan.js` ~line 2151 | ✓ |
-| `claim_anonymous_plan(plan_id)` | `js/plan.js` after magic-link click | ✓ |
-| `signInAnon` at wizard start | `js/wizard.js` | ✓ |
+| `accept_team_invite(p_invite_token)` | `js/plan.js` | Untouched ✓ |
+| `get_invite_info(p_invite_token)` | `js/plan.js` | Untouched ✓ |
+| `claim_anonymous_plan(plan_id)` | `js/plan.js` after magic-link click | Same-device handoff — untouched ✓ |
+| `claim_anonymous_plan_by_email()` | `js/plan.js` after magic-link click | **NEW** — cross-device handoff (migration `20260501000002`) |
+| `signInAnon` at wizard start | `js/wizard.js` | Untouched ✓ |
 
-Dev shouldn't need to touch any of these. The `/login/` page is a
-**front-end addition**, not a back-end change.
+The `/login/` page is a **front-end addition**, not a back-end change.
 
 ---
 
-## Outstanding work for dev
+## Outstanding work ✅ DONE
 
-These are flagged in `DELIVERABILITY.md` (item 7) as in-app
-mitigations for email-going-to-junk risk. Both should be done
-before the show.
+The two items previously flagged here (resend button + add-to-contacts
+instruction) are both live. See the updated *Scenarios* section above
+and `DELIVERABILITY.md` item 7 for current status.
 
-### 7a — Resend button on `/login/`
+What's left for dev (deliverability infra, not login flow):
+- Configure Supabase Auth SMTP → Postmark sender = `hello@autoevent.io`
+- Real `hello@autoevent.io` mailbox so replies + warming work
+- DNS records (SPF / DKIM / DMARC) for autoevent.io
 
-**Where:** `login/index.html`, in the `<script type="module">` block
-that handles form submission.
-
-**Behaviour:**
-- After successful submit, the success message *"Check your inbox.
-  A magic link is on its way to {email}"* appears.
-- After **60 seconds**, additionally show a *"Didn't get the email?"*
-  prompt with a **Resend** button.
-- Clicking Resend re-fires `sendMagicLink(email, redirectTo)` and
-  shows a confirmation *"Resent. Check your inbox again."*
-- Throttle: max 1 resend per 30s per email (Supabase Auth
-  rate-limits magic-link requests on the back-end too — they'll
-  return 429 if you exceed this).
-
-Approx 30 lines of JS + CSS.
-
-### 7b — "Add to contacts" instruction
-
-**Where:** `index.html` stage-email-sent screen + `emails/welcome.html`
-
-**Behaviour:**
-- Add a small instruction prompt to both:
-  *"💡 Add `hello@autoevent.io` to your contacts — every email
-  client treats messages from contacts as priority and skips spam
-  filtering."*
-- Style as a subtle muted card, similar to the existing junk-folder
-  card on the success screen.
+All covered in `DELIVERABILITY.md` items 1–3.
 
 ---
 

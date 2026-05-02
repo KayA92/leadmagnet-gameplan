@@ -608,33 +608,55 @@ body::before {
 
 /* Live category-popularity badge. Injected at runtime by wizard.js with the
    total of (sessions + exhibitors) tagged with that canonical_category in
-   programme.json + exhibitors.json. Renders on Stage 2 chips + Stage 3
-   options. The .cat-hot variant goes on the top 3 entries (subtle heatmap). */
+   programme.json + exhibitors.json. Three tiers create a hot→cool heatmap:
+     .cat-tier-hot  — top 3 (mint, with flame icon, glow) → "go here first"
+     .cat-tier-warm — middle half (amber) → "solid options"
+     .cat-tier-cool — bottom half (grey, faded) → "thin coverage" */
 .cat-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--text-muted);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 2px 8px;
+  padding: 2px 9px;
   border-radius: 100px;
   min-width: 22px;
   line-height: 1;
   flex-shrink: 0;
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
-/* Heatmap accent for the top 3 most-covered categories — mint glow draws
-   the eye to the strongest matches without saying "popular" explicitly. */
-.cat-hot .cat-count,
-.prompt-chip.cat-hot .cat-count {
+.cat-count svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+.cat-count-num { line-height: 1; }
+
+/* HOT — top 3 most-covered categories. Mint pill + flame icon + glow.
+   Reads emotionally as "this is where the show is heaviest". */
+.cat-tier-hot .cat-count {
   color: var(--mint);
-  background: rgba(34,230,168,0.12);
-  border-color: rgba(34,230,168,0.40);
-  box-shadow: 0 0 10px rgba(34,230,168,0.20);
+  background: rgba(34,230,168,0.14);
+  border-color: rgba(34,230,168,0.45);
+  box-shadow: 0 0 12px rgba(34,230,168,0.25);
 }
+/* WARM — middle half. Amber pill, no glow. Reads as "solid coverage". */
+.cat-tier-warm .cat-count {
+  color: var(--amber);
+  background: rgba(251,191,36,0.10);
+  border-color: rgba(251,191,36,0.30);
+}
+/* COOL — bottom half. Faded grey pill. Reads as "thin pickings". */
+.cat-tier-cool .cat-count {
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+  opacity: 0.8;
+}
+
 /* Chip-specific spacing — chips are inline so the badge sits with a small gap */
 .prompt-chip .cat-count { margin-left: 8px; }
 /* Option-specific positioning — options are flex; push badge to the right

@@ -566,14 +566,36 @@ function decorateAndRankByCategory() {
     for (const cat of e.canonical_categories || []) bump(cat, 'exhibitors');
   }
 
+  // Lucide-style flame SVG, inlined so each badge is self-contained.
+  const FLAME_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+
   const decorate = (selector, badgeBeforeSelector) => {
     const els = Array.from(document.querySelectorAll(selector));
     if (els.length === 0) return;
-    // Inject badge + record count for sorting
+    // Record count for each so we can sort
     for (const el of els) {
       const cat = el.dataset.cat;
-      const total = counts[cat]?.total || 0;
-      el.dataset.count = total;
+      el.dataset.count = counts[cat]?.total || 0;
+    }
+    // Sort by descending count, re-insert in DOM order
+    const sorted = [...els].sort((a, b) =>
+      (Number(b.dataset.count) || 0) - (Number(a.dataset.count) || 0),
+    );
+    const parent = els[0].parentNode;
+    for (const el of sorted) parent.appendChild(el);
+
+    // Tier the sorted list: hot (top 3) / warm (next ~half) / cool (bottom)
+    // — gives the user a hot-to-cold heatmap where the "where to start" call
+    //   is obvious at a glance, with the exact count as proof.
+    const len = sorted.length;
+    const warmCutoff = Math.max(3, Math.ceil(len / 2));
+    sorted.forEach((el, i) => {
+      // Reset previous tier classes (in case decorate runs more than once)
+      el.classList.remove('cat-tier-hot', 'cat-tier-warm', 'cat-tier-cool');
+      const tier = i < 3 ? 'hot' : i < warmCutoff ? 'warm' : 'cool';
+      el.classList.add(`cat-tier-${tier}`);
+
+      // Inject (or refresh) the count badge
       let badge = el.querySelector('.cat-count');
       if (!badge) {
         badge = document.createElement('span');
@@ -582,16 +604,10 @@ function decorateAndRankByCategory() {
         if (before) el.insertBefore(badge, before);
         else el.appendChild(badge);
       }
-      badge.textContent = total;
-    }
-    // Sort by descending count, re-insert in order
-    const sorted = [...els].sort((a, b) =>
-      (Number(b.dataset.count) || 0) - (Number(a.dataset.count) || 0),
-    );
-    const parent = els[0].parentNode;
-    for (const el of sorted) parent.appendChild(el);
-    // Mark the top 3 with a "hot" class for the heatmap accent
-    sorted.slice(0, 3).forEach(el => el.classList.add('cat-hot'));
+      // Hot tier gets a flame icon prefix; others just show the number.
+      const flame = tier === 'hot' ? FLAME_SVG : '';
+      badge.innerHTML = `${flame}<span class="cat-count-num">${el.dataset.count}</span>`;
+    });
   };
 
   decorate('#stage-2 .prompt-chip[data-cat]', null);

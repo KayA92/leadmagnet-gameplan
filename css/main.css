@@ -524,34 +524,18 @@ body::before {
 
 /* Tag pills (role + problem prompts + quirk prompts) */
 .tag-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-/* Role groups (Stage 5) — splits sector from seniority so users in
-   adjacent roles (bookkeeper, tax advisor) don't have to fit themselves
-   into a seniority ladder, and partners don't have to mentally untangle
-   their identity from their job title. Single-select still — picking one
-   pill in any group is the answer. */
-.role-groups { display: flex; flex-direction: column; gap: 24px; width: 100%; }
-.role-group { display: flex; flex-direction: column; gap: 12px; }
+/* Role groups (Stage 5) — quiet text-only section dividers, no pill, no icon.
+   Single-select. Picking one pill in any group is the answer. */
+.role-groups { display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.role-group { display: flex; flex-direction: column; gap: 10px; }
 .role-group-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text);
-  font-weight: 700;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--ink-3);
-  border-radius: 10px;
-  width: fit-content;
-}
-.role-group-label svg {
-  width: 15px;
-  height: 15px;
-  color: var(--mint);
-  flex-shrink: 0;
+  color: var(--text-faint);
+  font-weight: 600;
+  padding-left: 2px;
 }
 .tag-pill {
   display: inline-flex; align-items: center; gap: 8px;
@@ -563,6 +547,12 @@ body::before {
   font-family: inherit; font-size: 15px; font-weight: 500;
   cursor: pointer; transition: all 0.15s;
 }
+.tag-pill--quiet {
+  border-style: dashed;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+.tag-pill--quiet .tag-pill-icon { color: var(--text-faint); }
 .tag-pill:hover { border-color: var(--pink); background: rgba(255,94,132,0.06); transform: translateY(-1px); }
 .tag-pill.selected { border-color: var(--mint); background: rgba(34,230,168,0.1); color: var(--mint); box-shadow: var(--glow-mint); }
 .tag-pill.selected::before { content: '✓'; font-size: 12px; }
@@ -762,102 +752,30 @@ body::before {
 .pain-tag:hover { transform: translateY(-1px); }
 .pain-tag.selected::before { content: '✓ '; font-weight: 700; }
 
-/* SCORCHING — pink heat (top tier, this is the bell-ringer) */
-.band-scorching .pain-band-label {
-  background: rgba(255,94,132,0.10);
-  border-color: rgba(255,94,132,0.35);
-  color: var(--pink);
-}
-.band-scorching .pain-band-dot {
-  background: var(--pink);
-  box-shadow: 0 0 10px var(--pink);
-  animation: pulse 2s ease-in-out infinite;
-}
-.band-scorching .pain-tag {
-  border-color: rgba(255,94,132,0.40);
-  background: rgba(255,94,132,0.05);
-  font-weight: 600;
-}
-.band-scorching .pain-tag:hover {
-  border-color: var(--pink);
-  background: rgba(255,94,132,0.12);
-  box-shadow: 0 0 14px rgba(255,94,132,0.20);
-}
-.band-scorching .pain-tag.selected {
-  border-color: var(--pink);
-  background: rgba(255,94,132,0.18);
-  color: var(--pink);
-  box-shadow: 0 0 14px rgba(255,94,132,0.30);
-}
-
-/* HOT — coral */
-.band-hot .pain-band-label {
-  background: rgba(255,138,92,0.10);
-  border-color: rgba(255,138,92,0.32);
-  color: var(--coral);
-}
-.band-hot .pain-band-dot {
-  background: var(--coral);
-  box-shadow: 0 0 8px var(--coral);
-}
-.band-hot .pain-tag { border-color: rgba(255,138,92,0.30); }
-.band-hot .pain-tag:hover {
-  border-color: var(--coral);
-  background: rgba(255,138,92,0.10);
-}
-.band-hot .pain-tag.selected {
-  border-color: var(--coral);
-  background: rgba(255,138,92,0.16);
-  color: var(--coral);
-  box-shadow: 0 0 12px rgba(255,138,92,0.25);
-}
-
-/* WARM — amber */
-.band-warm .pain-band-label {
-  background: rgba(251,191,36,0.10);
-  border-color: rgba(251,191,36,0.30);
-  color: var(--amber);
-}
-.band-warm .pain-band-dot {
-  background: var(--amber);
-  box-shadow: 0 0 6px rgba(251,191,36,0.7);
-}
-.band-warm .pain-tag { border-color: rgba(251,191,36,0.22); }
-.band-warm .pain-tag:hover {
-  border-color: var(--amber);
-  background: rgba(251,191,36,0.08);
-}
-.band-warm .pain-tag.selected {
-  border-color: var(--amber);
-  background: rgba(251,191,36,0.14);
-  color: var(--amber);
-  box-shadow: 0 0 10px rgba(251,191,36,0.20);
-}
-
-/* SPECIALIST — cool blue (lower attention, but real) */
-.band-specialist .pain-band-label {
-  background: rgba(106,169,255,0.08);
-  border-color: rgba(106,169,255,0.28);
-  color: var(--cool-blue);
-}
-.band-specialist .pain-band-dot {
-  background: var(--cool-blue);
-  box-shadow: 0 0 6px rgba(106,169,255,0.6);
-}
-.band-specialist .pain-tag {
-  border-color: rgba(255,255,255,0.08);
+/* All bands share the same visual treatment — the SCORCHING/HOT/WARM/SPECIALIST
+   labels still convey priority order, but the pills look identical. Top-to-bottom
+   ranking carries the meaning, not colour. */
+.pain-band-label {
   color: var(--text-muted);
 }
-.band-specialist .pain-tag:hover {
-  border-color: var(--cool-blue);
-  background: rgba(106,169,255,0.08);
+.pain-band-dot {
+  background: var(--mint);
+  box-shadow: 0 0 6px rgba(34,230,168,0.5);
+}
+.pain-tag {
+  border-color: var(--ink-3);
+  background: var(--ink-2);
   color: var(--text);
 }
-.band-specialist .pain-tag.selected {
-  border-color: var(--cool-blue);
-  background: rgba(106,169,255,0.14);
-  color: var(--cool-blue);
-  box-shadow: 0 0 10px rgba(106,169,255,0.18);
+.pain-tag:hover {
+  border-color: var(--mint);
+  background: rgba(34,230,168,0.06);
+}
+.pain-tag.selected {
+  border-color: var(--mint);
+  background: rgba(34,230,168,0.14);
+  color: var(--mint);
+  box-shadow: 0 0 10px rgba(34,230,168,0.20);
 }
 
 /* ═══ FIXED CTA STACK (precision bar + next/back) ═══
@@ -1063,21 +981,6 @@ body::before {
   background: rgba(168,85,247,0.06);
 }
 
-/* Mode section locked until a firm size is picked */
-.firm-mode-section { margin-top: 22px; transition: opacity 0.3s; }
-.firm-mode-section.locked {
-  opacity: 0.45;
-  pointer-events: none;
-}
-.firm-mode-section.locked .firm-section-label::after {
-  content: '· locked until firm size picked';
-  font-size: 10px;
-  color: var(--text-faint);
-  letter-spacing: 0.05em;
-  text-transform: none;
-  font-weight: 500;
-  margin-left: 6px;
-}
 
 /* Chunk 18: Mobile/desktop copy toggles */
 .mobile-only { display: none; }

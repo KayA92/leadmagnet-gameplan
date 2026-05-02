@@ -581,7 +581,7 @@ function togglePain(slug) {
   updatePrecisionBars();
 }
 
-// Score model: pains 0..40, role bucket +25, firm size +20, mode +10. Capped 95.
+// Score model: pains 0..40, role bucket +25, firm size +20. Capped 95.
 function computePrecisionScore() {
   const a = state.answers;
   let s = 0;
@@ -593,7 +593,6 @@ function computePrecisionScore() {
   if (n >= 5) s += 4;
   if (a.roleBucket) s += 25;
   if (a.firmSize) s += 20;
-  if (a.mode) s += 10;
   return Math.min(95, s);
 }
 
@@ -626,19 +625,9 @@ function prepareStage5b() {
     const target = document.querySelector(`.firm-pill[data-firm="${cfg.suggest}"]`);
     if (target) target.classList.add('smart-suggest-active');
   }
-  // Mode section: only "unlocked" (full opacity) for owners. Others still see it
-  // but it stays subdued — a softer reveal once they pick a firm size.
-  const modeEl = $('firm-mode-section');
-  if (modeEl) {
-    modeEl.classList.toggle('locked', !state.answers.firmSize);
-    modeEl.style.display = bucket === 'owner' ? '' : 'none';
-  }
   // Re-apply visual selection state on revisits
   document.querySelectorAll('.firm-pill').forEach(b => {
     b.classList.toggle('selected', b.dataset.firm === state.answers.firmSize);
-  });
-  document.querySelectorAll('.mode-pill').forEach(b => {
-    b.classList.toggle('selected', b.dataset.mode === state.answers.mode);
   });
   const nextBtn = $('firm-next');
   if (nextBtn) nextBtn.disabled = !state.answers.firmSize;
@@ -819,7 +808,7 @@ export async function initWizard() {
   });
   $('role-next') && ($('role-next').disabled = true);
 
-  // ── Stage 5b: firm size + (conditional) mode
+  // ── Stage 5b: firm size
   document.querySelectorAll('[data-firm]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-firm]').forEach(b => b.classList.remove('selected'));
@@ -827,18 +816,7 @@ export async function initWizard() {
       state.answers.firmSize = btn.dataset.firm;
       // Smart-suggest badge only matters until first interaction; clear it everywhere.
       document.querySelectorAll('.firm-pill').forEach(b => b.classList.remove('smart-suggest-active'));
-      // Unlock mode section (owners only see mode prompt visually but logic is uniform)
-      const modeEl = $('firm-mode-section');
-      if (modeEl) modeEl.classList.remove('locked');
       $('firm-next').disabled = false;
-      updatePrecisionBars();
-    });
-  });
-  document.querySelectorAll('[data-mode]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state.answers.mode = btn.dataset.mode;
       updatePrecisionBars();
     });
   });

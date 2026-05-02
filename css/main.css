@@ -314,9 +314,58 @@ body::before {
 .q-container { width: 100%; max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
 .q-number { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 12px; }
 .q-progress { display: flex; gap: 4px; flex: 1; max-width: 140px; }
-.q-progress-seg { flex: 1; height: 4px; background: rgba(255,255,255,0.14); border-radius: 2px; transition: background 0.4s, box-shadow 0.4s; }
-.q-progress-seg.done { background: var(--grad); }
-.q-progress-seg.current { background: var(--grad); box-shadow: 0 0 10px rgba(255,94,132,0.45); }
+.q-progress-seg {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.14);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.4s, box-shadow 0.4s;
+}
+/* When a segment is done or current, hide its base background and let the
+   ::before pseudo carry the gradient slice. Each segment's slice is positioned
+   so the four together form ONE continuous gradient flowing left-to-right. */
+.q-progress-seg.done,
+.q-progress-seg.current {
+  background: transparent;
+}
+.q-progress-seg.done::before,
+.q-progress-seg.current::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grad);
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+}
+.q-progress-seg.done:nth-child(1)::before,
+.q-progress-seg.current:nth-child(1)::before { background-position: 0% 50%; }
+.q-progress-seg.done:nth-child(2)::before,
+.q-progress-seg.current:nth-child(2)::before { background-position: 33.33% 50%; }
+.q-progress-seg.done:nth-child(3)::before,
+.q-progress-seg.current:nth-child(3)::before { background-position: 66.67% 50%; }
+.q-progress-seg.done:nth-child(4)::before,
+.q-progress-seg.current:nth-child(4)::before { background-position: 100% 50%; }
+/* Subtle shimmer — a soft white sweep across each filled segment that loops
+   continuously. Independent per segment but timed identically so they read
+   as one wave. */
+.q-progress-seg.done::after,
+.q-progress-seg.current::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+  background-size: 220% 100%;
+  background-position: 220% 0;
+  animation: q-progress-shimmer 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes q-progress-shimmer {
+  0% { background-position: 220% 0; }
+  100% { background-position: -120% 0; }
+}
+.q-progress-seg.current { box-shadow: 0 0 10px rgba(255,94,132,0.45); }
 .q-title { font-family: 'Fraunces', serif; font-size: clamp(32px,5vw,52px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; color: var(--text); font-variation-settings: 'SOFT' 40; }
 .q-title em { font-style: italic; font-variation-settings: 'SOFT' 90; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .q-title .optional-tag {
@@ -593,15 +642,34 @@ body::before {
 
 .text-input-wrap { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; padding: 0; transition: all 0.2s; }
 .text-input-wrap:focus-within { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255,94,132,0.12); }
-.text-input { width: 100%; background: transparent; border: none; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 18px; padding: 22px 22px 22px 22px; outline: none; line-height: 1.5; resize: none; min-height: 120px; display: block; box-sizing: border-box; }
+.text-input { width: 100%; background: transparent; border: none; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 18px; padding: 18px 20px 14px; outline: none; line-height: 1.5; resize: none; min-height: 96px; display: block; box-sizing: border-box; }
 .text-input.short { min-height: 64px; }
 .text-input::placeholder { color: var(--text-faint); }
 
-.text-input-hint { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.char-progress { flex: 1; max-width: 180px; height: 3px; background: var(--ink-3); border-radius: 100px; overflow: hidden; position: relative; }
-.char-progress-fill { height: 100%; width: 0; background: var(--amber); border-radius: 100px; transition: width 0.3s cubic-bezier(.4,0,.2,1), background 0.3s; }
-.char-progress-fill.ok { background: var(--mint); }
-.text-input-hint .count.ok { color: var(--mint); }
+/* Min-character note sits INSIDE the input wrapper, visually attached to the
+   textarea — saves vertical space vs. the old separate hint row. Hides
+   smoothly via max-height transition once the threshold is met. */
+.text-input-min-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 0 20px 14px;
+  margin: 0;
+  transition: opacity 0.18s ease, max-height 0.22s ease, padding 0.22s ease;
+  max-height: 30px;
+  overflow: hidden;
+}
+.text-input-min-note.hidden,
+.text-input-min-note[hidden] {
+  display: block !important; /* override [hidden] so we control via max-height */
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
 .min-note { color: var(--text-muted); font-size: 10px; }
 .min-note.ok { color: var(--mint); }
 
@@ -7606,9 +7674,11 @@ button.app-pill.purple.clickable:hover {
 
 @media (max-width: 640px) {
   .top-bar { padding: 10px 18px; }
-  .brand { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .brand { gap: 10px; }
   .brand-logo { height: 26px; }
-  .brand-event { font-size: 10px; letter-spacing: 0.14em; padding-top: 0; }
+  /* Hide the "Accountex 2026" chip on mobile — saves space + avoids the
+     cramped vertical-stack look. The page content still anchors the event. */
+  .brand-event { display: none; }
   .top-bar-right { gap: 14px; }
   .cta-primary { font-size: 15px; padding: 16px 24px; gap: 10px; white-space: nowrap; }
   .launch-card-btn { font-size: 15px; padding: 15px 22px; gap: 8px; white-space: nowrap; }

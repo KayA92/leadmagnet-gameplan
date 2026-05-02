@@ -537,17 +537,10 @@ async function handleSaveSubmit(e) {
 // ── Problem textarea helpers ──────────────────────────────────────────────────
 function updateCharCount(val) {
   const len = val.length;
-  const countEl = $('char-count');
-  const fillEl = $('char-fill');
   const minNote = $('char-min');
-  if (countEl) countEl.textContent = len + ' / 1000';
-  if (fillEl) {
-    fillEl.style.width = Math.min((len / 1000) * 100, 100) + '%';
-    fillEl.className = 'char-progress-fill' + (len >= 20 ? ' ok' : '');
-  }
   if (minNote) {
-    minNote.className = 'min-note' + (len >= 20 ? ' ok' : '');
-    minNote.hidden = len >= 20;
+    if (len >= 20) minNote.classList.add('hidden');
+    else minNote.classList.remove('hidden');
   }
   const btn = $('problem-next');
   if (btn) btn.disabled = len < 20;

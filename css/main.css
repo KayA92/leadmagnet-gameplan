@@ -606,6 +606,41 @@ body::before {
 .prompt-chip.added { background: rgba(34,230,168,0.15); border-color: var(--mint); color: var(--mint); }
 .prompt-chip.added::before { content: '✓ '; font-weight: 700; }
 
+/* Live category-popularity badge. Injected at runtime by wizard.js with the
+   total of (sessions + exhibitors) tagged with that canonical_category in
+   programme.json + exhibitors.json. Renders on Stage 2 chips + Stage 3
+   options. The .cat-hot variant goes on the top 3 entries (subtle heatmap). */
+.cat-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 100px;
+  min-width: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+/* Heatmap accent for the top 3 most-covered categories — mint glow draws
+   the eye to the strongest matches without saying "popular" explicitly. */
+.cat-hot .cat-count,
+.prompt-chip.cat-hot .cat-count {
+  color: var(--mint);
+  background: rgba(34,230,168,0.12);
+  border-color: rgba(34,230,168,0.40);
+  box-shadow: 0 0 10px rgba(34,230,168,0.20);
+}
+/* Chip-specific spacing — chips are inline so the badge sits with a small gap */
+.prompt-chip .cat-count { margin-left: 8px; }
+/* Option-specific positioning — options are flex; push badge to the right
+   alongside the check tick, but a touch separated. */
+.option .cat-count { margin-left: auto; margin-right: 12px; }
+
 /* Chunk 18: Mobile/desktop copy toggles */
 .mobile-only { display: none; }
 .desktop-only { display: inline; }

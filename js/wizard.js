@@ -546,6 +546,58 @@ function updateCharCount(val) {
   if (btn) btn.disabled = len < 20;
 }
 
+// ── Popularity ranking ────────────────────────────────────────────────────────
+// Counts canonical_categories across loaded sessions + exhibitors, then injects
+// a count badge into every chip / option that has a matching data-cat, and
+// reorders the elements within their parent so the most-covered categories
+// appear first. Top 3 get a "hot" highlight. No-op if data isn't loaded.
+function decorateAndRankByCategory() {
+  if (!state.allSessions?.length && !state.allExhibitors?.length) return;
+  const counts = {};
+  const bump = (slug, key) => {
+    if (!counts[slug]) counts[slug] = { sessions: 0, exhibitors: 0, total: 0 };
+    counts[slug][key] += 1;
+    counts[slug].total += 1;
+  };
+  for (const s of state.allSessions || []) {
+    for (const cat of s.canonical_categories || []) bump(cat, 'sessions');
+  }
+  for (const e of state.allExhibitors || []) {
+    for (const cat of e.canonical_categories || []) bump(cat, 'exhibitors');
+  }
+
+  const decorate = (selector, badgeBeforeSelector) => {
+    const els = Array.from(document.querySelectorAll(selector));
+    if (els.length === 0) return;
+    // Inject badge + record count for sorting
+    for (const el of els) {
+      const cat = el.dataset.cat;
+      const total = counts[cat]?.total || 0;
+      el.dataset.count = total;
+      let badge = el.querySelector('.cat-count');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'cat-count';
+        const before = badgeBeforeSelector ? el.querySelector(badgeBeforeSelector) : null;
+        if (before) el.insertBefore(badge, before);
+        else el.appendChild(badge);
+      }
+      badge.textContent = total;
+    }
+    // Sort by descending count, re-insert in order
+    const sorted = [...els].sort((a, b) =>
+      (Number(b.dataset.count) || 0) - (Number(a.dataset.count) || 0),
+    );
+    const parent = els[0].parentNode;
+    for (const el of sorted) parent.appendChild(el);
+    // Mark the top 3 with a "hot" class for the heatmap accent
+    sorted.slice(0, 3).forEach(el => el.classList.add('cat-hot'));
+  };
+
+  decorate('#stage-2 .prompt-chip[data-cat]', null);
+  decorate('#stage-3 .option[data-cat]', '.option-check');
+}
+
 function addPromptChip(text) {
   const ta = $('problem-input');
   if (!ta) return;
@@ -576,6 +628,12 @@ export async function initWizard() {
     console.error('Failed to load data files:', err);
   }
 
+  // ── Decorate Stage 2 chips + Stage 3 categories with live popularity counts
+  // (sessions + exhibitors per canonical category) and reorder by descending
+  // count so the most-covered topics are surfaced first. Gives users immediate
+  // signal about what the show is heaviest on, before they invest in answers.
+  decorateAndRankByCategory();
+
   // ── Stage 0: hero CTA
   $('hero-start')?.addEventListener('click', () => goToStage(2));
 
@@ -604,7 +662,9 @@ export async function initWizard() {
   });
 
   // ── Stage 3: categories
-  document.querySelectorAll('[data-cat]').forEach(btn => {
+  // Scoped to .option to avoid matching the .prompt-chip elements on stage 2
+  // which now also carry data-cat (used for popularity ranking, NOT selection).
+  document.querySelectorAll('.option[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => toggleCategory(btn.dataset.cat));
   });
   $('cat-back')?.addEventListener('click', () => history.back());

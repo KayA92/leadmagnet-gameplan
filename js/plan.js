@@ -1675,60 +1675,67 @@ function renderPlanEditorFilters() {
   const el = document.getElementById('planEditorFilters');
   if (!el) return;
 
-  const userCats    = _plan?.categories || [];
-  const unpicked    = Object.keys(_EDITOR_CATEGORY_LABELS).filter(c => !userCats.includes(c));
-  const hasActive   = _planEditorCategories.size > 0;
+  const userCats   = _plan?.categories || [];
+  const unpicked   = Object.keys(_EDITOR_CATEGORY_LABELS).filter(c => !userCats.includes(c));
+  const userPains  = (_plan?.problem || '').split(/\s*,\s*/).filter(Boolean);
 
-  const problemChips = userCats.map(c => {
-    const on = _planEditorCategories.has(c);
-    return `<button class="editor-filter-chip${on ? ' active' : ''}"
-      onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">
-      ${on ? '✓ ' : ''}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
-    </button>`;
-  }).join('');
-
-  const moreChips = unpicked.map(c => {
-    const on = _planEditorCategories.has(c);
-    return `<button class="editor-filter-chip variant-more${on ? ' active' : ''}"
-      onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">
-      ${on ? '✓ ' : '+ '}${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}
-    </button>`;
-  }).join('');
+  // Locked context — readonly mint chips of the user's pains AND tools
+  // they picked at onboarding. Shows what's filtering this list without
+  // making it editable on this surface (clear single-purpose UI).
+  const contextChips = [
+    ...userPains.map(label => `<span class="editor-context-chip">${escHtml(label)}</span>`),
+    ...userCats.map(c => `<span class="editor-context-chip">${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}</span>`),
+  ].join('');
 
   let html = '';
 
-  if (userCats.length) {
-    html += `<div class="editor-filter-group">
-      <span class="editor-filter-label editor-filter-label-ai">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg>
-        Your top problems
-      </span>
-      ${problemChips}
-      ${hasActive ? `<button class="editor-filter-clear" onclick="clearPlanEditorCategories()" type="button">Clear</button>` : ''}
-      ${unpicked.length && !_planEditorShowMore ? `<button class="editor-filter-more-btn" onclick="togglePlanEditorMoreFilters()" type="button">+ ${unpicked.length} more filter${unpicked.length === 1 ? '' : 's'}</button>` : ''}
-    </div>
-    ${_planEditorShowMore && unpicked.length ? `
-      <div class="editor-filter-group editor-filter-more-row">
-        <span class="editor-filter-label">Also filter by</span>
-        ${moreChips}
-        <button class="editor-filter-more-hide" onclick="togglePlanEditorMoreFilters()" type="button">Hide</button>
-      </div>` : ''}`;
+  if (contextChips) {
+    html += `<div class="editor-filter-row">
+      <span class="editor-filter-label">Filtered to your context</span>
+      <div class="editor-context-chips">${contextChips}</div>
+    </div>`;
   }
 
   if (_planEditorMode === 'sessions') {
     html += `
-    <div class="editor-filter-group">
+    <div class="editor-filter-row">
       <span class="editor-filter-label">Day</span>
-      ${[['all','All days'],['Day 1','Day 1'],['Day 2','Day 2']].map(([v,l]) => `
-        <button class="editor-filter-chip${_planEditorDay === v ? ' active' : ''}"
-          onclick="setPlanEditorFilter('day','${v}')" type="button">${l}</button>`).join('')}
+      <div class="editor-filter-pills">
+        ${[['all','All days'],['Day 1','Day 1'],['Day 2','Day 2']].map(([v,l]) => `
+          <button class="editor-filter-pill${_planEditorDay === v ? ' active' : ''}"
+            onclick="setPlanEditorFilter('day','${v}')" type="button">${l}</button>`).join('')}
+      </div>
     </div>
-    <div class="editor-filter-group">
+    <div class="editor-filter-row">
       <span class="editor-filter-label">Time</span>
-      ${[['all','All day'],['morning','Morning'],['afternoon','Afternoon']].map(([v,l]) => `
-        <button class="editor-filter-chip${_planEditorTime === v ? ' active' : ''}"
-          onclick="setPlanEditorFilter('time','${v}')" type="button">${l}</button>`).join('')}
+      <div class="editor-filter-pills">
+        ${[['all','All day'],['morning','Morning'],['afternoon','Afternoon']].map(([v,l]) => `
+          <button class="editor-filter-pill${_planEditorTime === v ? ' active' : ''}"
+            onclick="setPlanEditorFilter('time','${v}')" type="button">${l}</button>`).join('')}
+      </div>
     </div>`;
+  }
+
+  // Refine link — opens the deeper category filter panel. Only render
+  // when there are unpicked categories to surface (always true unless
+  // user picked every one at onboarding).
+  if (unpicked.length) {
+    const activeAdditional = [..._planEditorCategories].filter(c => !userCats.includes(c));
+    const refineLabel = _planEditorShowMore
+      ? 'Hide category filters ↑'
+      : `Refine with category filters →${activeAdditional.length ? ` <span class="editor-filter-refine-count">${activeAdditional.length}</span>` : ''}`;
+    html += `<button class="editor-filter-refine" onclick="togglePlanEditorMoreFilters()" type="button">${refineLabel}</button>`;
+    if (_planEditorShowMore) {
+      const moreChips = unpicked.map(c => {
+        const on = _planEditorCategories.has(c);
+        return `<button class="editor-filter-pill${on ? ' active' : ''}"
+          onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}</button>`;
+      }).join('');
+      html += `<div class="editor-filter-row editor-filter-refine-panel">
+        <div class="editor-filter-pills">${moreChips}</div>
+        ${activeAdditional.length ? `<button class="editor-filter-clear" onclick="clearPlanEditorCategories()" type="button">Clear</button>` : ''}
+      </div>`;
+    }
   }
 
   el.innerHTML = html;
@@ -1809,76 +1816,62 @@ function renderPlanEditorSessions(container) {
 
   let html = '';
   let lastDay = null;
+  // TODO: investigate duplicate sessions appearing in the editor list
+  // (e.g. "AI for bookkeepers", "Surviving Hospitality") — could be
+  // upstream data dupes in _allSessions or a render edge case.
   for (const key of sortedKeys) {
     const sessions = slots.get(key);
     const [day, time] = key.split('||');
     if (day !== lastDay) {
       lastDay = day;
-      const dayNum  = day;
       const dayName = day === 'Day 1' ? 'Wednesday 13 May' : 'Thursday 14 May';
       html += `<div class="editor-day-divider">
-        <span class="editor-day-divider-num">${dayNum}</span>
+        <span class="editor-day-divider-num">${day}</span>
         <span class="editor-day-divider-name">${dayName}</span>
         <span class="editor-day-divider-line"></span>
       </div>`;
     }
-    const slotPlanCount = sessions.filter(s => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
+    // Sort sessions within a start-time group by AI match confidence
+    // descending — top match shows first.
+    const sortedSlot = [...sessions].sort((a, b) => {
+      const ca = a.match_confidence ?? aiMatchConfidence(a.session_id, 'session');
+      const cb = b.match_confidence ?? aiMatchConfidence(b.session_id, 'session');
+      return cb - ca;
+    });
+    const slotPlanCount = sortedSlot.filter(s => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
     const hasClash = slotPlanCount >= 2;
     html += `<div class="editor-slot${hasClash ? ' has-clash' : ''}">
       <div class="editor-slot-head">
-        <div class="editor-slot-time"><strong>${escHtml(time || '')}</strong></div>
-        ${hasClash ? `<div class="editor-clash-warning">⚠ ${slotPlanCount} sessions selected at this time</div>` : ''}
+        <div class="editor-slot-time">${escHtml(time || '')}</div>
+        ${hasClash ? `<div class="editor-clash-warning">${slotPlanCount} sessions selected at this time</div>` : ''}
       </div>
       <div class="editor-slot-rows">`;
-    for (const s of sessions) {
+    for (const s of sortedSlot) {
       const inPlan     = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
+      const confidence = s.match_confidence ?? aiMatchConfidence(s.session_id, 'session');
       const speaker    = (s.speakers || [])[0];
-      const speakerLine = speaker
-        ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>`
-        : '';
-      const planCats  = _plan?.categories || [];
-      const whyTags   = planCats.flatMap(cat => {
-        const canonicals = PLAN_CATEGORY_MATCH[cat] || [];
-        return (s.canonical_categories || []).some(c => canonicals.includes(c))
-          ? [_EDITOR_CATEGORY_LABELS[cat] || cat]
-          : [];
-      }).slice(0, 3);
-      const filterTags = [..._planEditorCategories]
-        .filter(c => c !== 'other' && !planCats.includes(c))
-        .filter(c => {
-          const canonicals = PLAN_CATEGORY_MATCH[c] || [];
-          return (s.canonical_categories || []).some(cat => canonicals.includes(cat));
-        })
-        .map(c => _EDITOR_CATEGORY_LABELS[c] || c)
-        .slice(0, 3);
-      const isOther = _planEditorCategories.has('other') && !(s.canonical_categories || []).length;
-      const allTagSpans = [
-        ...whyTags.map(t => `<span class="checklist-why-tag why-category">Your problem: &ldquo;${escHtml(t)}&rdquo;</span>`),
-        ...filterTags.map(t => `<span class="checklist-why-tag why-category">Filtered: ${escHtml(t)}</span>`),
-        ...(isOther ? [`<span class="checklist-why-tag why-category">Uncategorised</span>`] : []),
-      ];
-      const whyHtml = allTagSpans.length
-        ? `<div class="editor-row-tags">${allTagSpans.join('')}</div>`
-        : '';
+      const metaParts = [
+        s.theatre ? `<span>${escHtml(s.theatre)}</span>` : '',
+        speaker ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>` : '',
+      ].filter(Boolean).join('');
+      const blurb = s.description ? truncateBoothDesc(s.description) : '';
       html += `
         <div class="editor-row${inPlan ? ' in-plan' : ''}">
           <div class="editor-row-main">
             <div class="editor-row-title">${escHtml(s.title || s.session_id)}</div>
-            <div class="editor-row-meta">
-              ${s.theatre ? `<span>${escHtml(s.theatre)}</span>` : ''}
-              ${speakerLine}
-            </div>
-            ${s.description ? `<div class="editor-row-blurb">${escHtml(s.description)}</div>` : ''}
-            ${whyHtml}
+            <div class="editor-row-meta">${metaParts}</div>
+            ${blurb ? `<div class="editor-row-blurb">${escHtml(blurb)}</div>` : ''}
           </div>
-          <div class="editor-row-actions">
-            <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
-              onclick="togglePlanSession('${escHtml(String(s.session_id))}','${escHtml(s.day||'')}','${escHtml(s.start_time||'')}')" type="button">
-              ${inPlan
-                ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
-                : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add to plan`}
-            </button>
+          <div class="editor-row-confidence">
+            <div class="row-confidence-num">${confidence}%</div>
+            <div class="row-confidence-label">AI Match<br>Confidence</div>
           </div>
+          <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
+            onclick="togglePlanSession('${escHtml(String(s.session_id))}','${escHtml(s.day||'')}','${escHtml(s.start_time||'')}')" type="button">
+            ${inPlan
+              ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
+              : `+ Add`}
+          </button>
         </div>`;
     }
     html += '</div></div>';
@@ -1922,46 +1915,33 @@ function renderPlanEditorBooths(container) {
     return;
   }
 
-  const rows = filtered.map(e => {
-    const inPlan = planNums.has(e.stand_number);
-    const isOther = _planEditorCategories.has('other') && !(e.canonical_categories || []).length;
+  // Sort booths by AI match confidence desc — top matches first
+  const sortedBooths = [...filtered].sort((a, b) => {
+    const ca = a.match_confidence ?? aiMatchConfidence(a.stand_number || a.company_name, 'booth');
+    const cb = b.match_confidence ?? aiMatchConfidence(b.stand_number || b.company_name, 'booth');
+    return cb - ca;
+  });
 
-    const whyTags = planCats.flatMap(cat => {
-      const canonicals = PLAN_CATEGORY_MATCH[cat] || [];
-      return (e.canonical_categories || []).some(c => canonicals.includes(c))
-        ? [_EDITOR_CATEGORY_LABELS[cat] || cat]
-        : [];
-    }).slice(0, 3);
-
-    const filterTags = [..._planEditorCategories]
-      .filter(c => c !== 'other' && !planCats.includes(c))
-      .filter(c => {
-        const canonicals = PLAN_CATEGORY_MATCH[c] || [];
-        return (e.canonical_categories || []).some(cat => canonicals.includes(cat));
-      })
-      .map(c => _EDITOR_CATEGORY_LABELS[c] || c)
-      .slice(0, 3);
-
-    const allTagSpans = [
-      ...whyTags.map(t => `<span class="checklist-why-tag why-category">Your problem: &ldquo;${escHtml(t)}&rdquo;</span>`),
-      ...filterTags.map(t => `<span class="checklist-why-tag why-category">Filtered: ${escHtml(t)}</span>`),
-      ...(isOther ? [`<span class="checklist-why-tag why-category">Uncategorised</span>`] : []),
-    ];
-    const tagsHtml = allTagSpans.length ? `<div class="editor-row-tags">${allTagSpans.join('')}</div>` : '';
-
+  const rows = sortedBooths.map(e => {
+    const inPlan     = planNums.has(e.stand_number);
+    const confidence = e.match_confidence ?? aiMatchConfidence(e.stand_number || e.company_name, 'booth');
+    const blurb      = e.company_description ? truncateBoothDesc(e.company_description) : '';
     return `
       <div class="editor-row${inPlan ? ' in-plan' : ''}">
         <div class="editor-row-main">
           <div class="editor-row-title">${escHtml(e.company_name || '')}</div>
-          <div class="editor-row-meta"><span>Stand ${escHtml(String(e.stand_number || ''))}</span></div>
-          ${e.company_description ? `<div class="editor-row-blurb">${escHtml(e.company_description)}</div>` : ''}
-          ${tagsHtml}
+          <div class="editor-row-meta">Booth · Stand ${escHtml(String(e.stand_number || ''))}</div>
+          ${blurb ? `<div class="editor-row-blurb">${escHtml(blurb)}</div>` : ''}
+        </div>
+        <div class="editor-row-confidence">
+          <div class="row-confidence-num">${confidence}%</div>
+          <div class="row-confidence-label">AI Match<br>Confidence</div>
         </div>
         <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
           onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
           ${inPlan
-            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
-            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add to plan`}
+            ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
+            : `+ Add`}
         </button>
       </div>`;
   }).join('');

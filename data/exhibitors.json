@@ -7,7 +7,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://123sheets.com",
+    "products_services": "Accounting Software, MTD, Practice & Project Management, Tax, VAT",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD",
     "categories": "Practice Management, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -26,7 +29,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.2020innovation.com/",
+    "products_services": "Consulting & Business Services, Recruitment & Training, Sales & Marketing, Tax",
+    "old_categories": "Tax & MTD, HR & People, Marketing & Growth",
     "categories": "Marketing & Growth, HR & Leadership, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "marketing-growth",
       "hr-people",
@@ -45,7 +51,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.accesspaysuite.com/",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Cash Flow Forecasting, Payment Process Services",
+    "old_categories": "Bookkeeping, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping"
@@ -63,7 +72,10 @@
     "show_category": "",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "HR & People, Marketing & Growth",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "",
@@ -78,7 +90,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.accountingflow.io/",
+    "products_services": "Accounting Software, AI & Automation, CRM, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, AI & Automation, Document Management, CRM & Comms",
     "categories": "Document Management, Practice Management, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -99,7 +114,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.accountingcpd.com/",
+    "products_services": "Magazines & Publishing, Recruitment & Training, Research & Development",
+    "old_categories": "HR & People, Marketing & Growth",
     "categories": "Marketing & Growth, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "marketing-growth",
       "hr-people"
@@ -117,7 +135,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.accountinuity.co.uk",
+    "products_services": "Association / Professional Body, Charity / Not for Profit, Consulting & Business Services, Corporate Finance / Mergers & Acquisitions, Outsourcing / Offshoring",
+    "old_categories": "HR & People,",
     "categories": "Banking & Payments, HR & Leadership, Outsourcing",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "banking-payments",
       "hr-people",
@@ -136,7 +157,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.accountsiq.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Expense Management",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Expenses",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -155,7 +179,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://acenteus-cca.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, Audit, MTD, Outsourcing / Offshoring",
+    "old_categories": "AI & Automation, Tax & MTD, Data & Analytics, Outsourcing",
     "categories": "Data & Analytics, AI & Automation, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -175,7 +202,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.actingoffice.com/",
+    "products_services": "Accounting Software, Analytics & Reporting, Corporate Finance / Mergers & Acquisitions, CRM, Cyber Security",
+    "old_categories": "Bookkeeping, CRM & Comms, Data & Analytics, Cyber Security, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, Cyber Security, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -196,7 +226,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://adfin.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Banking Services / Open Banking / Payment / FX Budgeting, MTD, Payment Process Services",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -216,7 +249,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://adsum-works.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, MTD, VAT",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -235,7 +271,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.advancetrack.com/",
+    "products_services": "Audit, Outsourcing / Offshoring, Payroll, Tax, VAT",
+    "old_categories": "Tax & MTD, Payroll, Outsourcing",
     "categories": "Outsourcing, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "outsourcing",
       "tax-mtd",
@@ -254,7 +293,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.advantage.co.uk/",
+    "products_services": "Accounting Software, AI & Automation, Consulting & Business Services, CRM, Sales & Marketing",
+    "old_categories": "Bookkeeping, AI & Automation, CRM & Comms, Marketing & Growth",
     "categories": "Marketing & Growth, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "marketing-growth",
       "ai-automation",
@@ -273,7 +315,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://affinityassociates.com https://affinityoutsourcing.net",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, MTD, Outsourcing / Offshoring, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -292,7 +337,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.aims.co.uk",
+    "products_services": "Association / Professional Body, Consulting & Business Services, Recruitment & Training",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "hr-people"
     ],
@@ -309,7 +357,10 @@
     "show_category": "Accountex London",
     "country": "Belgium",
     "website": "https://www.alkmist.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, Document Management, IT Solutions",
+    "old_categories": "AI & Automation, Document Management, Data & Analytics",
     "categories": "Document Management, Data & Analytics, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "data-analytics",
@@ -328,7 +379,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.allin.place/",
+    "products_services": "Cash Flow Forecasting, Consulting & Business Services, Practice & Project Management, Sales & Marketing",
+    "old_categories": "Bookkeeping, Practice Management, Marketing & Growth",
     "categories": "Practice Management, Marketing & Growth, Bookkeeping",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "marketing-growth",
@@ -347,7 +401,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.allica.bank/accountants",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -364,7 +421,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://alt21.com/",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Foreign Exchange and Multi-Currency Services",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -381,7 +441,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://alvio.io/",
+    "products_services": "AI & Automation, Analytics & Reporting, Consulting & Business Services, MTD, Practice & Project Management",
+    "old_categories": "Practice Management, AI & Automation, Tax & MTD, Data & Analytics",
     "categories": "Practice Management, Data & Analytics, AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "practice-management",
       "data-analytics",
@@ -401,7 +464,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.groupams.co.uk/",
+    "products_services": "Audit, Capital Allowances, Corporate Finance / Mergers & Acquisitions, Payroll, VAT",
+    "old_categories": "Tax & MTD, Payroll, Banking & Payments",
     "categories": "Banking & Payments, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "tax-mtd",
@@ -420,7 +486,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.andersonbrookes.co.uk",
+    "products_services": "Insolvency, Restructuring & Business Recovery",
+    "old_categories": "Insolvency",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -437,7 +506,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.andica.com",
+    "products_services": "Accounting Software, MTD, Payroll, Practice & Project Management, Tax",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD, Payroll",
     "categories": "Practice Management, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -457,7 +529,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.aparipro.com/",
+    "products_services": "Accounting Software",
+    "old_categories": "Bookkeeping, Practice Management",
     "categories": "Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "bookkeeping"
     ],
@@ -474,7 +549,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.appadvisoryplus.com/",
+    "products_services": "Magazines & Publishing, Research & Development",
+    "old_categories": "Marketing & Growth",
     "categories": "Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "marketing-growth"
     ],
@@ -491,7 +569,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://approvalmax.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, Charity / Not for Profit, Data Entry / OCR (Optical Character Recognition), Expense Management",
+    "old_categories": "Bookkeeping, Doc Automation, Expenses, Practice Management",
     "categories": "Data & Analytics, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "bookkeeping"
@@ -509,7 +590,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://getapron.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, Data Entry / OCR (Optical Character Recognition), Expense Management, Payment Process Services",
+    "old_categories": "Bookkeeping, Doc Automation, Expenses, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -528,7 +612,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://arnaltd.com",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Outsourcing / Offshoring",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Outsourcing, Expenses",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -548,7 +635,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.getartifact.com/",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition)",
+    "old_categories": "Bookkeeping, AI & Automation, Doc Automation",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -567,7 +657,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "Education & Qualifications, Magazines & Publishing, Sales & Marketing",
+    "old_categories": "HR & People, Marketing & Growth",
     "categories": "Marketing & Growth, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "marketing-growth",
       "hr-people"
@@ -585,7 +678,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.aslan.io/",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Employee Benefits / Incentives / Salary Sacrifice, HR, Payroll",
+    "old_categories": "Payroll, HR & People, Banking & Payments",
     "categories": "Banking & Payments, HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "hr-people",
@@ -604,7 +700,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.aat.org.uk/",
+    "products_services": "No products listed",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "HR & People",
     "canonical_categories": [
       "hr-people"
     ],
@@ -621,7 +720,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "Association / Professional Body, Charity / Not for Profit, Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "hr-people"
     ],
@@ -638,7 +740,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.aiaworldwide.com/",
+    "products_services": "Association / Professional Body, Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -655,7 +760,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.astranti.com/ai/",
+    "products_services": "AI & Automation, Consulting & Business Services, Education & Qualifications, Recruitment & Training",
+    "old_categories": "AI & Automation, HR & People",
     "categories": "AI & Automation, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "hr-people"
@@ -673,7 +781,10 @@
     "show_category": "Accountex London",
     "country": "India",
     "website": "https://www.auditcorpus.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, Audit, Outsourcing / Offshoring, Practice & Project Management",
+    "old_categories": "Practice Management, AI & Automation, Data & Analytics, Outsourcing",
     "categories": "Practice Management, Data & Analytics, AI & Automation, Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "practice-management",
       "data-analytics",
@@ -693,7 +804,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://auditbot.co/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Audit",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -712,7 +826,10 @@
     "show_category": "Accountex London",
     "country": "Germany",
     "website": "https://www.auditi.com/",
+    "products_services": "Accounting Software, Audit, Consulting & Business Services, Practice & Project Management, Tax",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD",
     "categories": "Practice Management, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -731,7 +848,10 @@
     "show_category": "Accountex London",
     "country": "Ireland",
     "website": "https://www.ayphen.com",
+    "products_services": "Accounting Software, AI & Automation, CRM, HR, Payroll",
+    "old_categories": "Bookkeeping, AI & Automation, Payroll, CRM & Comms, HR & People",
     "categories": "AI & Automation, Bookkeeping, HR & Leadership, Marketing & Growth, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -752,7 +872,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.barclays.co.uk/business-banking/introducers/",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -769,7 +892,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://befreeltd.com/uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Audit, Payroll, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Payroll",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -789,7 +915,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.bglcorp.com/",
+    "products_services": "Accounting Software, AI & Automation, AML - Anti Money Laundering",
+    "old_categories": "Bookkeeping, AI & Automation, AML/KYC",
     "categories": "AI & Automation, Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -808,7 +937,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://briefcase.so/",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition), MTD, VAT",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Doc Automation",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -828,7 +960,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://brightsg.com/",
+    "products_services": "Accounting Software, MTD, Payroll, Practice & Project Management, Tax",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD, Payroll",
     "categories": "Practice Management, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -848,7 +983,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.byrdlink.co.uk/",
+    "products_services": "Audit",
+    "old_categories": "Practice Management",
     "categories": "Practice Management",
+    "target_audience": "Practice Management",
     "canonical_categories": [
       "practice-management"
     ],
@@ -865,7 +1003,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "",
+    "old_categories": "Marketing & Growth",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/capify/",
@@ -880,7 +1021,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.capium.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, MTD, Practice & Project Management, Tax",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD",
     "categories": "Practice Management, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -899,7 +1043,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.caseware.com/uk/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Audit",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Tax & MTD",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -918,7 +1065,10 @@
     "show_category": "Accountex London",
     "country": "Australia",
     "website": "https://castawayforecasting.com/",
+    "products_services": "Analytics & Reporting, Cash Flow Forecasting, Consulting & Business Services, Corporate Finance / Mergers & Acquisitions",
+    "old_categories": "Bookkeeping, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -937,7 +1087,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.chaserhq.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Cash Flow Forecasting, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -956,7 +1109,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.cheku.ai",
+    "products_services": "Accounting Software, AI & Automation, CRM, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, AI & Automation, Document Management, CRM & Comms",
     "categories": "Document Management, Practice Management, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -977,7 +1133,10 @@
     "show_category": "Accountex London",
     "country": "Belgium",
     "website": "https://www.chift.eu/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, IT Solutions, Research & Development",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -996,7 +1155,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.circit.io",
+    "products_services": "Accounting Software, AI & Automation, Audit",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Other",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -1014,7 +1176,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://cleanbooksai.com/",
+    "products_services": "Accounting Software, AI & Automation, Cash Flow Forecasting, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -1032,7 +1197,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://clientwindow.com",
+    "products_services": "IT Solutions, MTD, Sales & Marketing",
+    "old_categories": "Tax & MTD, Marketing & Growth",
     "categories": "Marketing & Growth, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "marketing-growth",
       "tax-mtd"
@@ -1050,7 +1218,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.closeday.com",
+    "products_services": "Insolvency, Restructuring & Business Recovery, Legal & Solicitor Services",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -1067,13 +1238,16 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.cloud2me.co.uk/for-accountants/",
+    "products_services": "Accounting Software, Cyber Security, IT Solutions, Practice & Project Management",
+    "old_categories": "Cyber Security, Technology & Software, Practice Management",
     "categories": "Practice Management, Cyber Security, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "cyber-security",
       "bookkeeping"
     ],
-    "company_description": "Cloud IT, designed specifically for Accountants. Specialists in the Accountancy Sector Key software knowledge, including managed updates Sector leading data protection and security Impeccable support with extended support hours during busy periods Knowledge of key practice workflows Seamless practice onboarding Transparent pricing",
+    "company_description": "Cloud IT, designed specifically for Accountants.  Specialists in the Accountancy Sector  Key software knowledge, including managed updates  Sector leading data protection and security  Impeccable support with extended support hours during busy periods  Knowledge of key practice workflows  Seamless practice onboarding  Transparent pricing",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/cloud2me/",
     "logo_url": "https://divcommanual.com/acx-fds/wp-content/uploads/sites/6/2026/02/logo.png",
     "is_host": false
@@ -1086,7 +1260,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.combinely.ai",
+    "products_services": "Accounting Software, AI & Automation, MTD, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -1105,7 +1282,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.gov.uk/government/organisations/companies-house",
+    "products_services": "No products listed",
+    "old_categories": "Tax & MTD",
     "categories": "Tax & MTD",
+    "target_audience": "Tax & MTD",
     "canonical_categories": [
       "tax-mtd"
     ],
@@ -1122,7 +1302,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://compoundapp.co.uk/",
+    "products_services": "Auto Enrolment & Pensions, Employee Benefits / Incentives / Salary Sacrifice, Payroll",
+    "old_categories": "Payroll, HR & People",
     "categories": "HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people",
       "payroll"
@@ -1140,7 +1323,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://confiancebizsol.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, Cash Flow Forecasting, Outsourcing / Offshoring, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -1159,7 +1345,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.constantcontact.com/uk",
+    "products_services": "AI & Automation, IT Solutions, Sales & Marketing",
+    "old_categories": "AI & Automation, Marketing & Growth",
     "categories": "Marketing & Growth, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "marketing-growth",
       "ai-automation"
@@ -1177,7 +1366,10 @@
     "show_category": "Accountex London",
     "country": "United States (US)",
     "website": "https://www.cpa.com",
+    "products_services": "Accounting Software, Education & Qualifications, Practice & Project Management, Research & Development",
+    "old_categories": "Bookkeeping, Practice Management, HR & People",
     "categories": "Practice Management, Bookkeeping, HR & Leadership",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -1196,7 +1388,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://cpdflow.com",
+    "products_services": "Analytics & Reporting, Education & Qualifications, Recruitment & Training",
+    "old_categories": "Data & Analytics, HR & People",
     "categories": "Data & Analytics, HR & Leadership",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "hr-people"
@@ -1214,7 +1409,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.cpdstore.co.uk/",
+    "products_services": "Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -1231,7 +1429,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.croneri.co.uk/",
+    "products_services": "Accounting Software, Audit, MTD, Tax, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -1249,7 +1450,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.croneri.co.uk/cl/my-vip-tax-consultancy-accountants",
+    "products_services": "Consulting & Business Services, Insolvency, Restructuring & Business Recovery, MTD, Tax, VAT",
+    "old_categories": "Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, Tax & MTD",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "banking-payments",
       "tax-mtd"
@@ -1267,7 +1471,10 @@
     "show_category": "Accountex London",
     "country": "India",
     "website": "https://datamaticscpa.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, MTD, Outsourcing / Offshoring",
+    "old_categories": "Bookkeeping, Tax & MTD, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -1286,7 +1493,10 @@
     "show_category": "Accountex London",
     "country": "Netherlands",
     "website": "https://www.datasnipper.com/",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management",
+    "old_categories": "Bookkeeping, AI & Automation, Document Management, Doc Automation",
     "categories": "Document Management, AI & Automation, Data & Analytics, Bookkeeping",
+    "target_audience": "",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -1306,7 +1516,10 @@
     "show_category": "Accountex London",
     "country": "Singapore",
     "website": "https://datatracks.com/uk/",
+    "products_services": "Data Entry / OCR (Optical Character Recognition), Document Management, IT Solutions, MTD, Outsourcing / Offshoring",
+    "old_categories": "Tax & MTD, Document Management, Doc Automation, Outsourcing",
     "categories": "Document Management, Data & Analytics, Outsourcing, Tax & MTD",
+    "target_audience": "",
     "canonical_categories": [
       "doc-management",
       "data-analytics",
@@ -1326,7 +1539,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.dext.com",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition), MTD, Payment Process Services",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Doc Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -1347,7 +1563,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.dnsnexus.co.uk/",
+    "products_services": "Consulting & Business Services, Practice & Project Management",
+    "old_categories": "Practice Management",
     "categories": "Practice Management",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "practice-management"
     ],
@@ -1364,7 +1583,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://doc2.co",
+    "products_services": "AML - Anti Money Laundering, Document Management",
+    "old_categories": "Document Management, AML/KYC",
     "categories": "Document Management, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "aml-kyc"
@@ -1382,7 +1604,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.docusoft.net",
+    "products_services": "AI & Automation, CRM, Document Management, Practice & Project Management",
+    "old_categories": "Document Management",
     "categories": "Document Management, Practice Management, AI & Automation, Marketing & Growth",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -1402,7 +1627,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.doshioutsourcing.com",
+    "products_services": "Outsourcing / Offshoring",
+    "old_categories": "Outsourcing",
     "categories": "Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "outsourcing"
     ],
@@ -1419,7 +1647,10 @@
     "show_category": "Accountex London",
     "country": "South Africa",
     "website": "https://www.draftworx.com",
+    "products_services": "Accounting Software, Audit, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, Document Management",
     "categories": "Document Management, Practice Management, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -1438,7 +1669,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.getdunner.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Cash Flow Forecasting",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -1457,7 +1691,10 @@
     "show_category": "Accountex London",
     "country": "Belgium",
     "website": "https://www.geteagl.com",
+    "products_services": "Accounting Software, AI & Automation",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -1475,7 +1712,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://eazycapture.com",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition), MTD",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Doc Automation",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -1495,7 +1735,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://edgeofdifference.com/",
+    "products_services": "No products listed",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "At Edge Of Difference we help you create inclusive employee cultures for business success. Our immersive diversity, equity and inclusion leadership programmes drive business performance, recruitment, retention, building diverse leadership pipelines and equipping managers to lead high-performing teams.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/edge-of-difference/",
@@ -1510,7 +1753,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://employmenthero.com/uk/",
+    "products_services": "AI & Automation, Analytics & Reporting, HR, Payment Process Services, Payroll",
+    "old_categories": "AI & Automation, Payroll, Data & Analytics, HR & People, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -1531,7 +1777,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://engager.app/",
+    "products_services": "Accounting Software, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, Document Management",
     "categories": "Document Management, Practice Management, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -1550,7 +1799,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.fdintelligence.co.uk/",
+    "products_services": "AI & Automation, Tax, VAT",
+    "old_categories": "AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "ai-automation",
       "tax-mtd"
@@ -1568,7 +1820,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.figsflow.com",
+    "products_services": "AI & Automation, AML - Anti Money Laundering, CRM, MTD, Practice & Project Management",
+    "old_categories": "Practice Management, AI & Automation, Tax & MTD, CRM & Comms, AML/KYC",
     "categories": "Practice Management, AI & Automation, Marketing & Growth, Tax & MTD, AML/KYC",
+    "target_audience": "Accountants in Practice, Bookkeepers, Other",
     "canonical_categories": [
       "practice-management",
       "ai-automation",
@@ -1589,7 +1844,10 @@
     "show_category": "Accountex London",
     "country": "Sweden",
     "website": "https://www.findity.com/",
+    "products_services": "Expense Management",
+    "old_categories": "Expenses",
     "categories": "Other",
+    "target_audience": "Other",
     "canonical_categories": [],
     "company_description": "Findity is the leader in Embedded Expense Management. We provide a card-agnostic, AI-powered platform, enabling companies to offer a localised, branded expense solution. Our headless architecture allows partners to build via Expense API or go to market instantly with our white-label solution. We are the trusted technology behind the world's most innovative expense products.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/findity/",
@@ -1604,7 +1862,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.firmcheck.com/",
+    "products_services": "Accounting Software, AML - Anti Money Laundering",
+    "old_categories": "Bookkeeping, AML/KYC",
     "categories": "Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "bookkeeping",
       "aml-kyc"
@@ -1622,7 +1883,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.fcls.co.uk",
+    "products_services": "Accounting Software, IT Solutions, Legal & Solicitor Services, Outsourcing / Offshoring",
+    "old_categories": "Bookkeeping, Outsourcing",
     "categories": "Bookkeeping, Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing"
@@ -1640,7 +1904,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.fi.co.uk",
+    "products_services": "Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "hr-people"
     ],
@@ -1657,7 +1924,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.flagstoneim.com/",
+    "products_services": "Cash Flow Forecasting",
+    "old_categories": "Bookkeeping",
     "categories": "Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "bookkeeping"
     ],
@@ -1674,7 +1944,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.freeagent.com/accountants/",
+    "products_services": "Accounting Software, Cash Flow Forecasting, MTD, Tax, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -1692,7 +1965,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.fusesign.com",
+    "products_services": "Accounting Software",
+    "old_categories": "Bookkeeping, eSign",
     "categories": "Bookkeeping, Document Management",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "doc-management"
@@ -1710,7 +1986,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://fyi.app/uk/",
+    "products_services": "Accounting Software, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, Document Management",
     "categories": "Document Management, Practice Management, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -1729,7 +2008,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.garfield.law",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Legal & Solicitor Services",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -1747,7 +2029,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://gwm.org.uk/",
+    "products_services": "Corporate Finance / Mergers & Acquisitions",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Other",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -1764,7 +2049,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.gioutsourcing.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, Outsourcing / Offshoring, Payroll, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Payroll, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -1784,7 +2072,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://glideworkflow.com/",
+    "products_services": "MTD, Payroll, Practice & Project Management, Tax, VAT",
+    "old_categories": "Practice Management, Tax & MTD, Payroll",
     "categories": "Practice Management, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "practice-management",
       "tax-mtd",
@@ -1803,7 +2094,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.gocardless.com/",
+    "products_services": "AI & Automation, Banking Services / Open Banking / Payment / FX Budgeting, Payment Process Services",
+    "old_categories": "AI & Automation, Banking & Payments, Expenses",
     "categories": "Banking & Payments, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "ai-automation"
@@ -1821,7 +2115,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.usehammock.com/landlord-mtd-for-accountants/",
+    "products_services": "Accounting Software, MTD, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -1839,7 +2136,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.usehammock.com",
+    "products_services": "Accounting Software, MTD, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -1857,7 +2157,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.hduk.co.uk/",
+    "products_services": "Accounting Software, Cyber Security, IT Solutions",
+    "old_categories": "Bookkeeping, Cyber Security",
     "categories": "Cyber Security, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "cyber-security",
       "bookkeeping"
@@ -1875,7 +2178,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.hello-ai.co.uk/",
+    "products_services": "AI & Automation, Consulting & Business Services",
+    "old_categories": "AI & Automation",
     "categories": "AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "ai-automation"
     ],
@@ -1892,7 +2198,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "MTD, Payroll, Tax, VAT",
+    "old_categories": "Tax & MTD, Payroll",
     "categories": "Tax & MTD, Payroll",
+    "target_audience": "",
     "canonical_categories": [
       "tax-mtd",
       "payroll"
@@ -1910,7 +2219,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.homeofmortgages.co.uk",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Consulting & Business Services, Corporate Finance / Mergers & Acquisitions, Insurance",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -1927,7 +2239,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.hoxtonmix.com/enterprise/",
+    "products_services": "Accounting Software, AI & Automation, Document Management",
+    "old_categories": "Bookkeeping, AI & Automation, Document Management",
     "categories": "Document Management, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -1946,7 +2261,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.husu.co.uk",
+    "products_services": "Analytics & Reporting, Consulting & Business Services",
+    "old_categories": "Data & Analytics",
     "categories": "Data & Analytics",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "data-analytics"
     ],
@@ -1963,7 +2281,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.bookkeepers.org.uk/",
+    "products_services": "Education & Qualifications, Practice & Project Management, Recruitment & Training, Research & Development",
+    "old_categories": "Practice Management, HR & People",
     "categories": "Practice Management, HR & Leadership",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "hr-people"
@@ -1981,7 +2302,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.ifastgb.com/en/home",
+    "products_services": "Accounts Payable / Accounts Receivable, Banking Services / Open Banking / Payment / FX Budgeting, Foreign Exchange and Multi-Currency Services, Payment Process Services, Sales & Marketing",
+    "old_categories": "Bookkeeping, Banking & Payments, Marketing & Growth",
     "categories": "Banking & Payments, Marketing & Growth, Bookkeeping",
+    "target_audience": "Other",
     "canonical_categories": [
       "banking-payments",
       "marketing-growth",
@@ -2000,7 +2324,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.ignitionapp.com/",
+    "products_services": "Accounting Software, Document Management, MTD, Payment Process Services, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD, Document Management, Banking & Payments",
     "categories": "Document Management, Practice Management, Banking & Payments, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -2021,7 +2348,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.inflo.com/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Audit, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2040,7 +2370,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://brightsg.com/brightcosec-company-secretarial-software/",
+    "products_services": "Accounting Software, AML - Anti Money Laundering, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, AML/KYC",
     "categories": "Practice Management, Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -2059,7 +2392,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.informanagement.co.uk/",
+    "products_services": "AI & Automation, Document Management, Legal & Solicitor Services, Magazines & Publishing, Sales & Marketing",
+    "old_categories": "AI & Automation, Document Management, Marketing & Growth",
     "categories": "Document Management, Marketing & Growth, AI & Automation",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "marketing-growth",
@@ -2078,7 +2414,10 @@
     "show_category": "Accountex London",
     "country": "India",
     "website": "https://initor-global.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, MTD, Outsourcing / Offshoring, Payroll, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Payroll, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -2098,7 +2437,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://instantcpd.com",
+    "products_services": "Recruitment & Training",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "hr-people"
     ],
@@ -2115,7 +2457,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.iab.org.uk",
+    "products_services": "AML - Anti Money Laundering, Association / Professional Body, Education & Qualifications",
+    "old_categories": "AML/KYC, HR & People",
     "categories": "HR & Leadership, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people",
       "aml-kyc"
@@ -2133,7 +2478,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.ifa.org.uk",
+    "products_services": "AML - Anti Money Laundering, Association / Professional Body, Education & Qualifications, Tax",
+    "old_categories": "Tax & MTD, AML/KYC, HR & People",
     "categories": "HR & Leadership, Tax & MTD, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people",
       "tax-mtd",
@@ -2152,7 +2500,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://quickbooks.intuit.com/uk/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, MTD",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2172,7 +2523,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://iplicit.com/",
+    "products_services": "Accounting Software, AI & Automation, Charity / Not for Profit, Data Entry / OCR (Optical Character Recognition)",
+    "old_categories": "Bookkeeping, AI & Automation, Doc Automation",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -2191,7 +2545,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.iris.co.uk/accountancy/",
+    "products_services": "Accounting Software, AI & Automation, Cyber Security, MTD, Payroll",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Payroll, Cyber Security",
     "categories": "AI & Automation, Cyber Security, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "cyber-security",
@@ -2212,7 +2569,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.jlnusglobal.com/",
+    "products_services": "Audit, Outsourcing / Offshoring, Payroll",
+    "old_categories": "Payroll, Outsourcing",
     "categories": "Outsourcing, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "outsourcing",
       "payroll"
@@ -2230,7 +2590,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.justaudits.co.uk",
+    "products_services": "Audit, Charity / Not for Profit",
+    "old_categories": "Practice Management",
     "categories": "Practice Management",
+    "target_audience": "Practice Management",
     "canonical_categories": [
       "practice-management"
     ],
@@ -2247,7 +2610,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.kaleidoscope.com",
+    "products_services": "Analytics & Reporting, Cash Flow Forecasting",
+    "old_categories": "Bookkeeping, Data & Analytics",
     "categories": "Data & Analytics, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "data-analytics",
       "bookkeeping"
@@ -2265,7 +2631,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://kaplan.co.uk/",
+    "products_services": "Education & Qualifications, Recruitment & Training",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -2282,7 +2651,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://karbonhq.com/",
+    "products_services": "Accounting Software, AI & Automation, CRM, Document Management, IT Solutions",
+    "old_categories": "Practice Management, Tax & MTD,  AI & Automation, Document Management, CRM & Comms",
     "categories": "Document Management, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -2302,7 +2674,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.khipartners.com",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, Corporate Finance / Mergers & Acquisitions, MTD, Payroll",
+    "old_categories": "Bookkeeping, Tax & MTD, Payroll, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -2322,7 +2697,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.landlordstudio.com/uk",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Expense Management, MTD",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Data & Analytics, Expenses",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Tax & MTD, Other",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2342,7 +2720,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.lbkis.co.uk",
+    "products_services": "Insolvency, Restructuring & Business Recovery",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -2359,7 +2740,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.lightyear.cloud/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Data Entry / OCR (Optical Character Recognition), Expense Management",
+    "old_categories": "Bookkeeping, AI & Automation, Doc Automation, Expenses",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -2378,7 +2762,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://lime-books.co.uk/",
+    "products_services": "Accounting Software, Data Entry / OCR (Optical Character Recognition), IT Solutions, MTD, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Doc Automation",
     "categories": "Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "data-analytics",
       "bookkeeping",
@@ -2397,7 +2784,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://global.lockton.com/gb/en",
+    "products_services": "Insurance",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -2414,7 +2804,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.lsbf.org.uk/",
+    "products_services": "Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "hr-people"
     ],
@@ -2431,7 +2824,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.maplehillservices.com",
+    "products_services": "Consulting & Business Services, Outsourcing / Offshoring, Recruitment & Training, Tax, VAT",
+    "old_categories": "Tax & MTD, HR & People, Outsourcing",
     "categories": "HR & Leadership, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people",
       "outsourcing",
@@ -2450,7 +2846,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.playbook-mel.com",
+    "products_services": "AI & Automation, Consulting & Business Services, CRM, Practice & Project Management, Sales & Marketing",
+    "old_categories": "Practice Management, AI & Automation, CRM & Comms, Marketing & Growth",
     "categories": "Practice Management, Marketing & Growth, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "practice-management",
       "marketing-growth",
@@ -2469,7 +2868,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "AML - Anti Money Laundering, Audit, Education & Qualifications, Sales & Marketing",
+    "old_categories": "AML/KYC, HR & People, Marketing & Growth",
     "categories": "Marketing & Growth, HR & Leadership, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "marketing-growth",
       "hr-people",
@@ -2488,7 +2890,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "http://www.mimohq.com",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable",
+    "old_categories": "Bookkeeping",
     "categories": "Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "bookkeeping"
     ],
@@ -2505,7 +2910,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://mindspaceoutsourcing.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Expense Management, Outsourcing / Offshoring, VAT",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Expenses, Outsourcing",
     "categories": "AI & Automation, Bookkeeping, Outsourcing, Tax & MTD, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -2525,7 +2933,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.modulrfinance.com",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Payment Process Services, Payroll",
+    "old_categories": "Payroll, Banking & Payments",
     "categories": "Banking & Payments, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "payroll"
@@ -2543,7 +2954,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.moneypenny.com/uk/",
+    "products_services": "Outsourcing / Offshoring",
+    "old_categories": "Outsourcing",
     "categories": "Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "outsourcing"
     ],
@@ -2560,7 +2974,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.getmoss.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Expense Management",
+    "old_categories": "Bookkeeping, AI & Automation, Expenses",
     "categories": "AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -2578,7 +2995,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.mydigital.software/",
+    "products_services": "AI & Automation, Outsourcing / Offshoring, Payroll",
+    "old_categories": "AI & Automation, Payroll, Outsourcing",
     "categories": "AI & Automation, Outsourcing, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "ai-automation",
       "outsourcing",
@@ -2597,7 +3017,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://brightsg.com/myworkpapers-audit-practice-software/",
+    "products_services": "Accounting Software, Audit, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -2615,7 +3038,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.natwest.com/business.html",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Charity / Not for Profit, Corporate Finance / Mergers & Acquisitions, Payment Process Services",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -2632,7 +3058,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.nestpensions.org.uk/schemeweb/nest/advisers.html",
+    "products_services": "Auto Enrolment & Pensions, Banking Services / Open Banking / Payment / FX Budgeting",
+    "old_categories": "Payroll, Banking & Payments",
     "categories": "Banking & Payments, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "payroll"
@@ -2650,7 +3079,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://nett-tracker.com",
+    "products_services": "Accounting Software, AI & Automation",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -2668,7 +3100,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.nomi.co.uk/",
+    "products_services": "Accounting Software, AML - Anti Money Laundering, MTD, Payroll, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Payroll, AML/KYC",
     "categories": "Bookkeeping, Tax & MTD, AML/KYC, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd",
@@ -2688,7 +3123,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.nowpensions.com",
+    "products_services": "Auto Enrolment & Pensions, Employee Benefits / Incentives / Salary Sacrifice, Payroll",
+    "old_categories": "Payroll, HR & People",
     "categories": "HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people",
       "payroll"
@@ -2706,7 +3144,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://numiva.ai/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Data Entry / OCR (Optical Character Recognition), IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Doc Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2725,7 +3166,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.nxsys.tech/",
+    "products_services": "AI & Automation, Auto Enrolment & Pensions, Expense Management, Payment Process Services, Payroll",
+    "old_categories": "AI & Automation, Payroll, Expenses, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Other, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -2744,7 +3188,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://occasiofx.com/",
+    "products_services": "Consulting & Business Services, Foreign Exchange and Multi-Currency Services, Outsourcing / Offshoring, Payment Process Services, Sales & Marketing",
+    "old_categories": "Banking & Payments, Outsourcing, Marketing & Growth",
     "categories": "Banking & Payments, Marketing & Growth, Outsourcing",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "banking-payments",
       "marketing-growth",
@@ -2763,7 +3210,10 @@
     "show_category": "Accountex London",
     "country": "Belgium",
     "website": "https://www.odoo.com/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, IT Solutions, Payroll",
+    "old_categories": "Bookkeeping, AI & Automation, Payroll, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2783,7 +3233,10 @@
     "show_category": "Accountex London",
     "country": "Australia",
     "website": "https://www.onboardme.app/",
+    "products_services": "Accounting Software, AML - Anti Money Laundering, CRM, Payment Process Services, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, CRM & Comms, AML/KYC, Banking & Payments",
     "categories": "Practice Management, Banking & Payments, Bookkeeping, Marketing & Growth, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "banking-payments",
@@ -2804,7 +3257,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.osome.com",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Audit, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2824,7 +3280,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://outbooks.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, Cash Flow Forecasting, Outsourcing / Offshoring, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -2843,7 +3302,10 @@
     "show_category": "Accountex London",
     "country": "Ireland",
     "website": "https://www.outmin.io/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Data Entry / OCR (Optical Character Recognition)",
+    "old_categories": "Bookkeeping, AI & Automation, Doc Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -2862,7 +3324,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.pacificglobalsolutions.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, Cash Flow Forecasting, Outsourcing / Offshoring, Payroll",
+    "old_categories": "Bookkeeping, Payroll, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -2881,7 +3346,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://papertrail.ai",
+    "products_services": "AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management, Expense Management, VAT",
+    "old_categories": "AI & Automation, Tax & MTD, Document Management, Doc Automation, Expenses",
     "categories": "Document Management, AI & Automation, Data & Analytics, Tax & MTD, Other",
+    "target_audience": "Accountants in Practice, Bookkeepers, Other",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -2901,7 +3369,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.payrollsorted.com/",
+    "products_services": "Payroll",
+    "old_categories": "Payroll",
     "categories": "Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "payroll"
     ],
@@ -2918,7 +3389,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://getpenfold.com/",
+    "products_services": "AI & Automation, Auto Enrolment & Pensions, Employee Benefits / Incentives / Salary Sacrifice, HR, Payroll",
+    "old_categories": "AI & Automation, Payroll, HR & People",
     "categories": "AI & Automation, HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "hr-people",
@@ -2937,7 +3411,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://thepeoplespension.co.uk/",
+    "products_services": "Auto Enrolment & Pensions",
+    "old_categories": "Payroll",
     "categories": "Payroll",
+    "target_audience": "Other",
     "canonical_categories": [
       "payroll"
     ],
@@ -2954,7 +3431,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.pinnacleglobalgroup.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, Outsourcing / Offshoring, Payroll, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD, Payroll, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -2974,7 +3454,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://platformed.com/",
+    "products_services": "AI & Automation, Audit, Document Management, IT Solutions",
+    "old_categories": "AI & Automation, Document Management",
     "categories": "Document Management, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "ai-automation"
@@ -2992,7 +3475,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://pleo.io",
+    "products_services": "Expense Management",
+    "old_categories": "Expenses",
     "categories": "Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [],
     "company_description": "Pleo is the spend management platform modern finance teams actually enjoy using. It replaces expense chaos with real-time visibility, smart cards, and automated workflows that scale with your business. From employee spending to accounting integrations, Pleo gives companies control without friction-helping them move faster, stay compliant, and turn finance from a blocker into a strategic advantage.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/pleo/",
@@ -3007,7 +3493,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://plotkit.io/",
+    "products_services": "AI & Automation, Consulting & Business Services, Sales & Marketing",
+    "old_categories": "AI & Automation, Marketing & Growth",
     "categories": "Marketing & Growth, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "marketing-growth",
       "ai-automation"
@@ -3025,7 +3514,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://practicegateway.com/",
+    "products_services": "Accounting Software, AI & Automation, AML - Anti Money Laundering, MTD, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, AML/KYC",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD, AML/KYC",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -3045,7 +3537,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://prodriveit.co.uk",
+    "products_services": "AI & Automation, Cyber Security, IT Solutions",
+    "old_categories": "AI & Automation, Cyber Security",
     "categories": "AI & Automation, Cyber Security",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "cyber-security"
@@ -3063,7 +3558,10 @@
     "show_category": "Accountex London",
     "country": "Ireland",
     "website": "https://www.theprofitpro.com",
+    "products_services": "AI & Automation, Practice & Project Management, Sales & Marketing",
+    "old_categories": "Practice Management, AI & Automation, Marketing & Growth",
     "categories": "Practice Management, Marketing & Growth, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "practice-management",
       "marketing-growth",
@@ -3082,7 +3580,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.progress.com/",
+    "products_services": "AI & Automation, CRM, Cyber Security, IT Solutions",
+    "old_categories": "AI & Automation, CRM & Comms, Cyber Security",
     "categories": "AI & Automation, Cyber Security, Marketing & Growth",
+    "target_audience": "",
     "canonical_categories": [
       "ai-automation",
       "cyber-security",
@@ -3101,7 +3602,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://pss-tax.co.uk",
+    "products_services": "Accounting Software, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -3119,7 +3623,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.qyon.com/uk",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition), MTD, Payroll",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Doc Automation, Payroll",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -3140,7 +3647,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://rainstonemoney.co.uk/",
+    "products_services": "Consulting & Business Services",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Banking & Payments",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -3157,7 +3667,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://randduk.com/",
+    "products_services": "Research & Development",
+    "old_categories": "Tax & MTD",
     "categories": "Tax & MTD",
+    "target_audience": "Tax & MTD",
     "canonical_categories": [
       "tax-mtd"
     ],
@@ -3174,7 +3687,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.rbassist.co.uk",
+    "products_services": "No products listed",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [],
     "company_description": "Rising costs are making traditional business models less profitable. We help UK businesses improve profitability by cutting overhead and operational costs through Offshore Directorship. We set up your own offshore office fully managed, tailored to your needs, and staffed with skilled professionals. Your team. Your control. A fraction of the cost.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/rb-accounts-offshore-directorship/",
@@ -3189,7 +3705,10 @@
     "show_category": "Accountex London",
     "country": "United States (US)",
     "website": "https://reachreporting.com/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Cash Flow Forecasting, Charity / Not for Profit",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -3208,7 +3727,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://receeva.com",
+    "products_services": "Cyber Security, Document Management, IT Solutions, Practice & Project Management",
+    "old_categories": "Practice Management, Document Management, Cyber Security",
     "categories": "Document Management, Practice Management, Cyber Security",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -3227,7 +3749,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.record-os.com",
+    "products_services": "Accounting Software, AI & Automation, Data Entry / OCR (Optical Character Recognition), MTD, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Doc Automation",
     "categories": "AI & Automation, Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "data-analytics",
@@ -3247,7 +3772,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://rentalbux.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, Document Management, Expense Management, MTD",
+    "old_categories": "Bookkeeping, Tax & MTD, Document Management, Expenses",
     "categories": "Document Management, Bookkeeping, Tax & MTD, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "doc-management",
       "bookkeeping",
@@ -3266,7 +3794,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/rewardsearth-ltd/",
@@ -3281,7 +3812,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.pfu-emea.ricoh.com/",
+    "products_services": "AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management, MTD",
+    "old_categories": "AI & Automation, Tax & MTD, Document Management, Doc Automation",
     "categories": "Document Management, AI & Automation, Data & Analytics, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -3301,7 +3835,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.rollpay.co.uk/",
+    "products_services": "Auto Enrolment & Pensions, Employee Benefits / Incentives / Salary Sacrifice, MTD, Payroll, VAT",
+    "old_categories": "Tax & MTD, Payroll, HR & People",
     "categories": "HR & Leadership, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "hr-people",
       "tax-mtd",
@@ -3320,7 +3857,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.romafinance.co.uk",
+    "products_services": "No products listed",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [],
     "company_description": "Roma Finance is a fast, flexible relationship based specialist lender supporting property investors, developers, and landlords across the UK. Focused on long term partnerships and delivering real value, Roma provides bridging, development, and term solutions with speed and clarity. Its customer first approach and expert team help turn property ambitions into successful, sustainable outcomes.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/roma-finance/",
@@ -3335,7 +3875,10 @@
     "show_category": "Accountex London",
     "country": "Ireland",
     "website": "https://roomex.com/",
+    "products_services": "Accounting Software, Analytics & Reporting, Expense Management, Payment Process Services, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, Data & Analytics, Expenses, Banking & Payments",
     "categories": "Practice Management, Banking & Payments, Data & Analytics, Bookkeeping, Other",
+    "target_audience": "",
     "canonical_categories": [
       "practice-management",
       "banking-payments",
@@ -3355,7 +3898,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://rpost.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, Cyber Security, Document Management, IT Solutions",
+    "old_categories": "AI & Automation, Document Management, eSign, Data & Analytics, Cyber Security",
     "categories": "Document Management, Data & Analytics, AI & Automation, Cyber Security",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "data-analytics",
@@ -3375,7 +3921,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://rq.app",
+    "products_services": "CRM, Sales & Marketing",
+    "old_categories": "Bookkeeping,",
     "categories": "Marketing & Growth",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "marketing-growth"
     ],
@@ -3392,7 +3941,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.rubli.co/",
+    "products_services": "Accounting Software",
+    "old_categories": "Practice Management",
     "categories": "Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping"
     ],
@@ -3409,7 +3961,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.sage.com",
+    "products_services": "Accounting Software, MTD, Payroll, Practice & Project Management, VAT",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD, Payroll",
     "categories": "Practice Management, Bookkeeping, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -3429,7 +3984,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.scanoptics.co.uk",
+    "products_services": "AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management",
+    "old_categories": "AI & Automation, Document Management, Doc Automation",
     "categories": "Document Management, AI & Automation, Data & Analytics",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -3448,7 +4006,10 @@
     "show_category": "Accountex London",
     "country": "Malta",
     "website": "https://www.scopecloudsolutions.com",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, CRM, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, AI & Automation, CRM & Comms",
     "categories": "Practice Management, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "ai-automation",
@@ -3468,7 +4029,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.seidor.com/en-gb",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Cash Flow Forecasting, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -3487,7 +4051,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://silverfin.com/en-gb/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Document Management",
+    "old_categories": "Bookkeeping, AI & Automation, Document Management, Data & Analytics",
     "categories": "Document Management, Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "doc-management",
       "data-analytics",
@@ -3507,7 +4074,10 @@
     "show_category": "Accountex London",
     "country": "Germany",
     "website": "https://www.smart-zebra.com/",
+    "products_services": "AI & Automation, Audit, Corporate Finance / Mergers & Acquisitions, IT Solutions, Tax",
+    "old_categories": "AI & Automation, Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -3526,7 +4096,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/socket-digital-limited/",
@@ -3541,7 +4114,10 @@
     "show_category": "Accountex London",
     "country": "Netherlands",
     "website": "https://www.speedbooks.co.uk",
+    "products_services": "Analytics & Reporting",
+    "old_categories": "Data & Analytics",
     "categories": "Data & Analytics",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "data-analytics"
     ],
@@ -3558,7 +4134,10 @@
     "show_category": "Accountex London",
     "country": "Netherlands",
     "website": "https://spreadsheetsoftware.com",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Audit, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -3577,7 +4156,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.starlingbank.com/business-account/",
+    "products_services": "Accounting Software, Banking Services / Open Banking / Payment / FX Budgeting, MTD",
+    "old_categories": "Bookkeeping, Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -3596,7 +4178,10 @@
     "show_category": "Accountex London",
     "country": "Poland",
     "website": "https://sterling-outsourcing.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, Cash Flow Forecasting, Consulting & Business Services, Insolvency, Restructuring & Business Recovery, Outsourcing / Offshoring",
+    "old_categories": "Bookkeeping, Banking & Payments, Outsourcing",
     "categories": "Banking & Payments, Bookkeeping, Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -3615,7 +4200,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://streemconnect.com",
+    "products_services": "Accounting Software, AI & Automation, Banking Services / Open Banking / Payment / FX Budgeting, Data Entry / OCR (Optical Character Recognition), MTD",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Doc Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -3636,7 +4224,10 @@
     "show_category": "Accountex London",
     "country": "New Zealand",
     "website": "https://www.suitefiles.com",
+    "products_services": "AI & Automation, Document Management, Practice & Project Management",
+    "old_categories": "Practice Management, AI & Automation, Document Management",
     "categories": "Document Management, Practice Management, AI & Automation",
+    "target_audience": "Accountants in Practice, Bookkeepers, Other",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -3655,7 +4246,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://summatech.co.uk/",
+    "products_services": "Accounting Software, AML - Anti Money Laundering, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, Document Management, AML/KYC",
     "categories": "Document Management, Practice Management, Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -3675,7 +4269,10 @@
     "show_category": "Accountex London",
     "country": "United States (US)",
     "website": "https://www.suralink.com/",
+    "products_services": "Accounting Software, AI & Automation, Audit, Document Management, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, AI & Automation, Document Management",
     "categories": "Document Management, Practice Management, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "practice-management",
@@ -3695,7 +4292,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://swoopfunding.com/",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Cash Flow Forecasting, Corporate Finance / Mergers & Acquisitions, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -3714,7 +4314,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.syndesi.network/",
+    "products_services": "Consulting & Business Services",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "HR & People",
     "canonical_categories": [
       "hr-people"
     ],
@@ -3731,7 +4334,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.taxaccountantfranchise.co.uk/",
+    "products_services": "Accounting Software, Corporate Finance / Mergers & Acquisitions, MTD, Tax, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -3750,7 +4356,10 @@
     "show_category": "Accountex London",
     "country": "Netherlands",
     "website": "https://www.taxcanary.com",
+    "products_services": "AI & Automation, Tax, VAT",
+    "old_categories": "AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "tax-mtd"
@@ -3768,7 +4377,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.indicator.co.uk",
+    "products_services": "AI & Automation, MTD, Research & Development, Tax, VAT",
+    "old_categories": "AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "tax-mtd"
@@ -3786,7 +4398,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "Tax & MTD, Marketing & Growth",
     "categories": "Marketing & Growth, Tax & MTD",
+    "target_audience": "Tax & MTD, Marketing & Growth",
     "canonical_categories": [
       "marketing-growth",
       "tax-mtd"
@@ -3804,7 +4419,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.taxworld.co.uk/",
+    "products_services": "Accounting Software, AI & Automation, Capital Allowances, Tax, VAT",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -3823,7 +4441,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.taxassistfranchise.co.uk",
+    "products_services": "Consulting & Business Services, Education & Qualifications, Practice & Project Management, Recruitment & Training, Tax",
+    "old_categories": "Practice Management, Tax & MTD, HR & People",
     "categories": "Practice Management, HR & Leadership, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "hr-people",
@@ -3842,7 +4463,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "http://www.taxcalc.com",
+    "products_services": "Accounting Software, MTD, Practice & Project Management, Tax, VAT",
+    "old_categories": "Bookkeeping, Practice Management, Tax & MTD",
     "categories": "Practice Management, Bookkeeping, Tax & MTD",
+    "target_audience": "",
     "canonical_categories": [
       "practice-management",
       "bookkeeping",
@@ -3861,7 +4485,10 @@
     "show_category": "Accountex London",
     "country": "United States (US)",
     "website": "https://taxdome.com/en-gb/",
+    "products_services": "Accounting Software, AI & Automation, CRM, IT Solutions, Practice & Project Management",
+    "old_categories": "Bookkeeping, Practice Management, AI & Automation, CRM & Comms",
     "categories": "Practice Management, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "practice-management",
       "ai-automation",
@@ -3881,7 +4508,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.taxnavhq.co.uk",
+    "products_services": "Accounting Software, AI & Automation, IT Solutions, MTD, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -3900,7 +4530,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://taxpad.co.uk",
+    "products_services": "Accounting Software, MTD, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -3918,7 +4551,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.telleroo.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, Banking Services / Open Banking / Payment / FX Budgeting, Foreign Exchange and Multi-Currency Services, Payment Process Services, Payroll",
+    "old_categories": "Bookkeeping, Payroll, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -3937,7 +4573,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/the-air-network-limited/",
@@ -3952,7 +4591,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://theauditexperts.co.uk/",
+    "products_services": "Audit",
+    "old_categories": "Practice Management",
     "categories": "Practice Management",
+    "target_audience": "Practice Management",
     "canonical_categories": [
       "practice-management"
     ],
@@ -3969,7 +4611,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.cipp.org.uk/",
+    "products_services": "Association / Professional Body, Auto Enrolment & Pensions, Employee Benefits / Incentives / Salary Sacrifice, HR, Payroll",
+    "old_categories": "Payroll, HR & People",
     "categories": "HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "hr-people",
       "payroll"
@@ -3987,7 +4632,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.thedothq.com",
+    "products_services": "Accounts Payable / Accounts Receivable, Audit, Outsourcing / Offshoring, Recruitment & Training, Tax",
+    "old_categories": "Bookkeeping, Tax & MTD, HR & People, Outsourcing",
     "categories": "Bookkeeping, HR & Leadership, Outsourcing, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "hr-people",
@@ -4007,7 +4655,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.theinkgroup.co.uk",
+    "products_services": "Consulting & Business Services, Employee Benefits / Incentives / Salary Sacrifice, HR, Payment Process Services, Payroll",
+    "old_categories": "Payroll, HR & People, Banking & Payments",
     "categories": "Banking & Payments, HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "hr-people",
@@ -4026,7 +4677,10 @@
     "show_category": "Accountex London",
     "country": "India",
     "website": "https://www.icai.org/",
+    "products_services": "Analytics & Reporting, Association / Professional Body, Audit, Education & Qualifications, Research & Development",
+    "old_categories": "Data & Analytics, HR & People",
     "categories": "Data & Analytics, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "hr-people"
@@ -4044,7 +4698,10 @@
     "show_category": "Accountex London",
     "country": "Nepal",
     "website": "https://en.ican.org.np/en/",
+    "products_services": "Association / Professional Body",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -4061,7 +4718,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.thomsonreuters.com/en.html",
+    "products_services": "AI & Automation, Audit, Document Management, MTD, Tax",
+    "old_categories": "AI & Automation, Tax & MTD, Document Management",
     "categories": "Document Management, AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -4080,7 +4740,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.tide.co",
+    "products_services": "Accounting Software, Banking Services / Open Banking / Payment / FX Budgeting, Expense Management, Insurance, MTD",
+    "old_categories": "Bookkeeping, Tax & MTD, Expenses, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Tax & MTD, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -4099,7 +4762,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://brightsg.com/timekeeper-brightpay-integration/",
+    "products_services": "HR, Practice & Project Management",
+    "old_categories": "Practice Management, HR & People",
     "categories": "Practice Management, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "practice-management",
       "hr-people"
@@ -4117,7 +4783,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://tipalti.com/en-eu/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, AML - Anti Money Laundering, Banking Services / Open Banking / Payment / FX Budgeting",
+    "old_categories": "Bookkeeping, AI & Automation, AML/KYC, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -4137,7 +4806,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.tolley.co.uk",
+    "products_services": "AI & Automation, Education & Qualifications, Magazines & Publishing, Tax, VAT",
+    "old_categories": "AI & Automation, Tax & MTD, HR & People, Marketing & Growth",
     "categories": "Marketing & Growth, AI & Automation, HR & Leadership, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "marketing-growth",
       "ai-automation",
@@ -4157,7 +4829,10 @@
     "show_category": "Accountex London",
     "country": "United States (US)",
     "website": "https://trullion.com",
+    "products_services": "Accounting Software, AI & Automation, Audit",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -4175,7 +4850,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.unipaas.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Banking Services / Open Banking / Payment / FX Budgeting, Payment Process Services",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -4194,7 +4872,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.unleashedsoftware.com",
+    "products_services": "AI & Automation, Analytics & Reporting, Cash Flow Forecasting, CRM, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, CRM & Comms, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -4214,7 +4895,10 @@
     "show_category": "Accountex London",
     "country": "Netherlands",
     "website": "https://validvalue.com/",
+    "products_services": "Accounting Software, Cash Flow Forecasting, Consulting & Business Services, Corporate Finance / Mergers & Acquisitions, IT Solutions",
+    "old_categories": "Bookkeeping, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping"
@@ -4232,7 +4916,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://valutico.com",
+    "products_services": "Accounting Software, Consulting & Business Services, Corporate Finance / Mergers & Acquisitions, IT Solutions",
+    "old_categories": "Bookkeeping, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping"
@@ -4250,7 +4937,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://vatit.com/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, Tax, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD",
     "categories": "Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "bookkeeping",
       "tax-mtd"
@@ -4268,7 +4958,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://veritas-tec.com",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Document Management, Doc Automation",
     "categories": "Document Management, AI & Automation, Data & Analytics, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -4288,7 +4981,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, VAT",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -4307,7 +5003,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.vfd.academy",
+    "products_services": "AI & Automation, Analytics & Reporting, Cash Flow Forecasting, Consulting & Business Services, Corporate Finance / Mergers & Acquisitions",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -4327,7 +5026,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.visa.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Banking Services / Open Banking / Payment / FX Budgeting, Expense Management, Payment Process Services",
+    "old_categories": "Bookkeeping, AI & Automation, Expenses, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -4346,7 +5048,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://vsid.com",
+    "products_services": "Accounting Software, AI & Automation, AML - Anti Money Laundering, Document Management, IT Solutions",
+    "old_categories": "Bookkeeping, AI & Automation, Document Management, AML/KYC",
     "categories": "Document Management, AI & Automation, Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -4366,7 +5071,10 @@
     "show_category": "Accountex London",
     "country": "India",
     "website": "https://www.white-bull.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, Outsourcing / Offshoring, Payroll, Tax, VAT",
+    "old_categories": "Bookkeeping, Tax & MTD, Payroll, Outsourcing",
     "categories": "Bookkeeping, Outsourcing, Tax & MTD, Payroll",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "outsourcing",
@@ -4386,7 +5094,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "http://www.whiterosefinance.com",
+    "products_services": "Consulting & Business Services, Corporate Finance / Mergers & Acquisitions, Education & Qualifications, Recruitment & Training, Sales & Marketing",
+    "old_categories": "HR & People, Banking & Payments, Marketing & Growth",
     "categories": "Banking & Payments, Marketing & Growth, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "marketing-growth",
@@ -4405,7 +5116,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.willowpay.co.uk",
+    "products_services": "Auto Enrolment & Pensions, Payment Process Services, Payroll",
+    "old_categories": "Payroll, Banking & Payments",
     "categories": "Banking & Payments, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "payroll"
@@ -4423,7 +5137,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.wolterskluwer.co.uk",
+    "products_services": "Accounting Software, AI & Automation, AML - Anti Money Laundering, MTD, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, AML/KYC",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -4443,7 +5160,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.workiro.com",
+    "products_services": "AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management",
+    "old_categories": "AI & Automation, Document Management, Doc Automation",
     "categories": "Document Management, AI & Automation, Data & Analytics",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
@@ -4452,7 +5172,7 @@
     "company_description": "Workiro is document management built for accountants. It gives firms greater traceability, control and confidence across every client interaction. Documents, emails, eSignatures and collaboration live in one secure system of record, fully integrated with tools like TaxCalc, IRIS, CCH, Digita, Xero and Microsoft 365 - helping teams work faster, stay organised, and scale without losing oversight.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/workiro/",
     "logo_url": "https://divcommanual.com/acx-fds/wp-content/uploads/sites/6/2026/01/Workiro-Virtual-Cabinet-2.0.png",
-    "is_host": false
+    "is_host": true
   },
   {
     "show": "Accountex",
@@ -4462,7 +5182,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.xbert.io/",
+    "products_services": "AI & Automation, Analytics & Reporting, Data Entry / OCR (Optical Character Recognition), Practice & Project Management",
+    "old_categories": "Practice Management, AI & Automation, Doc Automation, Data & Analytics",
     "categories": "Practice Management, Data & Analytics, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "data-analytics",
@@ -4481,7 +5204,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.xenonconnect.com/",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Practice & Project Management, VAT",
+    "old_categories": "Bookkeeping, Practice Management, AI & Automation, Tax & MTD, Data & Analytics",
     "categories": "Practice Management, Data & Analytics, AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Bookkeepers",
     "canonical_categories": [
       "practice-management",
       "data-analytics",
@@ -4502,7 +5228,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.xero.com/uk",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, MTD, Tax",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -4522,7 +5251,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://xledger.com/uk/",
+    "products_services": "Accounting Software, Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Expense Management",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Expenses",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -4541,7 +5273,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://xumagazine.com/",
+    "products_services": "No products listed",
+    "old_categories": "Marketing & Growth",
     "categories": "Marketing & Growth",
+    "target_audience": "Marketing & Growth",
     "canonical_categories": [
       "marketing-growth"
     ],
@@ -4558,7 +5293,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.yempo-solutions.com/",
+    "products_services": "Outsourcing / Offshoring",
+    "old_categories": "Outsourcing",
     "categories": "Outsourcing",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "outsourcing"
     ],
@@ -4575,7 +5313,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.zaharasoftware.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Data Entry / OCR (Optical Character Recognition), Expense Management",
+    "old_categories": "Bookkeeping, AI & Automation, Doc Automation, Data & Analytics, Expenses",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -4594,7 +5335,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://gozeal.co.uk/",
+    "products_services": "Capital Allowances, Consulting & Business Services, Tax",
+    "old_categories": "Tax & MTD",
     "categories": "Tax & MTD",
+    "target_audience": "Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "tax-mtd"
     ],
@@ -4611,7 +5355,10 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.zoho.com/",
+    "products_services": "Accounting Software, Analytics & Reporting, MTD",
+    "old_categories": "Bookkeeping, Tax & MTD, Data & Analytics",
     "categories": "Data & Analytics, Bookkeeping, Tax & MTD",
+    "target_audience": "",
     "canonical_categories": [
       "data-analytics",
       "bookkeeping",
@@ -4630,7 +5377,10 @@
     "show_category": "FD Show",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/aat-224/",
@@ -4645,7 +5395,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://ap-association.com/",
+    "products_services": "Association / Professional Body, Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Other",
     "canonical_categories": [
       "hr-people"
     ],
@@ -4662,7 +5415,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://uk.adp.com/who-we-serve/by-business-size/200-999-employees.aspx",
+    "products_services": "AML - Anti Money Laundering, Auto Enrolment & Pensions, HR, Outsourcing / Offshoring, Payroll",
+    "old_categories": "Payroll, AML/KYC, HR & People, Outsourcing",
     "categories": "HR & Leadership, Outsourcing, AML/KYC, Payroll",
+    "target_audience": "Accountants in Industry/Business, Other",
     "canonical_categories": [
       "hr-people",
       "outsourcing",
@@ -4682,7 +5438,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "",
+    "products_services": "Association / Professional Body",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "hr-people"
     ],
@@ -4699,7 +5458,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.bluechain.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, E-Invoicing, IT Solutions, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -4718,7 +5480,10 @@
     "show_category": "FD Show",
     "country": "South Africa",
     "website": "https://www.ca.co.za",
+    "products_services": "Outsourcing / Offshoring, Payroll, Recruitment & Training",
+    "old_categories": "Payroll, HR & People, Outsourcing",
     "categories": "HR & Leadership, Outsourcing, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "hr-people",
       "outsourcing",
@@ -4737,7 +5502,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://charted.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, E-Invoicing, ERP",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -4756,7 +5524,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.charterpath.org.uk",
+    "products_services": "Association / Professional Body, Charity / Not for Profit, Education & Qualifications, HR, Recruitment & Training",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -4773,7 +5544,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.aicpa-cima.com",
+    "products_services": "Association / Professional Body",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -4790,7 +5564,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.cooperparry.com/services/digital/",
+    "products_services": "AI & Automation, Analytics & Reporting, Corporate Finance / Mergers & Acquisitions, CRM, ERP",
+    "old_categories": "Bookkeeping, AI & Automation, CRM & Comms, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Industry/Business, Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -4811,7 +5588,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.corpay.com",
+    "products_services": "Accounts Payable / Accounts Receivable, Analytics & Reporting, Banking Services / Open Banking / Payment / FX Budgeting, Expense Management, Spend Management",
+    "old_categories": "Bookkeeping, Data & Analytics, Expenses, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, Bookkeeping, Other",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -4830,7 +5610,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.CrescitPay.com",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Banking Services / Open Banking / Payment / FX Budgeting, Treasury financial management",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business, Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -4850,7 +5633,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.crowe.com/uk/services/consulting/digital-and-alliances",
+    "products_services": "Accounts Payable / Accounts Receivable, CRM, ERP, IT Solutions, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, CRM & Comms, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -4869,7 +5655,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://cybernet-secure.com/",
+    "products_services": "Cyber Security, IT Solutions",
+    "old_categories": "Cyber Security",
     "categories": "Cyber Security",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "cyber-security"
     ],
@@ -4886,7 +5675,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://diligentsia.co.uk/",
+    "products_services": "AI & Automation, Analytics & Reporting, Corporate Finance / Mergers & Acquisitions, Funding / Lending, IT Solutions",
+    "old_categories": "AI & Automation, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -4905,7 +5697,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://start.docuware.com/en-gb/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, ERP",
+    "old_categories": "Bookkeeping, AI & Automation",
     "categories": "AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping"
@@ -4923,7 +5718,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.ergos.uk",
+    "products_services": "AI & Automation, Cyber Security, IT Solutions",
+    "old_categories": "AI & Automation, Cyber Security",
     "categories": "AI & Automation, Cyber Security",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "ai-automation",
       "cyber-security"
@@ -4941,7 +5739,10 @@
     "show_category": "FD Show",
     "country": "Australia",
     "website": "https://www.fathomhq.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, Cash Flow Forecasting, FP&A",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -4960,7 +5761,10 @@
     "show_category": "FD Show",
     "country": "United States (US)",
     "website": "https://www.fieldguide.io/",
+    "products_services": "AI & Automation, Audit, Tax",
+    "old_categories": "AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "tax-mtd"
@@ -4978,7 +5782,10 @@
     "show_category": "FD Show",
     "country": "United States (US)",
     "website": "https://www.finquery.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, Expense Management",
+    "old_categories": "AI & Automation, Data & Analytics, Expenses",
     "categories": "Data & Analytics, AI & Automation, Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "data-analytics",
       "ai-automation"
@@ -4996,7 +5803,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.fintags.co.uk",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, ESG & Sustainability, Tax, VAT",
+    "old_categories": "Bookkeeping, AI & Automation, Tax & MTD",
     "categories": "AI & Automation, Bookkeeping, Tax & MTD",
+    "target_audience": "Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -5015,7 +5825,10 @@
     "show_category": "FD Show",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/fishbowl/",
@@ -5030,7 +5843,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.genfinance.ai",
+    "products_services": "AI & Automation, Education & Qualifications, FP&A, IT Solutions, Recruitment & Training",
+    "old_categories": "Bookkeeping, AI & Automation, HR & People",
     "categories": "AI & Automation, Bookkeeping, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "ai-automation",
       "bookkeeping",
@@ -5049,7 +5865,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.globalcreditrecoveries.com",
+    "products_services": "Accounts Payable / Accounts Receivable, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping"
@@ -5067,7 +5886,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.hornblower-businesses.co.uk",
+    "products_services": "Corporate Finance / Mergers & Acquisitions",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -5084,7 +5906,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://acarp-edu.org",
+    "products_services": "Accounts Payable / Accounts Receivable, Association / Professional Body, Education & Qualifications, O2C - Order-To-Cash, Payroll",
+    "old_categories": "Bookkeeping, Payroll, HR & People, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping, HR & Leadership, Payroll",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping",
@@ -5104,7 +5929,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.laurel.ai/",
+    "products_services": "AI & Automation, Analytics & Reporting, IT Solutions",
+    "old_categories": "AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation",
+    "target_audience": "Accountants in Practice",
     "canonical_categories": [
       "data-analytics",
       "ai-automation"
@@ -5122,7 +5950,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.lucanet.com/en/",
+    "products_services": "AI & Automation, Analytics & Reporting, Corporate Finance / Mergers & Acquisitions, ERP, FP&A",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -5142,7 +5973,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.metrobankonline.co.uk/business/",
+    "products_services": "Banking Services / Open Banking / Payment / FX Budgeting, Corporate Finance / Mergers & Acquisitions, Funding / Lending",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -5159,7 +5993,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://mindful-education.co.uk/employers/",
+    "products_services": "Education & Qualifications",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "hr-people"
     ],
@@ -5176,7 +6013,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.mrc-productivity.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, CRM, IT Solutions",
+    "old_categories": "AI & Automation, CRM & Comms, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Marketing & Growth",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5195,7 +6035,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.neuminsolvency.co.uk/",
+    "products_services": "Insolvency, Restructuring & Business Recovery",
+    "old_categories": "Banking & Payments",
     "categories": "Banking & Payments",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments"
     ],
@@ -5212,7 +6055,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://newresults.co.uk/",
+    "products_services": "Education & Qualifications, HR, Recruitment & Training",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Other",
     "canonical_categories": [
       "hr-people"
     ],
@@ -5229,7 +6075,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.nolanbusinesssolutions.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Banking Services / Open Banking / Payment / FX Budgeting, ERP, Spend Management",
+    "old_categories": "Bookkeeping, AI & Automation, Expenses, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5248,7 +6097,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://octopusev.com/",
+    "products_services": "Employee Benefits / Incentives / Salary Sacrifice",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "",
     "canonical_categories": [
       "hr-people"
     ],
@@ -5265,7 +6117,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://onetouchleasing.co.uk/",
+    "products_services": "Analytics & Reporting, Insurance, IT Solutions",
+    "old_categories": "Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "data-analytics"
@@ -5283,7 +6138,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.paraglide.ai",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5302,7 +6160,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://payhawk.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Expense Management, Spend Management, Treasury financial management",
+    "old_categories": "Bookkeeping, AI & Automation, Expenses, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5321,7 +6182,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.quadient.com/en-gb/homepage",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Cash Flow Forecasting, E-Invoicing, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5340,7 +6204,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://rsult.one/",
+    "products_services": "CRM, ERP",
+    "old_categories": "Bookkeeping, CRM & Comms",
     "categories": "Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "bookkeeping",
       "marketing-growth"
@@ -5358,7 +6225,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.scalexp.com/",
+    "products_services": "AI & Automation, Analytics & Reporting, FP&A, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -5378,7 +6248,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.sequencehq.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, Banking & Payments",
     "categories": "Banking & Payments, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "bookkeeping"
@@ -5396,7 +6269,10 @@
     "show_category": "FD Show",
     "country": "France",
     "website": "https://sis-id.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AML - Anti Money Laundering, Banking Services / Open Banking / Payment / FX Budgeting, Cyber Security, IT Solutions",
+    "old_categories": "Bookkeeping, Cyber Security, AML/KYC, Banking & Payments",
     "categories": "Banking & Payments, Cyber Security, Bookkeeping, AML/KYC",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "cyber-security",
@@ -5416,7 +6292,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.spendesk.com/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Expense Management, Spend Management",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Expenses",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, Other",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5435,7 +6314,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.withspinal.com",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, E-Invoicing, ERP, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5454,7 +6336,10 @@
     "show_category": "FD Show",
     "country": "United States (US)",
     "website": "https://www.taxconnex.com/",
+    "products_services": "Audit, Corporate Finance / Mergers & Acquisitions, Tax",
+    "old_categories": "Tax & MTD, Banking & Payments",
     "categories": "Banking & Payments, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "banking-payments",
       "tax-mtd"
@@ -5472,7 +6357,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.dynamics-apps.co.uk",
+    "products_services": "CRM, ERP, IT Solutions",
+    "old_categories": "Bookkeeping, CRM & Comms",
     "categories": "Bookkeeping, Marketing & Growth",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "bookkeeping",
       "marketing-growth"
@@ -5490,7 +6378,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.cfocentre.com/gb/",
+    "products_services": "Analytics & Reporting, Banking Services / Open Banking / Payment / FX Budgeting, Cash Flow Forecasting, Corporate Finance / Mergers & Acquisitions, Funding / Lending",
+    "old_categories": "Bookkeeping, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, Bookkeeping",
+    "target_audience": "Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -5509,7 +6400,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.electriccarscheme.com/",
+    "products_services": "Employee Benefits / Incentives / Salary Sacrifice, HR",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "hr-people"
     ],
@@ -5526,7 +6420,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.o2clab.com",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, O2C - Order-To-Cash, Recruitment & Training",
+    "old_categories": "Bookkeeping, AI & Automation, HR & People, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, HR & Leadership",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Other",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5546,7 +6443,10 @@
     "show_category": "FD Show",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/thrive-operations-ltd/",
@@ -5561,7 +6461,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.vision33.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Corporate Finance / Mergers & Acquisitions, ERP",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers, Other",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -5581,7 +6484,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.webexpenses.com/",
+    "products_services": "Expense Management, Spend Management",
+    "old_categories": "Expenses",
     "categories": "Other",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [],
     "company_description": "Webexpenses is a cloud-based expense management solution that helps you take the hassle out of building, submitting, approving, and reporting on business expenses. Instead of chasing spreadsheets and emails, your teams manage everything in one place, with flexible workflows, built-in policy controls, and tailored reporting that make it easier to stay compliant.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/webexpenses/",
@@ -5596,7 +6502,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.westgatemoore.co.uk/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, Analytics & Reporting, Audit",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Other",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5615,7 +6524,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.wolterskluwer.co.uk",
+    "products_services": "Analytics & Reporting, Audit, Corporate Finance / Mergers & Acquisitions, Tax, VAT",
+    "old_categories": "Tax & MTD, Data & Analytics, Banking & Payments",
     "categories": "Banking & Payments, Data & Analytics, Tax & MTD",
+    "target_audience": "Accountants in Practice, Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "data-analytics",
@@ -5634,7 +6546,10 @@
     "show_category": "FD Show",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "HR & People",
     "canonical_categories": [
       "hr-people"
     ],
@@ -5651,7 +6566,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.workday.com/en-gb/solutions/organization-size/medium-enterprise/finance-package.html",
+    "products_services": "AI & Automation, Analytics & Reporting, Cash Flow Forecasting, ERP, FP&A",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5670,7 +6588,10 @@
     "show_category": "FD Show",
     "country": "United Kingdom (UK)",
     "website": "https://www.getyooz.com/en-gb/",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, E-Invoicing",
+    "old_categories": "Bookkeeping, AI & Automation, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping",
+    "target_audience": "Accountants in Industry/Business",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5689,7 +6610,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/accounting-bookkeepers-uk-ltd/",
@@ -5704,7 +6628,10 @@
     "show_category": "FD Show",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "HR & People",
     "categories": "HR & Leadership",
+    "target_audience": "HR & People",
     "canonical_categories": [
       "hr-people"
     ],
@@ -5721,7 +6648,10 @@
     "show_category": "FD Show",
     "country": "",
     "website": "",
+    "products_services": "Accounts Payable / Accounts Receivable, AI & Automation, ERP, HR, O2C - Order-To-Cash",
+    "old_categories": "Bookkeeping, AI & Automation, HR & People, Banking & Payments",
     "categories": "Banking & Payments, AI & Automation, Bookkeeping, HR & Leadership",
+    "target_audience": "",
     "canonical_categories": [
       "banking-payments",
       "ai-automation",
@@ -5741,7 +6671,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5760,7 +6693,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Association / Professional Body, Consulting & Business Services",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics, HR & People",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping, HR & Leadership",
+    "target_audience": "",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5780,7 +6716,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "",
+    "old_categories": "",
     "categories": "Other",
+    "target_audience": "",
     "canonical_categories": [],
     "company_description": "",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/national-crc-group-limited-1074/",
@@ -5795,7 +6734,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "Accounting Software, AI & Automation, Analytics & Reporting, Cash Flow Forecasting",
+    "old_categories": "Bookkeeping, AI & Automation, Data & Analytics",
     "categories": "Data & Analytics, AI & Automation, Bookkeeping",
+    "target_audience": "",
     "canonical_categories": [
       "data-analytics",
       "ai-automation",
@@ -5814,7 +6756,10 @@
     "show_category": "Accountex London",
     "country": "",
     "website": "",
+    "products_services": "Consulting & Business Services, Sales & Marketing",
+    "old_categories": "Marketing & Growth",
     "categories": "Marketing & Growth",
+    "target_audience": "",
     "canonical_categories": [
       "marketing-growth"
     ],

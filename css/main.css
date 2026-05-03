@@ -1571,8 +1571,45 @@ body::before {
 .app-tabs-brand-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 10px 0 10px;
   border-bottom: 1px solid var(--ink-3);
+}
+/* "Made by" credits — sits at the far right of the brand row, replacing
+   the old below-nav sponsors strip. Tiny mono caps label + small logos.
+   Quiet so it doesn't compete with the tab nav. */
+.app-tabs-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.app-tabs-credits-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.app-tabs-credits a {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.78;
+  transition: opacity 0.18s;
+  text-decoration: none;
+}
+.app-tabs-credits a:hover { opacity: 1; }
+.app-tabs-credits img {
+  height: 16px;
+  width: auto;
+  display: block;
+}
+@media (max-width: 640px) {
+  .app-tabs-credits { gap: 8px; }
+  .app-tabs-credits img { height: 13px; }
+  .app-tabs-credits-label { font-size: 8.5px; letter-spacing: 0.12em; }
 }
 .app-tabs-brand {
   display: inline-flex;
@@ -1614,51 +1651,6 @@ body::before {
   align-items: center;
 }
 .app-tabs-row::-webkit-scrollbar { display: none; }
-/* "Brought to you by" strip — sits directly under the app's tab nav.
-   Discreet treatment; XU Magazine + Workiro are the co-production
-   credit on every page of the app, but shouldn't pull focus from the
-   actual plan content below. */
-.app-sponsors-strip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 12px 24px;
-  background: rgba(255,255,255,0.02);
-  border-bottom: 1px solid var(--ink-3);
-  flex-wrap: wrap;
-}
-.app-sponsors-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 700;
-}
-.app-sponsors-strip a {
-  display: inline-flex;
-  align-items: center;
-  opacity: 0.75;
-  transition: opacity 0.18s;
-  text-decoration: none;
-}
-.app-sponsors-strip a:hover { opacity: 1; }
-.app-sponsors-strip img {
-  height: 20px;
-  width: auto;
-  display: block;
-}
-.app-sponsors-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--ink-3);
-}
-@media (max-width: 640px) {
-  .app-sponsors-strip { gap: 12px; padding: 10px 16px; }
-  .app-sponsors-strip img { height: 16px; }
-  .app-sponsors-label { font-size: 9px; letter-spacing: 0.14em; }
-}
 /* Individual tabs — distribute to fill, bigger tap targets */
 .app-tab {
   display: inline-flex;

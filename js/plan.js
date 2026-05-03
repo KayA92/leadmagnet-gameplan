@@ -291,6 +291,15 @@ function renderTabNav() {
           <span class="brand-divider"></span>
           <span class="brand-event">Accountex 2026</span>
         </a>
+        <div class="app-tabs-credits" aria-label="Made by">
+          <span class="app-tabs-credits-label">Made by</span>
+          <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+          </a>
+          <a href="https://workiro.com" target="_blank" rel="noopener" aria-label="Workiro">
+            <img src="/images/workiro-logo.svg" alt="Workiro">
+          </a>
+        </div>
       </div>
       <div class="app-tabs-row">
         ${tabs.map(t => `
@@ -302,17 +311,7 @@ function renderTabNav() {
         `).join('')}
       </div>
     </div>
-  </nav>
-  <div class="app-sponsors-strip">
-    <span class="app-sponsors-label">Brought to you by</span>
-    <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
-      <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-    </a>
-    <span class="app-sponsors-divider"></span>
-    <a href="https://workiro.com" target="_blank" rel="noopener" aria-label="Workiro">
-      <img src="/images/workiro-logo.svg" alt="Workiro">
-    </a>
-  </div>`;
+  </nav>`;
 }
 
 // ── Checklist tab ─────────────────────────────────────────────────────────────

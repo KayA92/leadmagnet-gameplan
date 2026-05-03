@@ -3763,7 +3763,7 @@ button.app-pill.purple.clickable:hover {
 }
 .checklist-row-main {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 16px;
   align-items: flex-start;
   padding: 11px 16px;
@@ -3777,13 +3777,17 @@ button.app-pill.purple.clickable:hover {
   flex-shrink: 0;
   padding-top: 1px;
 }
-.checklist-row-right {
+/* Rate + Going row — sits inside the main column above the note panel.
+   Replaces the old right-side cluster so action affordances flow with
+   the body content instead of competing for attention. */
+.checklist-row-actions {
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  align-items: center;
+  gap: 24px;
+  margin-top: 14px;
+  padding-top: 12px;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  padding-top: 4px;
+  border-top: 1px dashed var(--ink-3);
 }
 
 /* AI MATCH CONFIDENCE badge — appears in the right column of every
@@ -3821,23 +3825,10 @@ button.app-pill.purple.clickable:hover {
 .checklist-alternative-confidence .row-confidence-num { font-size: 18px; }
 .checklist-alternative-confidence .row-confidence-label { font-size: 8px; }
 
-/* At narrower widths, stack the right-side cluster below the title so
-   the title column has room to breathe */
-@media (max-width: 780px) {
-  .checklist-row-main {
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-      "left title"
-      ".    right";
-    row-gap: 10px;
-  }
-  .checklist-row-main > .checklist-row-leftcol { grid-area: left; }
-  .checklist-row-main > .checklist-main { grid-area: title; }
-  .checklist-row-main > .checklist-row-right {
-    grid-area: right;
-    justify-content: flex-start;
-    padding-left: 0;
-  }
+/* Mobile: row-actions wrap naturally; rate-wrap and team-wrap can
+   each fall to its own line on very narrow screens. */
+@media (max-width: 640px) {
+  .checklist-row-actions { gap: 16px; }
 }
 
 /* Prominent time/stand block — now sits below the tick */
@@ -4321,29 +4312,17 @@ button.app-pill.purple.clickable:hover {
    Mint and purple are reserved for sessions/booths as entity colours.
    Tags use amber (AI-driven matches) and pink (session content signals) so
    they feel distinct from "in your plan" mint / "booth" purple. */
-/* AI MATCH CONFIDENCE hero block — large pink number, small grey mono
-   caps label beneath. Pink ties this back to AI MATCH CONFIDENCE on
-   the reveal/preview screens; mint stays reserved for utility (Going,
-   swap, completion). */
-.checklist-match-hero {
-  margin-top: 10px;
-}
-.checklist-match-num {
+/* AI Match Confidence — single line at the title's weight class, in
+   pink. Ties back to AI MATCH CONFIDENCE on the reveal/preview screens.
+   Mint stays reserved for utility (Going, swap, completion). */
+.checklist-match-line {
   font-family: 'Fraunces', serif;
-  font-size: 26px;
-  font-weight: 600;
+  font-size: 17.5px;
+  font-weight: 500;
   color: var(--pink);
-  line-height: 1;
+  line-height: 1.2;
   letter-spacing: -0.01em;
-}
-.checklist-match-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-top: 5px;
+  margin-top: 8px;
 }
 /* Tags row — quiet outline pills, muted grey. No fill, no "+" prefix,
    no yellow; tags are descriptive labels, not interactive controls. */
@@ -4367,25 +4346,23 @@ button.app-pill.purple.clickable:hover {
   white-space: nowrap;
 }
 .checklist-row.attended .checklist-why-tags,
-.checklist-row.attended .checklist-match-hero { opacity: 0.4; }
+.checklist-row.attended .checklist-match-line { opacity: 0.4; }
 
 /* Turn E2: Strong-alternative session suggestions. Appears under a session
    you've picked if another session at the same time also matches your
    onboarding. Amber AI accent to match the "Why AI picked this" tag palette. */
-/* Alternatives: collapsed by default — quiet inline mono caps line that
-   expands to reveal the full alternative cards. Muted grey (no amber)
-   so the primary session stays the focus. */
+/* Alternatives: collapsed by default — sits directly under the match
+   line, leads with the top alternative's % and a swap icon. Muted
+   grey base, mint accent on hover so the swap option is discoverable
+   without competing with the primary card content. */
 .checklist-alternatives {
-  margin-top: 12px;
+  margin-top: 8px;
 }
 .checklist-alternatives-summary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
+  font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
   list-style: none;
@@ -4393,14 +4370,25 @@ button.app-pill.purple.clickable:hover {
   font-weight: 500;
   transition: color 0.15s;
 }
-.checklist-alternatives-summary strong { font-weight: 700; color: var(--text-muted); }
+.checklist-alternatives-summary strong {
+  font-weight: 700;
+  color: var(--pink);
+}
 .checklist-alternatives-summary:hover { color: var(--text); }
-.checklist-alternatives-summary:hover strong { color: var(--text); }
+.checklist-alternatives-summary:hover svg { color: var(--mint); }
 .checklist-alternatives-summary::-webkit-details-marker { display: none; }
 .checklist-alternatives-summary::marker { display: none; }
-.checklist-alternatives-summary svg { color: var(--text-faint); flex-shrink: 0; }
+.checklist-alternatives-summary svg {
+  color: var(--text-faint);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
 .checklist-alternatives-toggle {
   margin-left: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   text-decoration: underline;
   text-decoration-color: rgba(255,255,255,0.18);
   text-underline-offset: 3px;
@@ -4529,11 +4517,11 @@ button.app-pill.purple.clickable:hover {
 }
 .row-rate-caption {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 .row-rate-inline {
@@ -4548,7 +4536,7 @@ button.app-pill.purple.clickable:hover {
 .row-fire-btn {
   background: transparent;
   border: none;
-  padding: 5px 7px;
+  padding: 6px 8px;
   cursor: pointer;
   border-radius: 100px;
   display: flex;
@@ -4556,10 +4544,15 @@ button.app-pill.purple.clickable:hover {
   justify-content: center;
   transition: all 0.15s;
   line-height: 1;
-  color: var(--ink-4);
+  color: rgba(255,94,132,0.32);
 }
 .row-fire-btn .flame-icon {
   transition: all 0.2s cubic-bezier(.4,0,.2,1);
+  width: 16px;
+  height: 16px;
+}
+.row-fire-btn:hover {
+  color: rgba(255,94,132,0.65);
 }
 .row-fire-btn:hover .flame-icon {
   transform: scale(1.1);
@@ -4568,6 +4561,7 @@ button.app-pill.purple.clickable:hover {
   color: var(--pink);
 }
 .row-fire-btn.lit .flame-icon {
+  filter: drop-shadow(0 0 6px rgba(255,94,132,0.5));
   transform: scale(1.08);
 }
 .row-fire-btn.lit:hover .flame-icon {
@@ -4728,10 +4722,17 @@ button.app-pill.purple.clickable:hover {
 
 /* --- EDITING state: textarea with starter chips + Save/Cancel --- */
 .checklist-note-panel.editing {
-  background: rgba(34,230,168,0.025);
-  border-top: 1px solid rgba(34,230,168,0.25);
-  padding-top: 14px;
-  padding-bottom: 14px;
+  background: rgba(34,230,168,0.06);
+  border-top: 1px solid rgba(34,230,168,0.5);
+  box-shadow: inset 0 1px 0 rgba(34,230,168,0.25);
+  padding-top: 16px;
+  padding-bottom: 16px;
+  animation: note-edit-glow 0.4s ease-out;
+}
+@keyframes note-edit-glow {
+  0%   { box-shadow: inset 0 1px 0 rgba(34,230,168,0.25), 0 0 0 0 rgba(34,230,168,0.18); }
+  60%  { box-shadow: inset 0 1px 0 rgba(34,230,168,0.25), 0 0 0 6px rgba(34,230,168,0.10); }
+  100% { box-shadow: inset 0 1px 0 rgba(34,230,168,0.25), 0 0 0 0 rgba(34,230,168,0); }
 }
 .note-edit-head {
   display: flex;

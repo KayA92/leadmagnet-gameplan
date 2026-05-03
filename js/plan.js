@@ -245,6 +245,7 @@ function findStrongAlternatives(item) {
 const TICK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const STAR_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
 const ALT_SVG  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+const SWAP_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
 
 
 function flameSvg() {
@@ -453,31 +454,28 @@ function renderChecklistTab() {
       : '';
 
     const confidence = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
-    // AI MATCH CONFIDENCE hero block — large pink number, small mono caps
-    // grey label beneath. Tags only render for strong picks (>= 80%);
-    // borderline cards (75-79%) stay clean — number alone is honest.
+    // Single-line match — "96% AI Match Confidence" in pink at the title's
+    // weight class. Tags only render for strong picks (>= 80%); borderline
+    // cards (75-79%) stay clean — the number alone is honest.
     const whyHtml = `
-      <div class="checklist-match-hero">
-        <div class="checklist-match-num">${confidence}%</div>
-        <div class="checklist-match-label">AI Match Confidence</div>
-      </div>
+      <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
       ${whyTags.length ? `<div class="checklist-why-tags">
         ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
 
-    // Collapsed-by-default alternatives. Default state is a tiny inline
-    // text link; click to expand the full cards. Keeps the primary
-    // session uncluttered while making the swap option discoverable.
+    // Collapsed-by-default alternatives. The summary now leads with the
+    // top alternative's % match and a swap icon — no time repetition
+    // (already shown in the leftcol). Click to expand the full cards.
     const sortedAlts = [...alts]
       .map(alt => ({ alt, conf: alt.match_confidence ?? aiMatchConfidence(alt.session_id, 'session') }))
       .sort((a, b) => b.conf - a.conf);
     const altCount = sortedAlts.length;
-    const altLabel = altCount === 1 ? '1 alternative' : `${altCount} alternatives`;
+    const topAltConf = sortedAlts[0]?.conf ?? 0;
     const altsHtml = showSwap && altCount ? `
       <details class="checklist-alternatives">
         <summary class="checklist-alternatives-summary">
-          ${ALT_SVG}
-          <span><strong>${altLabel}</strong> available at ${escHtml(item.start_time || '')}</span>
+          ${SWAP_SVG}
+          <span><strong>${topAltConf}%</strong> AI-matched session also available</span>
           <span class="checklist-alternatives-toggle"><span class="show">show</span><span class="hide">hide</span></span>
         </summary>
         ${sortedAlts.map(({ alt, conf }) => `
@@ -567,21 +565,21 @@ function renderChecklistTab() {
             <div class="checklist-main-meta">${item.theatre ? escHtml(item.theatre) + ' · ' : ''}<span class="type-pill session">Session</span></div>
             ${whyHtml}
             ${altsHtml}
-            ${notePanel}
-            ${teamNotesHtml}
-          </div>
-          <div class="checklist-row-right">
-            <div class="row-rate-wrap">
-              <div class="row-rate-caption">${ratingLabel}</div>
-              <div class="row-rate-inline">${rowFlames(item.rating)}</div>
-            </div>
-            <div class="row-team-wrap">
-              <div class="row-rate-caption">Going</div>
-              <div class="checklist-avatars">
-                <div class="mini-av t3" title="You">${userInitial}</div>
-                ${teamAvatarHtml}
+            <div class="checklist-row-actions">
+              <div class="row-rate-wrap">
+                <div class="row-rate-caption">${ratingLabel}</div>
+                <div class="row-rate-inline">${rowFlames(item.rating)}</div>
+              </div>
+              <div class="row-team-wrap">
+                <div class="row-rate-caption">Going</div>
+                <div class="checklist-avatars">
+                  <div class="mini-av t3" title="You">${userInitial}</div>
+                  ${teamAvatarHtml}
+                </div>
               </div>
             </div>
+            ${notePanel}
+            ${teamNotesHtml}
           </div>
         </div>
       </div>`;
@@ -644,18 +642,15 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta"><span class="type-pill booth">Booth</span></div>
             ${desc ? `<p class="checklist-main-sub" style="font-size:13px;color:var(--text-muted);margin:4px 0 0;line-height:1.5;">${escHtml(desc)}</p>` : ''}
-            <div class="checklist-match-hero">
-              <div class="checklist-match-num">${confidence}%</div>
-              <div class="checklist-match-label">AI Match Confidence</div>
-            </div>
+            <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
             ${reason ? `<div class="checklist-why-tags"><span class="checklist-why-tag">${escHtml(reason)}</span></div>` : ''}
-            ${notePanel}
-          </div>
-          <div class="checklist-row-right">
-            <div class="row-rate-wrap">
-              <div class="row-rate-caption">${ratingLabel}</div>
-              <div class="row-rate-inline">${rowFlames(item.rating)}</div>
+            <div class="checklist-row-actions">
+              <div class="row-rate-wrap">
+                <div class="row-rate-caption">${ratingLabel}</div>
+                <div class="row-rate-inline">${rowFlames(item.rating)}</div>
+              </div>
             </div>
+            ${notePanel}
           </div>
         </div>
       </div>`;

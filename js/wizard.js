@@ -588,13 +588,10 @@ function computePainProgress() {
   const n = state.answers.pains.length;
   const percent = n === 0 ? 0 : n === 1 ? 33 : n === 2 ? 66 : 100;
   let label;
-  if (n === 0) label = 'Tap pains that hit home — 3+ unlocks strong matches';
-  else if (n === 1) label = '1 pain · 2 more unlocks strong matches';
-  else if (n === 2) label = '2 pains · 1 more unlocks strong matches';
-  else if (n === 3) label = '✓ Strong matches unlocked · keep tapping for sharper picks';
-  else if (n <= 5) label = `✓ Strong matches · ${n} pains captured`;
-  else if (n <= 8) label = `✓ Razor-sharp · ${n} pains captured`;
-  else label = `✓ Top 1% · ${n} pains — laser-focused matching`;
+  if (n === 0)      label = '3+ unlocks better AI matches';
+  else if (n === 1) label = '1 pain · 2 more unlocks better matches';
+  else if (n === 2) label = '2 pains · 1 more unlocks better matches';
+  else              label = `${n} pains captured · tap all that apply`;
   return { percent, label };
 }
 

@@ -555,7 +555,6 @@ body::before {
 .tag-pill--quiet .tag-pill-icon { color: var(--text-faint); }
 .tag-pill:hover { border-color: var(--pink); background: rgba(255,94,132,0.06); transform: translateY(-1px); }
 .tag-pill.selected { border-color: var(--mint); background: rgba(34,230,168,0.1); color: var(--mint); box-shadow: var(--glow-mint); }
-.tag-pill.selected::before { content: '✓'; font-size: 12px; }
 .tag-pill-icon {
   display: inline-flex;
   align-items: center;
@@ -727,7 +726,6 @@ body::before {
   color: var(--text);
 }
 .pain-tag:hover { transform: translateY(-1px); }
-.pain-tag.selected::before { content: '✓ '; font-weight: 700; }
 
 /* SCORCHING — pink heat (top tier, this is the bell-ringer) */
 .band-scorching .pain-band-label {
@@ -860,7 +858,7 @@ body::before {
   margin-top: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 16px;
   width: 100%;
   max-width: 720px;
@@ -995,9 +993,14 @@ body::before {
   }
   /* Hide the keyboard shortcut hint on mobile — no keyboard */
   .stage.flow-mode .q-actions .keybind { display: none; }
-  /* Give the q-container breathing room at the bottom so sticky bar doesn't cover content */
+  /* Generous bottom buffer on mobile so the last item is comfortably above
+     the fixed action bar — avoids the "stuck at bottom, scroll again" feel. */
   .stage.flow-mode .q-container {
-    padding-bottom: 100px;
+    padding-bottom: 160px;
+  }
+  /* Stage 2 has the precision bar stacked above the action row, so it needs more. */
+  .stage.flow-mode#stage-2 .q-container {
+    padding-bottom: 260px;
   }
 }
 

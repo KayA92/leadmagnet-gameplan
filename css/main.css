@@ -1392,6 +1392,7 @@ body::before {
 .plan-pains-chips {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
 }
 .plan-pain-chip {

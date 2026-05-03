@@ -5016,6 +5016,36 @@ button.app-pill.purple.clickable:hover {
   flex-shrink: 0;
 }
 .mini-av:first-child { margin-left: 0; }
+/* Invite pip — soft dashed circle with a user-plus icon, sits at the
+   end of the avatar row as a quiet conversion affordance into the
+   Team tab. Visible always, lifts to solid mint on hover. */
+.invite-pip {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed rgba(34,230,168,0.50);
+  background: transparent;
+  color: var(--mint);
+  margin-left: 4px;
+  padding: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.invite-pip:hover {
+  border-style: solid;
+  border-color: var(--mint);
+  background: rgba(34,230,168,0.10);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(34,230,168,0.25);
+}
+.invite-pip svg {
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.invite-pip:hover svg { opacity: 1; }
 .mini-av.t1 { background: linear-gradient(135deg, rgba(255,94,132,0.5), rgba(168,85,247,0.5)); color: var(--pink); }
 .mini-av.t2 { background: linear-gradient(135deg, rgba(168,85,247,0.5), rgba(0,212,214,0.5)); color: var(--purple); }
 .mini-av.t3 { background: linear-gradient(135deg, rgba(0,212,214,0.5), rgba(34,230,168,0.5)); color: var(--teal); }

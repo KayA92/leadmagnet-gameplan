@@ -536,6 +536,40 @@ body::before {
   opacity: 0.85;
 }
 .tag-pill--quiet .tag-pill-icon { color: var(--text-faint); }
+
+/* Stage 5b — owner-only mode question. Visible for owner role-bucket,
+   greyed/non-interactive until firm size is picked. */
+.firm-mode-section {
+  margin-top: 32px;
+  transition: opacity 0.3s ease;
+}
+.firm-mode-section[hidden] { display: none; }
+.firm-mode-section.locked {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.firm-mode-label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-left: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.firm-mode-hint {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: var(--text-faint);
+  font-weight: 500;
+  font-style: italic;
+}
 .tag-pill:hover { border-color: var(--pink); background: rgba(255,94,132,0.06); transform: translateY(-1px); }
 .tag-pill.selected { border-color: var(--mint); background: rgba(34,230,168,0.1); color: var(--mint); box-shadow: var(--glow-mint); }
 .tag-pill-icon {

@@ -604,6 +604,16 @@ function prepareStage5b() {
   document.querySelectorAll('.firm-pill').forEach(b => {
     b.classList.toggle('selected', b.dataset.firm === state.answers.firmSize);
   });
+  document.querySelectorAll('.mode-pill').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === state.answers.mode);
+  });
+  // Mode section: only owners see it. Locked until firm size is picked.
+  const modeEl = $('firm-mode-section');
+  if (modeEl) {
+    const isOwner = state.answers.roleBucket === 'owner';
+    modeEl.hidden = !isOwner;
+    modeEl.classList.toggle('locked', !state.answers.firmSize);
+  }
   const nextBtn = $('firm-next');
   if (nextBtn) nextBtn.disabled = !state.answers.firmSize;
 }
@@ -775,13 +785,22 @@ export async function initWizard() {
   });
   $('role-next') && ($('role-next').disabled = true);
 
-  // ── Stage 5b: firm size
+  // ── Stage 5b: firm size + (owners-only) mode
   document.querySelectorAll('[data-firm]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-firm]').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       state.answers.firmSize = btn.dataset.firm;
+      // Unlock the mode section (only matters for owners — for others it stays hidden)
+      $('firm-mode-section')?.classList.remove('locked');
       $('firm-next').disabled = false;
+    });
+  });
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.answers.mode = btn.dataset.mode;
     });
   });
   $('firm-back')?.addEventListener('click', () => history.back());

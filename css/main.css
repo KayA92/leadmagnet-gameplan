@@ -396,10 +396,10 @@ body::before {
 .cat-group { display: flex; flex-direction: column; gap: 12px; }
 .cat-group-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-muted);
   font-weight: 600;
   padding-left: 2px;
 }
@@ -513,10 +513,10 @@ body::before {
 .role-group { display: flex; flex-direction: column; gap: 12px; }
 .role-group-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-muted);
   font-weight: 600;
   padding-left: 2px;
 }
@@ -556,10 +556,10 @@ body::before {
   margin-bottom: 12px;
   padding-left: 2px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-muted);
   font-weight: 600;
 }
 .firm-mode-hint {

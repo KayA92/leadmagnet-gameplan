@@ -107,32 +107,80 @@ function aiMatchConfidence(idStr, type) {
   return Math.round(lo + norm * (hi - lo));
 }
 
+// Human-readable labels for the user's selected categories. Includes both the
+// new 16-category slugs (cloud-accounting, practice-mgmt, etc.) and the
+// legacy 13-category slugs in case any older plan rows still use them.
+const CATEGORY_LABELS = {
+  // Current
+  'cloud-accounting': 'Cloud accounting',
+  'practice-mgmt':    'Practice management',
+  'tax-mtd':          'Tax & MTD',
+  'audit':            'Audit & assurance',
+  'bookkeeping':      'Bookkeeping',
+  'payroll':          'Payroll',
+  'doc-mgmt':         'Document management',
+  'portals-esign':    'Portals & e-sign',
+  'aml-onboarding':   'AML / KYC',
+  'forecasting':      'Forecasting',
+  'reporting':        'Reporting & analytics',
+  'proposals':        'Proposals',
+  'payments':         'Payments',
+  'lending':          'Lending',
+  'outsourcing':      'Outsourcing',
+  'cyber':            'Cyber security',
+  // Legacy
+  'practice-management': 'Practice management',
+  'ai-automation':       'AI & automation',
+  'doc-management':      'Document management',
+  'data-analytics':      'Data analytics',
+  'cyber-security':      'Cyber security',
+  'aml-kyc':             'AML / KYC',
+  'hr-people':           'HR & leadership',
+  'banking-payments':    'Banking & payments',
+  'marketing-growth':    'Marketing & growth',
+};
+
+// Tag rules:
+// - Only show tags for sessions with confidence >= 80% (top picks).
+//   Below that the % alone is honest and prevents weak heuristic matches
+//   from leaking into the UI.
+// - Pull tags from the user's actual onboarding selections (full labels,
+//   never extracted single-word fragments).
+// - 2–3 tags max; categories first (strongest signal), then pains.
+// TODO: Once the matcher returns explicit driver-tags per session, replace
+// this heuristic with the real signals.
 function whyMatched(session, plan) {
-  const tags       = [];
-  const categories = plan.categories || [];
-  const problem    = plan.problem    || '';
-  const role       = plan.role       || '';
-  const haystack   = `${session.title || ''} ${session.description || ''}`.toLowerCase();
+  const conf = session.match_confidence ?? aiMatchConfidence(session.session_id, 'session');
+  if (conf < 80) return [];
 
-  for (const cat of categories) {
-    if (session.category === cat || haystack.includes(cat.toLowerCase())) {
-      tags.push({ type: 'category', text: cat });
+  const tags = [];
+  const sessionCats = session.canonical_categories || [];
+  const userCats    = plan.categories || [];
+
+  // Category matches — surface the user's full label, not the slug.
+  for (const cat of userCats) {
+    if (tags.length >= 2) break;
+    const wanted = PLAN_CATEGORY_MATCH[cat] || [cat];
+    if (wanted.some(w => sessionCats.includes(w))) {
+      tags.push({ text: CATEGORY_LABELS[cat] || cat });
     }
   }
 
-  if (problem) {
-    const words = problem.toLowerCase().split(/\W+/).filter(w => w.length > 4);
-    for (const w of words) {
-      if (haystack.includes(w)) {
-        tags.push({ type: 'problem', text: `Your problem: "${w}"` });
-        break;
-      }
+  // Pain matches — plan.problem is a comma-separated string of full pain
+  // labels (synthesised at save time). Split, lookup the haystack on the
+  // first salient word from each label so we surface relevant pains
+  // without false-positive single-letter matches.
+  const haystack = `${session.title || ''} ${session.description || ''}`.toLowerCase();
+  const painLabels = (plan.problem || '').split(/\s*,\s*/).filter(Boolean);
+  for (const painLabel of painLabels) {
+    if (tags.length >= 3) break;
+    const firstSig = painLabel.toLowerCase().split(/\W+/).find(w => w.length >= 5);
+    if (firstSig && haystack.includes(firstSig)) {
+      tags.push({ text: painLabel });
     }
   }
 
-  if (role) tags.push({ type: 'role', text: `Fits: ${role}` });
-
-  return tags.slice(0, 5);
+  return tags.slice(0, 3);
 }
 
 const PLAN_CATEGORY_MATCH = {
@@ -406,12 +454,13 @@ function renderChecklistTab() {
       : '';
 
     const confidence = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
-    // "Why AI picked this · 77% MATCH" merged eyebrow — confidence
-    // lives inline so the right-column doesn't need its own % block.
+    // Match line on its own — no "Why AI picked this" eyebrow. Tags below
+    // sit quietly; only render at all if confidence >= 80% (whyMatched
+    // returns [] otherwise).
     const whyHtml = `
-      <div class="checklist-why-header">${STAR_SVG} Why AI picked this · <span class="checklist-why-pct">${confidence}% MATCH</span></div>
+      <div class="checklist-match-line">${confidence}% MATCH</div>
       ${whyTags.length ? `<div class="checklist-why-tags">
-        ${whyTags.map(t => `<span class="checklist-why-tag why-${t.type}">${escHtml(t.text)}</span>`).join('')}
+        ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
 
     // Collapsed-by-default alternatives. Default state is a tiny inline
@@ -597,8 +646,8 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta"><span class="type-pill booth">Booth</span></div>
             ${desc ? `<p class="checklist-main-sub" style="font-size:13px;color:var(--text-muted);margin:4px 0 0;line-height:1.5;">${escHtml(desc)}</p>` : ''}
-            <div class="checklist-why-header">${STAR_SVG} ${reason ? 'Why AI picked this · ' : ''}<span class="checklist-why-pct">${confidence}% MATCH</span></div>
-            ${reason ? `<div class="checklist-why-tags"><span class="checklist-why-tag why-ai">${escHtml(reason)}</span></div>` : ''}
+            <div class="checklist-match-line">${confidence}% MATCH</div>
+            ${reason ? `<div class="checklist-why-tags"><span class="checklist-why-tag">${escHtml(reason)}</span></div>` : ''}
             ${notePanel}
           </div>
           <div class="checklist-row-right">

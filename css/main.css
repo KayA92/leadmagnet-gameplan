@@ -1359,7 +1359,7 @@ body::before {
   font-family: 'Fraunces', serif;
   font-size: 26px;
   font-weight: 600;
-  color: var(--mint);
+  color: var(--pink);
   line-height: 1;
   letter-spacing: -0.01em;
 }
@@ -3810,7 +3810,7 @@ button.app-pill.purple.clickable:hover {
   font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 600;
-  color: var(--mint);
+  color: var(--pink);
   line-height: 1;
   letter-spacing: -0.01em;
 }
@@ -4329,135 +4329,97 @@ button.app-pill.purple.clickable:hover {
    Mint and purple are reserved for sessions/booths as entity colours.
    Tags use amber (AI-driven matches) and pink (session content signals) so
    they feel distinct from "in your plan" mint / "booth" purple. */
-.checklist-why-header {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+/* Match line — pink % MATCH on its own row. No "WHY AI PICKED THIS"
+   eyebrow; the % does the heavy lifting and the tags below speak
+   for themselves. Pink ties this back to AI MATCH CONFIDENCE on the
+   reveal/preview screens — same colour, same meaning. */
+.checklist-match-line {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--amber);
-  margin-top: 10px;
-  margin-bottom: 6px;
-}
-.checklist-why-header svg { color: var(--amber); }
-/* Inline % match in the merged eyebrow — mint signals positive
-   match-quality (vs pink which is reserved for negative pain heat). */
-.checklist-why-pct {
-  color: var(--mint);
+  color: var(--pink);
   font-weight: 700;
+  margin-top: 10px;
 }
+/* Tags row — quiet outline pills, muted grey. No fill, no "+" prefix,
+   no yellow; tags are descriptive labels, not interactive controls. */
 .checklist-why-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
+  margin-top: 6px;
 }
 .checklist-why-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 9px;
+  padding: 3px 10px;
   border-radius: 100px;
-  font-family: inherit;
-  font-size: 11.5px;
-  letter-spacing: -0.005em;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-/* AI-match tags — all amber. Category, problem, role all share the same
-   visual so the reader sees ONE colour for "why we picked this". */
-.checklist-why-tag.why-category,
-.checklist-why-tag.why-problem,
-.checklist-why-tag.why-role {
-  color: var(--amber);
-  background: rgba(251,191,36,0.08);
-  border: 1px solid rgba(251,191,36,0.32);
-}
-.checklist-why-tag.why-category::before,
-.checklist-why-tag.why-problem::before,
-.checklist-why-tag.why-role::before {
-  content: '';
-  width: 10px;
-  height: 10px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fbbf24'><path d='M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z'/></svg>");
-  background-size: contain;
-  background-repeat: no-repeat;
-  flex-shrink: 0;
-}
-.checklist-why-tag.why-ai {
-  white-space: normal;
-  line-height: 1.45;
-  border-radius: 8px;
-  background: rgba(251,191,36,0.06);
-  border: 1px solid rgba(251,191,36,0.22);
+  border: 1px solid var(--ink-3);
+  background: transparent;
   color: var(--text-muted);
-  font-weight: 400;
-  font-size: 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 .checklist-row.attended .checklist-why-tags,
-.checklist-row.attended .checklist-why-header { opacity: 0.4; }
+.checklist-row.attended .checklist-match-line { opacity: 0.4; }
 
 /* Turn E2: Strong-alternative session suggestions. Appears under a session
    you've picked if another session at the same time also matches your
    onboarding. Amber AI accent to match the "Why AI picked this" tag palette. */
-/* Alternatives: collapsed by default — small inline pill that expands to
-   reveal the full alternative cards. Keeps the primary session
-   uncluttered while making the swap discoverable. */
+/* Alternatives: collapsed by default — quiet inline mono caps line that
+   expands to reveal the full alternative cards. Muted grey (no amber)
+   so the primary session stays the focus. */
 .checklist-alternatives {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 .checklist-alternatives-summary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 100px;
-  background: rgba(251,191,36,0.06);
-  border: 1px dashed rgba(251,191,36,0.30);
   list-style: none;
   user-select: none;
-  transition: background 0.15s, border-color 0.15s;
   font-weight: 500;
+  transition: color 0.15s;
 }
-.checklist-alternatives-summary strong { font-weight: 700; }
-.checklist-alternatives-summary:hover {
-  background: rgba(251,191,36,0.12);
-  border-color: rgba(251,191,36,0.50);
-}
+.checklist-alternatives-summary strong { font-weight: 700; color: var(--text-muted); }
+.checklist-alternatives-summary:hover { color: var(--text); }
+.checklist-alternatives-summary:hover strong { color: var(--text); }
 .checklist-alternatives-summary::-webkit-details-marker { display: none; }
 .checklist-alternatives-summary::marker { display: none; }
-.checklist-alternatives-summary svg { color: var(--amber); flex-shrink: 0; }
+.checklist-alternatives-summary svg { color: var(--text-faint); flex-shrink: 0; }
 .checklist-alternatives-toggle {
-  margin-left: 4px;
-  opacity: 0.7;
-  font-size: 9.5px;
+  margin-left: 2px;
+  text-decoration: underline;
+  text-decoration-color: rgba(255,255,255,0.18);
+  text-underline-offset: 3px;
 }
 .checklist-alternatives-toggle .hide { display: none; }
 .checklist-alternatives[open] .checklist-alternatives-toggle .show { display: none; }
 .checklist-alternatives[open] .checklist-alternatives-toggle .hide { display: inline; }
 .checklist-alternative-card {
   padding: 10px 12px;
-  margin-top: 6px;
-  background: rgba(251,191,36,0.03);
-  border: 1px solid rgba(251,191,36,0.18);
+  margin-top: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--ink-3);
   border-radius: 8px;
-  transition: background 0.15s;
+  transition: border-color 0.15s, background 0.15s;
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   gap: 8px 12px;
 }
 .checklist-alternative-card:hover {
-  background: rgba(251,191,36,0.06);
+  border-color: var(--ink-4);
+  background: rgba(255,255,255,0.03);
 }
 .checklist-alternative-body { grid-column: 1; grid-row: 1; min-width: 0; }
 .checklist-alternative-confidence {

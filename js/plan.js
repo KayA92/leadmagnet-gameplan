@@ -87,6 +87,26 @@ async function loadTeamData(teamId) {
 
 // ── AI match helpers ──────────────────────────────────────────────────────────
 
+// TODO: Replace with real match_confidence from matcher response.
+// Backend will return a `match_confidence` (0-100) per session and per booth.
+// Until that ships, this returns a stable dummy % per item — same ID always
+// yields the same number, so rankings and sort order look believable across
+// renders and reloads. Replace the dummy hashing logic with a direct
+// `item.match_confidence ?? aiMatchConfidence(...)` once the field is live.
+function aiMatchConfidence(idStr, type) {
+  const s = String(idStr || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  const norm = (Math.abs(h) % 1000) / 1000; // 0..1
+  // Slightly different ranges so booths feel like a parallel-but-distinct
+  // grouping rather than directly comparable to sessions.
+  const [lo, hi] = type === 'booth' ? [70, 95] : [75, 98];
+  return Math.round(lo + norm * (hi - lo));
+}
+
 function whyMatched(session, plan) {
   const tags       = [];
   const categories = plan.categories || [];
@@ -392,11 +412,18 @@ function renderChecklistTab() {
     const altsHtml = showSwap && alts.length ? `
       <div class="checklist-alternatives">
         <div class="checklist-alternatives-label">${ALT_SVG} Also strong at ${escHtml(item.start_time || '')}</div>
-        ${alts.map(alt => `
+        ${[...alts]
+          .map(alt => ({ alt, conf: alt.match_confidence ?? aiMatchConfidence(alt.session_id, 'session') }))
+          .sort((a, b) => b.conf - a.conf)
+          .map(({ alt, conf }) => `
           <div class="checklist-alternative-card">
             <div class="checklist-alternative-body">
               <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
               <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
+            </div>
+            <div class="checklist-alternative-confidence">
+              <div class="row-confidence-num">${conf}%</div>
+              <div class="row-confidence-label">AI MATCH</div>
             </div>
             <div class="checklist-alternative-actions">
               <button class="checklist-alternative-btn swap" onclick="planSwapSession('${escHtml(item.session_id)}','${escHtml(alt.session_id)}')" type="button">
@@ -442,6 +469,7 @@ function renderChecklistTab() {
 
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
+    const confidence  = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
 
     const avatarColors = ['t1', 't2', 't4'];
     let avatarColorIdx = 0;
@@ -479,6 +507,10 @@ function renderChecklistTab() {
             ${teamNotesHtml}
           </div>
           <div class="checklist-row-right">
+            <div class="row-confidence-wrap">
+              <div class="row-confidence-num">${confidence}%</div>
+              <div class="row-confidence-label">AI MATCH<br>CONFIDENCE</div>
+            </div>
             <div class="row-rate-wrap">
               <div class="row-rate-caption">${ratingLabel}</div>
               <div class="row-rate-inline">${rowFlames(item.rating)}</div>
@@ -539,6 +571,7 @@ function renderChecklistTab() {
          </div>`;
 
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
+    const confidence  = item.match_confidence ?? aiMatchConfidence(item.stand_number || item.company_name, 'booth');
 
     return `
       <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
@@ -561,6 +594,10 @@ function renderChecklistTab() {
             ${notePanel}
           </div>
           <div class="checklist-row-right">
+            <div class="row-confidence-wrap">
+              <div class="row-confidence-num">${confidence}%</div>
+              <div class="row-confidence-label">AI MATCH<br>CONFIDENCE</div>
+            </div>
             <div class="row-rate-wrap">
               <div class="row-rate-caption">${ratingLabel}</div>
               <div class="row-rate-inline">${rowFlames(item.rating)}</div>
@@ -594,7 +631,15 @@ function renderChecklistTab() {
   });
   const sessionItems = sessionParts.join('');
 
-  const boothItems = booths.map((item, i) => renderBoothRow(item, i)).join('');
+  // Sort booths by AI match confidence (descending) so the highest match
+  // sits at the top — easier for the user to see "why this booth first".
+  // Stable: same booth always has the same dummy %, so order is consistent.
+  const sortedBooths = [...booths].sort((a, b) => {
+    const ca = a.match_confidence ?? aiMatchConfidence(a.stand_number || a.company_name, 'booth');
+    const cb = b.match_confidence ?? aiMatchConfidence(b.stand_number || b.company_name, 'booth');
+    return cb - ca;
+  });
+  const boothItems = sortedBooths.map((item, i) => renderBoothRow(item, i)).join('');
 
 
   return `

@@ -6785,13 +6785,32 @@ button.app-pill.purple.clickable:hover {
 .save-sub strong { color: var(--text); font-weight: 600; }
 
 /* Unlock strip — compact horizontal row, replaces the heavy three-card version */
+.save-unlock-section {
+  margin: 0 0 18px;
+  max-width: 560px;
+}
+.save-unlock-section:last-of-type {
+  margin-bottom: 32px;
+}
+.save-unlock-row-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+/* Second row's label gets a mint accent — subtle elevation as the
+   "upgrade tier" message without screaming for attention. */
+.save-unlock-row-label--upgrade {
+  color: var(--mint);
+}
 .save-unlock-strip {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin: 0 0 32px;
-  max-width: 560px;
 }
 .save-unlock-chip {
   display: inline-flex;

@@ -1019,6 +1019,23 @@ body::before {
   .stage.flow-mode#stage-2 .q-container {
     padding-bottom: 260px;
   }
+  /* Stage 3 has 3 grouped sections + 16 pills — extra room so the last
+     row of GROWTH & STRATEGY clears the action bar without sticking. */
+  .stage.flow-mode#stage-3 .q-container {
+    padding-bottom: 220px;
+  }
+  /* Slightly tighter pills on mobile so medium-length labels (Stage 3
+     CORE PLATFORMS especially) can pair up 2-per-row instead of always
+     wrapping to one. Keeps the same look, just trims a few px of padding
+     and a touch of font-size. */
+  .tag-pill {
+    padding: 10px 14px;
+    font-size: 14px;
+    gap: 6px;
+  }
+  .tag-pill-icon {
+    width: 14px; height: 14px;
+  }
 }
 
 .text-input-wrap { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; padding: 0; transition: all 0.2s; }

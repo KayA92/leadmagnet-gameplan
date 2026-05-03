@@ -589,10 +589,13 @@ function computePainProgress() {
   const n = state.answers.pains.length;
   const percent = n === 0 ? 0 : n === 1 ? 33 : n === 2 ? 66 : 100;
   let label;
-  if (n === 0)      label = '3+ unlocks better AI matches';
-  else if (n === 1) label = '1 pain · 2 more unlocks better matches';
-  else if (n === 2) label = '2 pains · 1 more unlocks better matches';
-  else              label = `${n} pains captured · tap all that apply`;
+  if (n === 0)      label = 'Tap 3+ to unlock AI matches';
+  else if (n === 1) label = '1 pain · 2 more to unlock matches';
+  else if (n === 2) label = '2 pains · 1 more to unlock matches';
+  else if (n === 3) label = '✓ Matches unlocked · tap more for sharper picks';
+  else if (n <= 5)  label = `✓ ${n} pains · matches getting sharper`;
+  else if (n <= 8)  label = `✓ ${n} pains · razor-sharp matching`;
+  else              label = `✓ ${n} pains · top 1% precision`;
   return { percent, label };
 }
 

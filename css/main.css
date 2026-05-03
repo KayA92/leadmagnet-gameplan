@@ -8458,30 +8458,34 @@ button.app-pill.purple.clickable:hover {
 .solo-nudge-chip {
   display: inline-flex;
   align-items: stretch;
-  gap: 0;
   margin-top: 14px;
-  border: 1px solid rgba(0,229,178,0.35);
-  border-radius: 8px;
-  background: transparent;
-  transition: all 0.18s;
-  max-width: 100%;
+  background: rgba(34,230,168,0.08);
+  border: 1px solid rgba(34,230,168,0.30);
+  border-radius: 100px;
+  max-width: 720px;
+  overflow: hidden;
+  transition: all 0.18s cubic-bezier(.4,0,.2,1);
 }
 .solo-nudge-chip:hover {
-  background: rgba(0,229,178,0.06);
-  border-color: rgba(0,229,178,0.5);
+  background: rgba(34,230,168,0.14);
+  border-color: rgba(34,230,168,0.50);
 }
 .solo-nudge-chip-body {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
+  gap: 10px;
+  padding: 9px 4px 9px 14px;
   background: transparent;
   border: none;
   color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   text-align: left;
-  line-height: 1.4;
+  line-height: 1.45;
+  flex: 1;
+  min-width: 0;
   transition: transform 0.15s;
 }
 .solo-nudge-chip-body:hover { transform: translateX(2px); }
@@ -8492,24 +8496,36 @@ button.app-pill.purple.clickable:hover {
   height: 7px;
   border-radius: 50%;
   background: var(--mint);
+  box-shadow: 0 0 8px var(--mint);
   flex-shrink: 0;
-  animation: pulse 2.4s ease-in-out infinite;
+  animation: solo-nudge-pulse 2.4s ease-in-out infinite;
 }
 .solo-nudge-text { flex: 1; min-width: 0; }
 .solo-nudge-chip-dismiss {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  width: 32px;
+  flex-shrink: 0;
   background: transparent;
   border: none;
-  border-left: 1px solid rgba(0,229,178,0.18);
+  border-left: 1px solid rgba(34,230,168,0.20);
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s;
-  flex-shrink: 0;
 }
-.solo-nudge-chip-dismiss:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.solo-nudge-chip-dismiss:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.06);
+}
+@keyframes solo-nudge-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); box-shadow: 0 0 8px var(--mint); }
+  50%      { opacity: 1;   transform: scale(1.15); box-shadow: 0 0 14px var(--mint); }
+}
+@media (max-width: 600px) {
+  .solo-nudge-chip-body { font-size: 12.5px; padding: 8px 4px 8px 12px; }
+  .solo-nudge-chip-dismiss { width: 30px; }
+}
 
 /* Avatar initials chip inside filter pills (team mode) */
 .filter-pill-av {

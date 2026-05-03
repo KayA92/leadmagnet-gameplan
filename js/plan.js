@@ -275,14 +275,17 @@ function parseTimeToMinutes(hhmm) {
   return h * 60 + (m || 0);
 }
 
-function suggestBoothsForGap(gapIndex) {
+function suggestBoothsForGap(_gapIndex) {
+  // Randomised on every render so the gap card feels alive and the user
+  // gets fresh suggestions across the day rather than the same two names
+  // hard-mapped to a slot. Picks 2 distinct booths from the plan.
   const booths = _plan?.booths || [];
   if (!booths.length) return [];
-  const start = (gapIndex * 2) % booths.length;
-  return [0, 1].map(i => ({ name: booths[(start + i) % booths.length].company_name }));
+  const shuffled = [...booths].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 2).map(b => ({ name: b.company_name }));
 }
 
-function renderGapCard(startTime, endTime, gapIndex) {
+function renderGapCard(day, startTime, endTime, gapIndex) {
   const diffMin = parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
   if (diffMin < 20) return '';
   const hours    = Math.floor(diffMin / 60);
@@ -291,7 +294,7 @@ function renderGapCard(startTime, endTime, gapIndex) {
   const suggested = suggestBoothsForGap(gapIndex);
   const boothLine = suggested.length
     ? suggested.map(b => `<strong>${escHtml(b.name)}</strong>`).join(' · ')
-    : 'your priority booths';
+    : '<strong>your priority booths</strong>';
   const kind = diffMin >= 60 ? 'Lunch break' : diffMin >= 45 ? 'Long break' : 'Break';
   return `
     <div class="checklist-gap-card">
@@ -300,11 +303,10 @@ function renderGapCard(startTime, endTime, gapIndex) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span><strong>${kind}</strong> · ${escHtml(startTime)}–${escHtml(endTime)} · ${duration}</span>
         </div>
-        <div class="checklist-gap-body">Good window to visit: ${boothLine}</div>
+        <div class="checklist-gap-body">Free time — visit the floor (${boothLine} are great fits) or pick a session for this slot.</div>
       </div>
-      <button class="checklist-gap-cta" onclick="document.getElementById('booths-anchor')?.scrollIntoView({behavior:'smooth'})" type="button">
-        View booths
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <button class="checklist-gap-cta" onclick="planFillSlot('${escHtml(day)}','${escHtml(startTime)}','${escHtml(endTime)}', event)" type="button">
+        + Pick a session here
       </button>
     </div>`;
 }
@@ -626,7 +628,7 @@ function renderChecklistTab() {
     const next = sortedSessions[i + 1];
     if (next && next.day === item.day && item.end_time && next.start_time) {
       const gap = parseTimeToMinutes(next.start_time) - parseTimeToMinutes(item.end_time);
-      if (gap >= 20) sessionParts.push(renderGapCard(item.end_time, next.start_time, gapIndex++));
+      if (gap >= 20) sessionParts.push(renderGapCard(item.day, item.end_time, next.start_time, gapIndex++));
     }
   });
   const sessionItems = sessionParts.join('');
@@ -2395,6 +2397,22 @@ window.planSwapSession = function(currentId, newId) {
   renderApp();
 };
 
+// Add a session into a previously-empty time block (a gap card "Pick a
+// session here"). No swap-out — just appends to the plan; the next render
+// sorts it chronologically into place.
+window.planAddSession = function(newId) {
+  if (!_plan) return;
+  if ((_plan.sessions || []).some(s => s.session_id === newId)) return;
+  const newSession = (_allSessions || []).find(s => s.session_id === newId);
+  if (!newSession) return;
+  _plan.sessions.push({ session_id: newId, rank: _plan.sessions.length + 1, reason: '', ...newSession });
+  if (newSession.day && newSession.start_time) {
+    _resolvedSlots.add(`${newSession.day}-${newSession.start_time}`);
+  }
+  savePlanSessions();
+  renderApp();
+};
+
 window.planRemoveSession = function(sessionId, day, startTime) {
   if (!_plan) return;
   _plan.sessions = _plan.sessions.filter(s =>
@@ -2512,6 +2530,77 @@ window.planDismissAlternative = function(currentId, altId, ev) {
   renderApp();
 };
 
+// Open the slot-picker modal for a previously-EMPTY time window (a gap
+// card). Lists sessions whose start_time falls within the gap window
+// and that fit chronologically. User taps "Add to plan" to slot a
+// session into that time. Mirrors planOpenSlotSwap but with no current
+// session to swap out.
+window.planFillSlot = function(day, slotStart, slotEnd, ev) {
+  if (ev) ev.stopPropagation();
+  const slotStartMin = parseTimeToMinutes(slotStart);
+  const slotEndMin   = parseTimeToMinutes(slotEnd);
+  const candidates = (_allSessions || []).filter(s => {
+    if (s.day !== day || !s.start_time) return false;
+    const sStart = parseTimeToMinutes(s.start_time);
+    if (sStart < slotStartMin || sStart >= slotEndMin) return false;
+    if (s.end_time) {
+      const sEnd = parseTimeToMinutes(s.end_time);
+      if (sEnd > slotEndMin) return false;
+    }
+    return true;
+  });
+  const cats = _plan?.categories || [];
+  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
+  const scored = candidates.map(s => ({
+    session: s,
+    score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+    confidence: aiMatchConfidence(s.session_id, 'session'),
+  }));
+  // Sort by AI match confidence desc, then category-match score, then title.
+  scored.sort((a, b) =>
+    b.confidence - a.confidence ||
+    b.score - a.score ||
+    (a.session.title || '').localeCompare(b.session.title || ''),
+  );
+  const dayLabel = day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const candidatesHtml = scored.length === 0
+    ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No sessions in this time window.</div>'
+    : scored.map(({ session: s, score, confidence }) => {
+        const inPlan = planIds.has(s.session_id);
+        return `
+          <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
+            <div class="slot-swap-row-main">
+              <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
+              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''} · <strong style="color:var(--pink)">${confidence}% match</strong></div>
+              ${score > 0 && !inPlan ? '<span class="slot-swap-match-tag">Matches your categories</span>' : ''}
+              ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
+            </div>
+            ${inPlan
+              ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
+              : `<button class="slot-swap-row-btn" onclick="planAddSession('${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Add to plan</button>`
+            }
+          </div>`;
+      }).join('');
+  let modal = document.getElementById('planSlotSwapModal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'planSlotSwapModal';
+  modal.className = 'login-modal slot-swap-modal open';
+  modal.innerHTML = `
+    <div class="login-modal-backdrop" onclick="document.getElementById('planSlotSwapModal')?.remove()"></div>
+    <div class="login-modal-panel slot-swap-panel">
+      <button class="login-modal-close" onclick="document.getElementById('planSlotSwapModal')?.remove()" aria-label="Close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(slotStart)}–${escHtml(slotEnd)}</div>
+      <h2 class="login-modal-title">Pick a session <em>for this slot.</em></h2>
+      <p class="login-modal-sub">Free time — perfect for booth visits, or pick something below to fill it. Sessions ranked by AI match.</p>
+      <div class="slot-swap-list">${candidatesHtml}</div>
+    </div>`;
+  document.body.appendChild(modal);
+};
+
 window.planOpenSlotSwap = function(currentId, ev) {
   if (ev) ev.stopPropagation();
   const current = (_allSessions || []).find(s => s.session_id === currentId)
@@ -2527,19 +2616,26 @@ window.planOpenSlotSwap = function(currentId, ev) {
   const scored = candidates.map(s => ({
     session: s,
     score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+    confidence: aiMatchConfidence(s.session_id, 'session'),
   }));
-  scored.sort((a, b) => b.score - a.score || (a.session.title || '').localeCompare(b.session.title || ''));
+  // Sort by AI match confidence desc — closest swaps appear first, so the
+  // user can see how near each alternative is to their current pick.
+  scored.sort((a, b) =>
+    b.confidence - a.confidence ||
+    b.score - a.score ||
+    (a.session.title || '').localeCompare(b.session.title || ''),
+  );
   const dayLabel = current.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other sessions at this time slot.</div>'
-    : scored.map(({ session: s, score }) => {
+    : scored.map(({ session: s, score, confidence }) => {
         const inPlan = planIds.has(s.session_id);
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
-              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''} · <strong style="color:var(--pink)">${confidence}% match</strong></div>
               ${score > 0 && !inPlan ? '<span class="slot-swap-match-tag">Matches your categories</span>' : ''}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>

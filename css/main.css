@@ -827,13 +827,12 @@ body::before {
   box-shadow: 0 0 6px rgba(106,169,255,0.6);
 }
 .band-specialist .pain-tag {
-  border-color: rgba(255,255,255,0.08);
-  color: var(--text-muted);
+  border-color: rgba(106,169,255,0.30);
+  color: var(--text);
 }
 .band-specialist .pain-tag:hover {
   border-color: var(--cool-blue);
-  background: rgba(106,169,255,0.08);
-  color: var(--text);
+  background: rgba(106,169,255,0.10);
 }
 .band-specialist .pain-tag.selected {
   border-color: var(--cool-blue);

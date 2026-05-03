@@ -102,13 +102,53 @@ function updateProgress() {
 }
 
 // ── Reveal animation (stage 6) ────────────────────────────────────────────────
-const STATUS_STEPS = [
-  { t: 200,  text: 'Scanning every session…' },
-  { t: 1400, text: 'Matching theatres to your mission…' },
-  { t: 2600, text: 'Scoring exhibitors by your categories…' },
-  { t: 3800, text: 'Auto-selecting your best picks…' },
+// Cycling list of thinking-style status updates. The previous 4-step fixed
+// schedule stuck on "Auto-selecting your best picks…" after 3.8s — for the
+// remainder of the API call (often 5–10s) the user saw a frozen line and
+// thought the page was hanging. Cycling through varied messages every ~1.6s
+// makes the wait feel like the AI is actively reasoning, not stalled.
+const STATUS_MESSAGES = [
+  'Scanning every session…',
+  'Reading speaker bios so you don\'t have to…',
+  'Matching theatres to your mission…',
+  'Cross-referencing your pain points…',
+  'Hmm — interesting candidates emerging…',
+  'Scoring exhibitors by your categories…',
+  'Asking: which booth actually solves this?',
+  'Weighing AI hype against AI ROI…',
+  'Sifting compliance theatre from substance…',
+  'Pulling in role-specific tracks…',
+  'Calibrating to your firm size…',
+  'Ruling out time-slot clashes…',
+  'Catching the pinned must-see sessions…',
+  'Promoting booths worth queuing for…',
+  'Asking: is this signal or noise?',
+  'Stitching your CPD hours together…',
+  'Deciding what to drop, what to keep…',
+  'Double-checking against your top priorities…',
+  'Mapping booths to your tech stack…',
+  'Sorting growth sessions from compliance ones…',
+  'Distilling 240+ down to your shortlist…',
+  'Auto-selecting your best picks…',
+  'Locking in the final order…',
+  'Almost ready — finishing up…',
 ];
-let _statusTimers = [];
+let _statusCycleId = null;
+
+function startStatusCycle() {
+  const el = $('revealStatusText');
+  if (!el) return;
+  let i = 0;
+  el.textContent = STATUS_MESSAGES[0];
+  _statusCycleId = setInterval(() => {
+    i = (i + 1) % STATUS_MESSAGES.length;
+    el.textContent = STATUS_MESSAGES[i];
+  }, 1600);
+}
+
+function stopStatusCycle() {
+  if (_statusCycleId) { clearInterval(_statusCycleId); _statusCycleId = null; }
+}
 
 function startTicker() {
   const el = $('reveal-ticker');
@@ -131,8 +171,6 @@ function startTicker() {
 function stopTicker() {
   const el = $('reveal-ticker');
   if (el) el.innerHTML = '';
-  _statusTimers.forEach(t => clearTimeout(t));
-  _statusTimers = [];
 }
 
 // Asymptote-style progress: bar creeps toward 95% indefinitely so it
@@ -257,9 +295,7 @@ async function startReveal() {
 
   startTicker();
   startProgress();
-  _statusTimers = STATUS_STEPS.map(({ t, text }) =>
-    setTimeout(() => { const el = $('revealStatusText'); if (el) el.textContent = text; }, t),
-  );
+  startStatusCycle();
 
   const apiResult = await matchSessions(
     {
@@ -275,6 +311,7 @@ async function startReveal() {
   );
 
   stopProgress();
+  stopStatusCycle();
   stopTicker();
 
   if (!apiResult || apiResult.fallback || !Array.isArray(apiResult.sessions)) {

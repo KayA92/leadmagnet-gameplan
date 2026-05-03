@@ -542,11 +542,17 @@ function renderChecklistTab() {
           <span><strong>${topAltConf}%</strong> AI-matched session also available</span>
           <span class="checklist-alternatives-toggle"><span class="show">show</span><span class="hide">hide</span></span>
         </summary>
-        ${sortedAlts.map(({ alt, conf }) => `
+        ${sortedAlts.map(({ alt, conf }) => {
+          const altTags = whyMatched(alt, plan);
+          const altTagsHtml = altTags.length
+            ? `<div class="checklist-why-tags">${altTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
+            : '';
+          return `
           <div class="checklist-alternative-card">
             <div class="checklist-alternative-body">
               <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
               <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
+              ${altTagsHtml}
             </div>
             <div class="checklist-alternative-confidence">
               <div class="row-confidence-num">${conf}%</div>
@@ -557,9 +563,13 @@ function renderChecklistTab() {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                 Swap
               </button>
-              <button class="checklist-alternative-btn dismiss" onclick="planDismissAlternative('${escHtml(item.session_id)}','${escHtml(alt.session_id)}',event)" type="button">Not for me</button>
+              <button class="checklist-alternative-btn dismiss" onclick="planDismissAlternative('${escHtml(item.session_id)}','${escHtml(alt.session_id)}',event)" type="button">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Keep my pick
+              </button>
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </details>` : '';
 
     const teamNotesHtml = teamNotes.length ? `
@@ -2727,11 +2737,16 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No sessions in this time window.</div>'
     : scored.map(({ session: s, confidence }) => {
         const inPlan = planIds.has(s.session_id);
+        const swapTags = whyMatched(s, _plan || {});
+        const tagsHtml = swapTags.length
+          ? `<div class="checklist-why-tags">${swapTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
+          : '';
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>
             <div class="slot-swap-row-confidence">
@@ -2806,11 +2821,16 @@ window.planOpenSlotSwap = function(currentId, ev) {
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other sessions at this time slot.</div>'
     : scored.map(({ session: s, confidence }) => {
         const inPlan = planIds.has(s.session_id);
+        const swapTags = whyMatched(s, _plan || {});
+        const tagsHtml = swapTags.length
+          ? `<div class="checklist-why-tags">${swapTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
+          : '';
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>
             <div class="slot-swap-row-confidence">

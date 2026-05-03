@@ -3847,6 +3847,120 @@ button.app-pill.purple.clickable:hover {
   background: rgba(168,85,247,0.06);
   border-color: rgba(168,85,247,0.2);
 }
+
+/* ── Booth card layout ───────────────────────────────────────────────
+   Booths follow a different rhythm to sessions:
+   - Left col is just the checkbox (no STAND pill — moved into meta line)
+   - Top row pairs title+meta (left) with the AI MATCH CONFIDENCE hero
+     block (right) so the % match is the dominant visual on the card
+   - Action row replaces the right-side rate cluster with three equal
+     ghost-buttons: Visited / Remove / Add a note
+   - Idle note panel hidden — Add-a-note lives in the action row */
+.checklist-row-leftcol.booth-leftcol {
+  padding-top: 4px;
+}
+.booth-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.booth-head-text { min-width: 0; flex: 1; }
+.booth-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 4px;
+}
+.booth-confidence-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.booth-confidence-block .row-confidence-num {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--pink);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.booth-confidence-block .row-confidence-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.booth-desc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+.booth-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ink-3);
+  flex-wrap: wrap;
+}
+.booth-action-btn {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px solid var(--ink-3);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.booth-action-btn:hover {
+  border-color: var(--ink-4);
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+}
+.booth-action-btn.visited {
+  color: var(--mint);
+  border-color: rgba(34,230,168,0.40);
+  background: rgba(34,230,168,0.06);
+}
+.booth-action-btn svg { flex-shrink: 0; opacity: 0.85; }
+.booth-note-hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+  padding-left: 2px;
+}
+@media (max-width: 480px) {
+  .booth-actions-row { gap: 6px; }
+  .booth-action-btn { font-size: 12px; padding: 8px 10px; }
+}
+/* Booth rows: hide the idle note panel — Add-a-note + ghost prompts are
+   already covered by the action row + .booth-note-hint above. The
+   editing/saved states still render normally at the bottom. */
+.checklist-row.is-booth .checklist-note-panel.idle { display: none; }
 .checklist-time-main {
   font-size: 16px;
   font-weight: 700;

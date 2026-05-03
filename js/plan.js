@@ -344,6 +344,22 @@ function parseTimeToMinutes(hhmm) {
   return h * 60 + (m || 0);
 }
 
+// Truncate a booth description to a 1–2 line summary. Prefers the first
+// full sentence if it fits within ~30 words, else word-cap at 25 + ellipsis.
+// Trade-show users want quick "what is this, why care" — not full B2B
+// sales copy.
+function truncateBoothDesc(desc) {
+  if (!desc) return '';
+  const trimmed = desc.trim();
+  const firstSentence = trimmed.match(/^[^.!?]+[.!?]/);
+  if (firstSentence && firstSentence[0].split(/\s+/).length <= 30) {
+    return firstSentence[0].trim();
+  }
+  const words = trimmed.split(/\s+/);
+  if (words.length <= 25) return trimmed;
+  return words.slice(0, 25).join(' ') + '…';
+}
+
 function renderGapCard(day, startTime, endTime, _gapIndex) {
   const diffMin = parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
   if (diffMin < 20) return '';
@@ -624,23 +640,43 @@ function renderChecklistTab() {
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
     const confidence  = item.match_confidence ?? aiMatchConfidence(item.stand_number || item.company_name, 'booth');
 
+    const truncatedDesc = truncateBoothDesc(desc);
+    const visitedLabel  = item.attended ? '✓ Visited' : '✓ Mark visited';
+
     return `
-      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
+      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
         <div class="checklist-row-main">
-          <div class="checklist-row-leftcol">
+          <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
-            <div class="checklist-time-block booth">
-              <div class="checklist-time-top">STAND</div>
-              <div class="checklist-time-main">${escHtml(item.stand_number || '')}</div>
-            </div>
           </div>
           <div class="checklist-main">
-            <div class="checklist-main-title">${escHtml(item.company_name)}</div>
-            <div class="checklist-main-meta"><span class="type-pill booth">Booth</span></div>
-            ${desc ? `<p class="checklist-main-sub" style="font-size:13px;color:var(--text-muted);margin:4px 0 0;line-height:1.5;">${escHtml(desc)}</p>` : ''}
-            <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
-            ${reason ? `<div class="checklist-why-tags"><span class="checklist-why-tag">${escHtml(reason)}</span></div>` : ''}
+            <div class="booth-head-row">
+              <div class="booth-head-text">
+                <div class="checklist-main-title">${escHtml(item.company_name)}</div>
+                <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
+              </div>
+              <div class="booth-confidence-block">
+                <div class="row-confidence-num">${confidence}%</div>
+                <div class="row-confidence-label">AI Match<br>Confidence</div>
+              </div>
+            </div>
+            ${truncatedDesc ? `<p class="booth-desc">${escHtml(truncatedDesc)}</p>` : ''}
+            <div class="booth-actions-row">
+              <button class="booth-action-btn ${item.attended ? 'visited' : ''}" onclick="planToggleBoothVisited('${escHtml(String(item.stand_number))}')" type="button">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ${item.attended ? 'Visited' : 'Mark visited'}
+              </button>
+              <button class="booth-action-btn" onclick="planRemoveBooth('${escHtml(String(item.stand_number))}')" type="button">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                Remove
+              </button>
+              <button class="booth-action-btn" onclick="planOpenNote('${noteItemId}')" type="button">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                ${existingNote ? 'Edit note' : 'Add a note'}
+              </button>
+            </div>
+            ${!existingNote ? '<div class="booth-note-hint">Pricing · Demo scheduled · Decision blocker</div>' : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
                 <div class="row-rate-caption">${ratingLabel}</div>
@@ -2477,6 +2513,21 @@ window.planRemoveBooth = function(standNumber) {
   if (!_plan) return;
   _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
+  renderApp();
+};
+
+// Toggle a booth's visited state from the in-card Visited button. Mirrors
+// the existing checkbox in the row's leftcol — same data path, just a
+// more discoverable affordance now sitting in the action row.
+window.planToggleBoothVisited = function(standNumber) {
+  if (!_plan) return;
+  const updated = (_plan.booths || []).map(b =>
+    String(b.stand_number) === String(standNumber)
+      ? { ...b, attended: !b.attended }
+      : b,
+  );
+  _plan.booths = updated;
+  supabase.from('plans').update({ booths: updated }).eq('id', _plan.id);
   renderApp();
 };
 

@@ -690,13 +690,34 @@ function renderChecklistTab() {
 
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
     const confidence  = item.match_confidence ?? dummyByRank(displayRank || item.rank || (i + 1), 'booth');
-
     const truncatedDesc = truncateBoothDesc(desc);
-    const visitedLabel  = item.attended ? '✓ Visited' : '✓ Mark visited';
+    const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
+
+    // Team avatars — teammates with this booth in their plan. Mirrors
+    // the session-row "Going" treatment so booths and sessions feel
+    // structurally identical on the live plan.
+    const avatarColors = ['t1', 't2', 't4'];
+    let avatarColorIdx = 0;
+    const teamAvatarHtml = _teamData
+      ? _teamData.teamPlans
+          .filter(tp => tp.user_id !== _authUser?.id)
+          .filter(tp => (tp.booths || []).some(b => String(b.stand_number) === String(item.stand_number)))
+          .map(tp => {
+            const member  = _teamData.members.find(m => m.users?.id === tp.user_id);
+            const initial = member?.users?.first_name?.[0]?.toUpperCase()
+                          || member?.users?.last_name?.[0]?.toUpperCase() || '?';
+            const name    = [member?.users?.first_name, member?.users?.last_name].filter(Boolean).join(' ') || 'Teammate';
+            return `<div class="mini-av ${avatarColors[avatarColorIdx++ % avatarColors.length]}" title="${escHtml(name)}">${escHtml(initial)}</div>`;
+          })
+          .join('')
+      : '';
 
     return `
       <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
+        <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(String(item.stand_number))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
@@ -713,25 +734,17 @@ function renderChecklistTab() {
               </div>
             </div>
             ${truncatedDesc ? `<p class="booth-desc">${escHtml(truncatedDesc)}</p>` : ''}
-            <div class="booth-actions-row">
-              <button class="booth-action-btn ${item.attended ? 'visited' : ''}" onclick="planToggleBoothVisited('${escHtml(String(item.stand_number))}')" type="button">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                ${item.attended ? 'Visited' : 'Mark visited'}
-              </button>
-              <button class="booth-action-btn" onclick="planRemoveBooth('${escHtml(String(item.stand_number))}')" type="button">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                Remove
-              </button>
-              <button class="booth-action-btn" onclick="planOpenNote('${noteItemId}')" type="button">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                ${existingNote ? 'Edit note' : 'Add a note'}
-              </button>
-            </div>
-            ${!existingNote ? '<div class="booth-note-hint">Pricing · Demo scheduled · Decision blocker</div>' : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
                 <div class="row-rate-caption">${ratingLabel}</div>
                 <div class="row-rate-inline">${rowFlames(item.rating)}</div>
+              </div>
+              <div class="row-team-wrap">
+                <div class="row-rate-caption">Visiting</div>
+                <div class="checklist-avatars">
+                  <div class="mini-av t3" title="You">${userInitial}</div>
+                  ${teamAvatarHtml}
+                </div>
               </div>
             </div>
           </div>
@@ -2556,6 +2569,15 @@ window.planRemoveBooth = function(standNumber) {
   _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
+};
+
+// Confirm-wrapped remove for the in-card subtle × button. Native confirm
+// is enough — booth removal is reversible (re-add via the editor).
+window.planConfirmRemoveBooth = function(standNumber, companyName) {
+  const label = companyName ? `"${companyName}"` : 'this booth';
+  if (window.confirm(`Remove ${label} from your plan?`)) {
+    window.planRemoveBooth(standNumber);
+  }
 };
 
 // Toggle a booth's visited state from the in-card Visited button. Mirrors

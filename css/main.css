@@ -3846,62 +3846,37 @@ button.app-pill.purple.clickable:hover {
   font-size: 13.5px;
   color: var(--text-muted);
   line-height: 1.5;
-  margin: 4px 0 0;
+  margin: 4px 0 12px;
 }
-.booth-actions-row {
+
+/* Booth quiet remove — small × in the top-right corner of the card,
+   only visible on hover. Sits above the host strip if there is one.
+   Tapping fires planConfirmRemoveBooth (native confirm dialog). */
+.checklist-row.is-booth { position: relative; }
+.booth-quiet-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
   display: flex;
-  gap: 8px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--ink-3);
-  flex-wrap: wrap;
-}
-.booth-action-btn {
-  flex: 1;
-  min-width: 0;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
   background: transparent;
-  border: 1px solid var(--ink-3);
-  border-radius: 8px;
-  color: var(--text-muted);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.booth-action-btn:hover {
-  border-color: var(--ink-4);
-  color: var(--text);
-  background: rgba(255,255,255,0.03);
-}
-.booth-action-btn.visited {
-  color: var(--mint);
-  border-color: rgba(34,230,168,0.40);
-  background: rgba(34,230,168,0.06);
-}
-.booth-action-btn svg { flex-shrink: 0; opacity: 0.85; }
-.booth-note-hint {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  border: none;
+  border-radius: 6px;
   color: var(--text-faint);
-  letter-spacing: 0.04em;
-  margin-top: 8px;
-  padding-left: 2px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
 }
-@media (max-width: 480px) {
-  .booth-actions-row { gap: 6px; }
-  .booth-action-btn { font-size: 12px; padding: 8px 10px; }
+.checklist-row.is-booth:hover .booth-quiet-remove,
+.booth-quiet-remove:focus-visible { opacity: 1; }
+.booth-quiet-remove:hover {
+  color: var(--pink);
+  background: rgba(255,94,132,0.08);
 }
-/* Booth rows: hide the idle note panel — Add-a-note + ghost prompts are
-   already covered by the action row + .booth-note-hint above. The
-   editing/saved states still render normally at the bottom. */
-.checklist-row.is-booth .checklist-note-panel.idle { display: none; }
 .checklist-time-main {
   font-size: 16px;
   font-weight: 700;

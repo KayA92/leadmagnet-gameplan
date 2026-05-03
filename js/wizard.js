@@ -408,12 +408,12 @@ function toggleCategory(cat) {
   } else {
     state.answers.categories.push(cat);
   }
-  // Update button state
+  // Update button state. Stage 3 is optional — Next stays clickable
+  // even with zero picks (some attendees aren't booth-shopping at all).
   document.querySelectorAll('[data-cat]').forEach(btn => {
     const active = state.answers.categories.includes(btn.dataset.cat);
     btn.classList.toggle('selected', active);
   });
-  $('cat-next').disabled = state.answers.categories.length === 0;
 }
 
 // ── Save form (stage 75) ──────────────────────────────────────────────────────
@@ -741,10 +741,9 @@ export async function initWizard() {
     btn.addEventListener('click', () => toggleCategory(btn.dataset.cat));
   });
   $('cat-back')?.addEventListener('click', () => history.back());
-  $('cat-next')?.addEventListener('click', () => {
-    if (state.answers.categories.length > 0) goToStage(4);
-  });
-  $('cat-next') && ($('cat-next').disabled = true);
+  // Stage 3 is optional — Next always advances. Zero picks is a valid
+  // signal (attendee not booth-shopping at all).
+  $('cat-next')?.addEventListener('click', () => goToStage(4));
 
   // ── Stage 4: availability (radio-per-day — one slot per day, both days independent)
   document.querySelectorAll('[data-time]').forEach(btn => {
@@ -798,9 +797,16 @@ export async function initWizard() {
   });
   document.querySelectorAll('[data-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
+      const wasSelected = btn.classList.contains('selected');
       document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state.answers.mode = btn.dataset.mode;
+      // Toggle off if user clicks the already-selected pill — mode is
+      // optional, so unclicking should clear the answer.
+      if (wasSelected) {
+        state.answers.mode = null;
+      } else {
+        btn.classList.add('selected');
+        state.answers.mode = btn.dataset.mode;
+      }
     });
   });
   $('firm-back')?.addEventListener('click', () => history.back());

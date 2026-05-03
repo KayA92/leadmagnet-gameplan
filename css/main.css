@@ -392,7 +392,7 @@ body::before {
 /* Stage 3 — software categories grouped into 3 sections.
    Group label treatment matches Stage 4 role-group: plain mono caps,
    no pill/box, no icon. Pills themselves use the standard .tag-pill. */
-.cat-groups { display: flex; flex-direction: column; gap: 30px; width: 100%; }
+.cat-groups { display: flex; flex-direction: column; gap: 42px; width: 100%; }
 .cat-group { display: flex; flex-direction: column; gap: 12px; }
 .cat-group-label {
   font-family: 'JetBrains Mono', monospace;

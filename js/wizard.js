@@ -337,6 +337,14 @@ async function startReveal() {
 }
 
 // ── Plan preview rendering (stage 7) ─────────────────────────────────────────
+const TICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+// TODO: Replace with real match_confidence values from matcher response.
+// Backend will return a `match_confidence` field (0-100) per session and per booth.
+// When live, remove these dummy arrays and read each item's `match_confidence`.
+const SESSION_DUMMY_CONFIDENCE = [96, 94, 91, 89, 87, 85, 83, 81, 79, 77, 76];
+const BOOTH_DUMMY_CONFIDENCE   = [94, 91, 88, 85, 82, 79, 77, 75, 73];
+
 function renderPlanPreview() {
   const container = $('plan-preview-content');
   if (!container || !state.plan) return;
@@ -344,72 +352,93 @@ function renderPlanPreview() {
   const { sessions: rankedSessions = [], booths: rankedBooths = [] } = state.plan;
   const cpdHours = (rankedSessions.length * 40 / 60).toFixed(1);
 
-  const problemPreview = state.answers.problem.length > 45
-    ? state.answers.problem.substring(0, 43).trim() + '…'
-    : state.answers.problem;
+  // Pain chips review row — every pain the user tapped on Stage 1, shown
+  // as compact mint chips. Replaces the old "Matched to … prioritising X"
+  // line which leaked backend slugs into user-facing copy.
+  const userPains = state.answers.pains || [];
+  const painsHtml = userPains.map(slug => {
+    const label = PAIN_LABELS[slug] || slug;
+    return `<span class="plan-pain-chip">${TICK_SVG}${escHtml(label)}</span>`;
+  }).join('');
+  const painsBlock = userPains.length > 0
+    ? `<div class="plan-pains-block">
+        <div class="plan-pains-label">Built around your pains</div>
+        <div class="plan-pains-chips">${painsHtml}</div>
+      </div>`
+    : '';
 
-  const catLabels = {
-    'practice-management': 'practice management',
-    'ai-automation': 'AI & automation',
-    'bookkeeping': 'bookkeeping',
-    'tax-mtd': 'tax & MTD',
-    'doc-management': 'document workflows',
-    'payroll': 'payroll',
-    'data-analytics': 'data analytics',
-    'cyber-security': 'cyber security',
-    'aml-kyc': 'AML / KYC',
-    'hr-people': 'HR & leadership',
-    'banking-payments': 'banking & payments',
-    'outsourcing': 'outsourcing',
-    'marketing-growth': 'marketing & growth',
-    'just-looking': 'general inspiration',
-  };
-  const pickedCats = (state.answers.categories || []).map(c => catLabels[c] || c);
-  const catStr = pickedCats.length === 0 ? 'general interest'
-    : pickedCats.length === 1 ? pickedCats[0]
-    : pickedCats.length === 2 ? pickedCats.join(' and ')
-    : pickedCats.slice(0, -1).join(', ') + ' and ' + pickedCats.slice(-1);
-
-  const whyExplanation = `Matched to &ldquo;<strong>${escHtml(problemPreview)}</strong>&rdquo; · prioritising <strong>${catStr}</strong>.`;
-
-  const items = [];
+  // Resolve sessions + booths separately so we can drop the
+  // HIDDEN ALTERNATIVES teaser between them.
+  const sessionItems = [];
   rankedSessions.forEach(item => {
     const s = state.allSessions.find(x => x.session_id === item.session_id);
-    if (s) items.push({ type: 'session', data: s });
+    if (s) sessionItems.push(s);
   });
+  const boothItems = [];
   rankedBooths.forEach(item => {
     const b = state.allExhibitors.find(
       x => x.stand_number === item.stand_number || x.company_name === item.company_name,
     );
-    if (b) items.push({ type: 'booth', data: b });
+    if (b) boothItems.push(b);
   });
 
-  const miniListHtml = items.map((entry, i) => {
-    const delay = i * 80;
-    if (entry.type === 'session') {
-      const s = entry.data;
-      const dayNum = s.day === 'Day 1' ? 1 : 2;
-      const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
-      return `<div class="mini-item" style="animation-delay:${delay}ms;">
-        <div class="mini-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="mini-body">
-          <div class="mini-title">${escHtml(s.title)}</div>
-          <div class="mini-meta"><span class="type-pill session">Session</span>${timeStr}</div>
-        </div>
-      </div>`;
-    } else {
-      const b = entry.data;
-      const desc = (b.normalised_products || []).slice(0, 2).join(', ');
-      const hostMark = b.is_host ? ` · <span style="color:var(--purple);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Host partner</span>` : '';
-      return `<div class="mini-item" style="animation-delay:${delay}ms;">
-        <div class="mini-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="mini-body">
-          <div class="mini-title">${escHtml(b.company_name)}${hostMark}</div>
-          <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(b.stand_number || '')} · ${escHtml(desc)}</div>
-        </div>
-      </div>`;
-    }
-  }).join('');
+  const confidenceFor = (arr, i) => arr[Math.min(i, arr.length - 1)];
+
+  const renderSession = (s, i) => {
+    const dayNum = s.day === 'Day 1' ? 1 : 2;
+    const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
+    const confidence = confidenceFor(SESSION_DUMMY_CONFIDENCE, i);
+    return `<div class="mini-item" style="animation-delay:${i * 80}ms;">
+      <div class="mini-tick">${TICK_SVG}</div>
+      <div class="mini-body">
+        <div class="mini-title">${escHtml(s.title)}</div>
+        <div class="mini-meta"><span class="type-pill session">Session</span>${timeStr}</div>
+      </div>
+      <div class="mini-confidence">
+        <div class="mini-confidence-num">${confidence}%</div>
+        <div class="mini-confidence-label">AI MATCH<br>CONFIDENCE</div>
+      </div>
+    </div>`;
+  };
+
+  const renderBooth = (b, i, animIndex) => {
+    const desc = (b.normalised_products || []).slice(0, 2).join(', ');
+    const hostMark = b.is_host ? ` · <span style="color:var(--purple);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Host partner</span>` : '';
+    const confidence = confidenceFor(BOOTH_DUMMY_CONFIDENCE, i);
+    return `<div class="mini-item" style="animation-delay:${animIndex * 80}ms;">
+      <div class="mini-tick">${TICK_SVG}</div>
+      <div class="mini-body">
+        <div class="mini-title">${escHtml(b.company_name)}${hostMark}</div>
+        <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(b.stand_number || '')} · ${escHtml(desc)}</div>
+      </div>
+      <div class="mini-confidence">
+        <div class="mini-confidence-num">${confidence}%</div>
+        <div class="mini-confidence-label">AI MATCH<br>CONFIDENCE</div>
+      </div>
+    </div>`;
+  };
+
+  const sessionsListHtml = sessionItems.map(renderSession).join('');
+  const boothsListHtml = boothItems
+    .map((b, i) => renderBooth(b, i, sessionItems.length + i))
+    .join('');
+
+  // TODO: Replace with real reserve_list from matcher response.
+  // Backend will return a `reserve_list` array of 4-7 sessions ranked just below
+  // the primary picks (within ~5% of the lowest top-pick score).
+  // Display: count + score range only. Titles stay hidden until user saves plan.
+  // If reserve_list is empty or null, hide this entire section.
+  const hiddenAlternativesHtml = `
+    <div class="hidden-alternatives">
+      <div class="hidden-alt-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        HIDDEN ALTERNATIVES
+      </div>
+      <div class="hidden-alt-body">
+        3 sessions ranked 87-91% match, ready to swap in. Save your plan to unlock.
+      </div>
+    </div>
+  `;
 
   container.innerHTML = `
     <div class="confirm-header">
@@ -418,7 +447,7 @@ function renderPlanPreview() {
         Our AI ran the room · ${rankedSessions.length + rankedBooths.length} picks
       </div>
       <h2 class="confirm-title">240+ sessions read.<br>Your <em>shortlist of ${rankedSessions.length}</em>,<br>ready to go.</h2>
-      <p class="confirm-sub">${whyExplanation}</p>
+      ${painsBlock}
       <div class="confirm-summary-pills">
         <div class="confirm-pill mint"><strong>${rankedSessions.length}</strong> sessions</div>
         <div class="confirm-pill pink"><strong>${cpdHours}</strong> CPD hours</div>
@@ -433,12 +462,14 @@ function renderPlanPreview() {
           The sessions &amp; booths our AI picked for you
         </div>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);line-height:1.55;margin-bottom:16px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--ink-3);border-radius:8px;font-family:'JetBrains Mono',monospace;letter-spacing:0.01em;">
-        <span style="display:inline-block;background:var(--ink-3);color:var(--text);padding:2px 8px;border-radius:4px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-right:8px;">Preview</span>
-        Save your plan to unlock live rating, team notes, and your CPD log.
+      <div class="confirm-preview-banner">
+        <span class="confirm-preview-tag">Preview</span>
+        To change anything, tap 'Save my plan' below. That's where you untick, swap, search for more, or invite teammates.
       </div>
       <div class="mini-item-list">
-        ${miniListHtml}
+        ${sessionsListHtml}
+        ${hiddenAlternativesHtml}
+        ${boothsListHtml}
       </div>
     </div>
 

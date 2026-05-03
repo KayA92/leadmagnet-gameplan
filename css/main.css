@@ -2360,7 +2360,7 @@ button.app-pill.purple.clickable:hover {
 /* Plan Editor overlay — reuses .search-overlay base styles with a few overrides */
 .plan-editor-overlay .search-overlay-title {
   font-family: 'Fraunces', serif;
-  font-size: clamp(28px, 4vw, 38px);
+  font-size: clamp(34px, 5vw, 48px);
   font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.05;
@@ -2535,32 +2535,34 @@ button.app-pill.purple.clickable:hover {
   border-radius: 0;
   background: transparent;
   overflow: visible;
-  margin-top: 18px;
+  margin-top: 32px;
 }
-.editor-slot:first-of-type { margin-top: 8px; }
-/* Quiet time headers — small mono caps muted grey, sit inline above the
-   first session of each start time. No heavy serif, no glow, no
-   background — these were dominating the screen. */
+.editor-slot:first-of-type { margin-top: 14px; }
+/* Time headers — larger mono caps, mint accent. Clear section markers
+   without competing with the session card titles. */
 .editor-slot-head {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 4px 8px;
+  align-items: baseline;
+  gap: 14px;
+  padding: 0 4px 12px;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--ink-3);
+  margin-bottom: 12px;
 }
 .editor-slot-time {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 17px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--mint);
   font-weight: 700;
+  line-height: 1;
 }
 .editor-clash-warning {
   display: inline-flex;
   align-items: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--text-faint);
@@ -2575,32 +2577,34 @@ button.app-pill.purple.clickable:hover {
   color: var(--text-faint);
 }
 /* Day divider — separates Day 1 / Day 2 groups in the Plan Editor.
-   Serif day label + date with a line filling remaining width. */
+   Bold serif day label + date, with a line filling remaining width.
+   Sized up so it reads as a real section break, not a passing label. */
 .editor-day-divider {
   display: flex;
   align-items: baseline;
-  gap: 14px;
-  margin: 6px 0 14px;
+  gap: 16px;
+  margin: 14px 0 22px;
   padding-top: 4px;
 }
 .editor-day-divider:not(:first-child) {
-  margin-top: 32px;
-  padding-top: 20px;
+  margin-top: 48px;
+  padding-top: 28px;
   border-top: 1px solid var(--ink-3);
 }
 .editor-day-divider-num {
   font-family: 'Fraunces', serif;
-  font-size: 22px;
+  font-size: clamp(28px, 3.4vw, 36px);
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--text);
   font-style: italic;
+  line-height: 1;
 }
 .editor-day-divider-name {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 700;
 }

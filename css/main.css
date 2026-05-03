@@ -388,6 +388,7 @@ body::before {
   font-style: normal;
 }
 .q-sub { font-size: 16px; color: var(--text-muted); max-width: 540px; }
+.q-sub strong { color: var(--text); font-weight: 700; }
 
 /* Stage 3 — software categories grouped into 3 sections.
    Group label treatment matches Stage 4 role-group: plain mono caps,

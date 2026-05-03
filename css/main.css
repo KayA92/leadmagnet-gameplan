@@ -1024,17 +1024,12 @@ body::before {
   .stage.flow-mode#stage-3 .q-container {
     padding-bottom: 220px;
   }
-  /* Slightly tighter pills on mobile so medium-length labels (Stage 3
-     CORE PLATFORMS especially) can pair up 2-per-row instead of always
-     wrapping to one. Keeps the same look, just trims a few px of padding
-     and a touch of font-size. */
+  /* Trim only horizontal padding on mobile so medium-length labels can
+     pair up 2-per-row. Vertical padding + font-size + icon size stay
+     the same as desktop, so pills don't look squashed. */
   .tag-pill {
-    padding: 10px 14px;
-    font-size: 14px;
-    gap: 6px;
-  }
-  .tag-pill-icon {
-    width: 14px; height: 14px;
+    padding-left: 14px;
+    padding-right: 14px;
   }
 }
 

@@ -544,24 +544,25 @@ async function handleSaveSubmit(e) {
 // Synthesises state.answers.problem from selected pain labels so the existing
 // matcher payload still receives semantic context without changing the API.
 const PAIN_LABELS = {
-  // SCORCHING (7)
+  // SCORCHING (8)
+  'ai-start':'AI — where to even start','ai-data-mess':'Data mess blocking AI',
   'mtd-volume':'MTD volume problem','mtd-clients':'Clients not MTD-ready',
-  'hiring':"Can't find good staff",'retention':'Losing staff to other firms',
-  'margin':'Margin squeeze','burnout':'Workload & burnout',
-  'ai-start':'AI — where to even start',
-  // HOT (12)
-  'ai-roi':'AI — proving the ROI','ai-team':'AI — getting team to use it',
-  'chasing':'Chasing clients for records','advisory':'Stuck in compliance, want advisory',
-  'advisory-charge':"Can't get clients to pay for advice",'disconnected':'Disconnected tech stack',
-  'aml':'AML / KYC pressure','winning':'Winning new clients',
-  'cyber':'Cyber threats / phishing','frs102':'FRS 102 transition',
-  'docs':'Document chaos','penalties':'New MTD penalty regime',
-  // WARM (10)
-  'ai-govern':'AI governance & risk','ai-skills':'AI skills gap on the team',
-  'onboarding':'Client onboarding too slow','month-end':'Month-end close is brutal',
-  'bankfeeds':'Bank feeds keep breaking','portal':'Portal adoption / clients hate it',
-  'cpd':'CPD & team development','career':'My own career path is murky',
-  'leadership':'Leadership skills gap','cashflow':'Late payments / debtor days',
+  'margin':'Margin squeeze','hiring':"Can't find good staff",
+  'retention':'Losing staff to other firms','burnout':'Workload & burnout',
+  // HOT (14)
+  'docs':'Document chaos','chasing':'Chasing clients for records',
+  'defensible-files':'Audit-ready client files','aml':'AML / KYC pressure',
+  'disconnected':'Disconnected tech stack','ai-roi':'AI — proving the ROI',
+  'advisory':'Stuck in compliance','advisory-charge':'Charging for advice',
+  'winning':'Winning new clients','ai-team':'AI — team adoption',
+  'cyber':'Cyber threats / phishing','penalties':'MTD penalty regime',
+  'frs102':'FRS 102 transition','portal':'Portal adoption / clients hate it',
+  // WARM (9)
+  'ai-govern':'AI governance & risk','ai-skills':'AI skills gap',
+  'onboarding':'Slow client onboarding','month-end':'Month-end close is brutal',
+  'bankfeeds':'Unreliable bank feeds','cpd':'CPD & team development',
+  'career':'Murky career path','leadership':'Leadership skills gap',
+  'cashflow':'Late payments / debtor days',
   // SPECIALIST (6)
   'pe':'PE consolidation closing in','exit':'Exit / succession planning',
   'outsource':'Outsourcing & offshore','niche':'Should I niche?',

@@ -31,6 +31,42 @@ let _resolvedSlots = new Set();
 let _pendingJoinToken     = null;
 let _pendingJoinCompany   = null;
 
+// One-time invite-team nudge — appears at the top of Checklist / CPD /
+// Debrief tabs when the user is solo (no team yet). Copy is tailored
+// per tab so the value prop fits the context the user is already in.
+// Persisted via localStorage so dismissing in one session sticks.
+let _inviteNudgeDismissed = false;
+try { _inviteNudgeDismissed = localStorage.getItem('inviteNudgeDismissed') === '1'; } catch (_) {}
+
+const INVITE_NUDGE_COPY = {
+  checklist: 'Going with colleagues? <strong>Send them your invite link</strong> — see their sessions, ratings, notes, and get an AI team summary.',
+  cpd:       'Bringing colleagues? <strong>Their CPD logs roll up here too</strong> — one report, whole team.',
+  debrief:   'Going alone, this writes from your notes only. <strong>Add a teammate</strong> and the debrief synthesises everyone\'s.',
+};
+
+function inviteNudgeHtml(tabKey, isTeam) {
+  if (isTeam || _inviteNudgeDismissed) return '';
+  const copy = INVITE_NUDGE_COPY[tabKey] || INVITE_NUDGE_COPY.checklist;
+  return `
+    <div class="solo-nudge-chip">
+      <button class="solo-nudge-chip-body" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button">
+        <span class="solo-nudge-dot"></span>
+        <span class="solo-nudge-text">${copy}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <button class="solo-nudge-chip-dismiss" onclick="dismissInviteNudge(event)" type="button" aria-label="Dismiss" title="Hide this prompt">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+}
+
+window.dismissInviteNudge = function(ev) {
+  if (ev) ev.stopPropagation();
+  _inviteNudgeDismissed = true;
+  try { localStorage.setItem('inviteNudgeDismissed', '1'); } catch (_) {}
+  renderApp();
+};
+
 // ── Supabase data access ──────────────────────────────────────────────────────
 
 async function loadLatestPlan(userId) {
@@ -415,6 +451,7 @@ function renderChecklistTab() {
   const plan        = _plan;
   if (!plan) return '';
 
+  const isTeam      = !!(_plan?.team_id);
   const sessions    = plan.sessions   || [];
   const booths      = plan.booths     || [];
   const notes       = plan.notes      || [];
@@ -726,6 +763,7 @@ function renderChecklistTab() {
         <div>
           <h2 class="app-title">Your <em>Accountex</em> plan.</h2>
           <p class="app-sub" style="margin-top:8px;">Rate sessions as you go and add notes — they roll into your debrief.</p>
+          ${inviteNudgeHtml('checklist', isTeam)}
         </div>
       </div>
     </div>
@@ -1125,10 +1163,12 @@ function renderCpdTab() {
   const sessions = _plan?.sessions || [];
   const attended = sessions.filter(s => s.attended).length;
   const cpdHours = (attended * 40 / 60).toFixed(1);
+  const isTeam   = !!(_plan?.team_id);
   return `
     <div class="app-header">
       <h2 class="app-title">CPD <em>log.</em></h2>
       <p class="app-sub">Your continuing professional development hours, tracked as you go.</p>
+      ${inviteNudgeHtml('cpd', isTeam)}
     </div>
     <div style="padding:32px 0;text-align:center;color:var(--text-muted);">
       <div style="font-family:'Fraunces',serif;font-size:56px;font-weight:500;color:var(--mint);">${cpdHours}</div>
@@ -1418,7 +1458,9 @@ function renderDebriefTab() {
     return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number);
   }).join('');
 
+  const isTeam = !!(_plan?.team_id);
   return `
+    ${inviteNudgeHtml('debrief', isTeam)}
     <div class="app-section">
       <div class="team-section-eyebrow tone-pink">The summary</div>
       <h3 class="team-section-title">Your Accountex, <em>distilled.</em></h3>

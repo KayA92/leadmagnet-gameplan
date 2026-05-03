@@ -1374,43 +1374,15 @@ body::before {
   font-weight: 600;
 }
 
-/* Plan-preview pain chips — review row showing every pain the user
-   tapped on Stage 1. Visually echoes Stage 1 selected mint chip but
-   smaller / lower density (these are non-interactive review chips). */
-.plan-pains-block {
-  margin: 22px 0 26px;
-}
-.plan-pains-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+/* Plan-preview tuned-to-you line — single quiet acknowledgement of what
+   the user gave us. Sits between the hero h2 and the stat tiles. Sentence
+   case + small + muted: keeps focus on the sessions list below. */
+.confirm-tuned {
+  font-size: 14px;
   color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.plan-pains-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-}
-.plan-pain-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 11px;
-  border-radius: 100px;
-  background: rgba(34,230,168,0.10);
-  border: 1px solid rgba(34,230,168,0.45);
-  color: var(--mint);
-  font-size: 12px;
-  font-weight: 500;
-}
-.plan-pain-chip svg {
-  width: 10px; height: 10px;
-  color: var(--mint);
-  flex-shrink: 0;
+  max-width: 540px;
+  margin: -4px auto 24px;
+  line-height: 1.5;
 }
 
 /* Hidden alternatives — amber-tinted teaser card sitting between

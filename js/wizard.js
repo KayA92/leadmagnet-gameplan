@@ -352,20 +352,17 @@ function renderPlanPreview() {
   const { sessions: rankedSessions = [], booths: rankedBooths = [] } = state.plan;
   const cpdHours = (rankedSessions.length * 40 / 60).toFixed(1);
 
-  // Pain chips review row — every pain the user tapped on Stage 1, shown
-  // as compact mint chips. Replaces the old "Matched to … prioritising X"
-  // line which leaked backend slugs into user-facing copy.
-  const userPains = state.answers.pains || [];
-  const painsHtml = userPains.map(slug => {
-    const label = PAIN_LABELS[slug] || slug;
-    return `<span class="plan-pain-chip">${TICK_SVG}${escHtml(label)}</span>`;
-  }).join('');
-  const painsBlock = userPains.length > 0
-    ? `<div class="plan-pains-block">
-        <div class="plan-pains-label">Built around your pains</div>
-        <div class="plan-pains-chips">${painsHtml}</div>
-      </div>`
-    : '';
+  // Quiet tuned-to-you line — single sentence acknowledging what the user
+  // gave us, without recapping it back chip-by-chip. Numbers do the
+  // trust-building work; firm context is a catch-all for role + firm
+  // size + (owner) mode so we don't enumerate every dimension.
+  const painCount = (state.answers.pains || []).length;
+  const toolCount = (state.answers.categories || []).length;
+  const painLabel = painCount === 1 ? '1 pain' : `${painCount} pains`;
+  const toolLabel = toolCount === 1 ? '1 tool' : `${toolCount} tools`;
+  const tunedLine = toolCount > 0
+    ? `Tuned to your ${painLabel}, ${toolLabel}, and firm context.`
+    : `Tuned to your ${painLabel} and firm context.`;
 
   // Resolve sessions + booths separately so we can drop the
   // HIDDEN ALTERNATIVES teaser between them.
@@ -447,7 +444,7 @@ function renderPlanPreview() {
         Our AI ran the room · ${rankedSessions.length + rankedBooths.length} picks
       </div>
       <h2 class="confirm-title">240+ sessions read.<br>Your <em>shortlist of ${rankedSessions.length}</em>,<br>ready to go.</h2>
-      ${painsBlock}
+      <p class="confirm-tuned">${escHtml(tunedLine)}</p>
       <div class="confirm-summary-pills">
         <div class="confirm-pill mint"><strong>${rankedSessions.length}</strong> sessions</div>
         <div class="confirm-pill pink"><strong>${cpdHours}</strong> CPD hours</div>

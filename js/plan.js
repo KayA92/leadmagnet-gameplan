@@ -44,8 +44,11 @@ const INVITE_NUDGE_COPY = {
   debrief:   'Going alone, this writes from your notes only. <strong>Add a teammate</strong> and the debrief synthesises everyone\'s.',
 };
 
-function inviteNudgeHtml(tabKey, isTeam) {
-  if (isTeam || _inviteNudgeDismissed) return '';
+function inviteNudgeHtml(tabKey, _isTeam) {
+  // Note: shown to ALL users (not just solo). Even people who've already
+  // joined a team should see the prompt — they're the next ring of the
+  // viral loop. Dismissal-via-X still applies once per user.
+  if (_inviteNudgeDismissed) return '';
   const copy = INVITE_NUDGE_COPY[tabKey] || INVITE_NUDGE_COPY.checklist;
   return `
     <div class="solo-nudge-chip">

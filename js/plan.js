@@ -344,26 +344,12 @@ function parseTimeToMinutes(hhmm) {
   return h * 60 + (m || 0);
 }
 
-function suggestBoothsForGap(_gapIndex) {
-  // Randomised on every render so the gap card feels alive and the user
-  // gets fresh suggestions across the day rather than the same two names
-  // hard-mapped to a slot. Picks 2 distinct booths from the plan.
-  const booths = _plan?.booths || [];
-  if (!booths.length) return [];
-  const shuffled = [...booths].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 2).map(b => ({ name: b.company_name }));
-}
-
-function renderGapCard(day, startTime, endTime, gapIndex) {
+function renderGapCard(day, startTime, endTime, _gapIndex) {
   const diffMin = parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
   if (diffMin < 20) return '';
   const hours    = Math.floor(diffMin / 60);
   const mins     = diffMin % 60;
   const duration = hours > 0 ? `${hours}h${mins > 0 ? ` ${mins}m` : ''}` : `${mins} min`;
-  const suggested = suggestBoothsForGap(gapIndex);
-  const boothLine = suggested.length
-    ? suggested.map(b => `<strong>${escHtml(b.name)}</strong>`).join(' · ')
-    : '<strong>your priority booths</strong>';
   const kind = diffMin >= 60 ? 'Lunch break' : diffMin >= 45 ? 'Long break' : 'Break';
   return `
     <div class="checklist-gap-card">
@@ -372,10 +358,10 @@ function renderGapCard(day, startTime, endTime, gapIndex) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span><strong>${kind}</strong> · ${escHtml(startTime)}–${escHtml(endTime)} · ${duration}</span>
         </div>
-        <div class="checklist-gap-body">Free time — visit the floor (${boothLine} are great fits) or pick a session for this slot.</div>
+        <div class="checklist-gap-body">Free time — visit booths or pick a session for this slot.</div>
       </div>
       <button class="checklist-gap-cta" onclick="planFillSlot('${escHtml(day)}','${escHtml(startTime)}','${escHtml(endTime)}', event)" type="button">
-        + Pick a session here
+        + Pick a session
       </button>
     </div>`;
 }

@@ -6916,7 +6916,7 @@ button.app-pill.purple.clickable:hover {
 .save-input {
   width: 100%;
   background: var(--ink-2);
-  border: 1px solid var(--ink-3);
+  border: 1px solid rgba(255,255,255,0.14);
   border-radius: 12px;
   padding: 15px 18px;
   color: var(--text);

@@ -128,10 +128,23 @@ async function loadTeamData(teamId) {
 
 // TODO: Replace with real match_confidence from matcher response.
 // Backend will return a `match_confidence` (0-100) per session and per booth.
-// Until that ships, this returns a stable dummy % per item — same ID always
-// yields the same number, so rankings and sort order look believable across
-// renders and reloads. Replace the dummy hashing logic with a direct
-// `item.match_confidence ?? aiMatchConfidence(...)` once the field is live.
+// Until that ships:
+//   · For ranked items (matcher already ordered them — sessions/booths in
+//     the user's plan), use SESSION_DUMMY_CONFIDENCE / BOOTH_DUMMY_CONFIDENCE
+//     looked up by rank. This gives a believable descending order on screen
+//     that matches the matcher's intended ranking.
+//   · For unranked items (alternatives in swap modals, sessions browsed in
+//     the editor), fall back to a stable per-id hash so each session shows
+//     a consistent % across renders.
+const SESSION_DUMMY_CONFIDENCE = [96, 94, 91, 89, 87, 85, 83, 81, 79, 77, 76, 75];
+const BOOTH_DUMMY_CONFIDENCE   = [94, 91, 88, 85, 82, 79, 77, 75, 73, 71, 70];
+
+function dummyByRank(rank, type) {
+  const arr = type === 'booth' ? BOOTH_DUMMY_CONFIDENCE : SESSION_DUMMY_CONFIDENCE;
+  if (!Number.isFinite(rank) || rank < 1) return arr[arr.length - 1];
+  return arr[Math.min(rank - 1, arr.length - 1)];
+}
+
 function aiMatchConfidence(idStr, type) {
   const s = String(idStr || '');
   let h = 0;
@@ -139,9 +152,7 @@ function aiMatchConfidence(idStr, type) {
     h = ((h << 5) - h) + s.charCodeAt(i);
     h |= 0;
   }
-  const norm = (Math.abs(h) % 1000) / 1000; // 0..1
-  // Slightly different ranges so booths feel like a parallel-but-distinct
-  // grouping rather than directly comparable to sessions.
+  const norm = (Math.abs(h) % 1000) / 1000;
   const [lo, hi] = type === 'booth' ? [70, 95] : [75, 98];
   return Math.round(lo + norm * (hi - lo));
 }
@@ -506,7 +517,7 @@ function renderChecklistTab() {
            Swap
          </button>`;
 
-    const confidence = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
+    const confidence = item.match_confidence ?? dummyByRank(item.rank, 'session');
     // Single-line match — "96% AI Match Confidence" in pink at the title's
     // weight class. Tags only render for strong picks (>= 80%); borderline
     // cards (75-79%) stay clean — the number alone is honest.
@@ -638,7 +649,7 @@ function renderChecklistTab() {
       </div>`;
   }
 
-  function renderBoothRow(item, i) {
+  function renderBoothRow(item, i, displayRank) {
     const noteKey      = `booth:${item.stand_number}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
     const desc         = item.company_description || '';
@@ -678,7 +689,7 @@ function renderChecklistTab() {
          </div>`;
 
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
-    const confidence  = item.match_confidence ?? aiMatchConfidence(item.stand_number || item.company_name, 'booth');
+    const confidence  = item.match_confidence ?? dummyByRank(displayRank || item.rank || (i + 1), 'booth');
 
     const truncatedDesc = truncateBoothDesc(desc);
     const visitedLabel  = item.attended ? '✓ Visited' : '✓ Mark visited';
@@ -749,15 +760,19 @@ function renderChecklistTab() {
   });
   const sessionItems = sessionParts.join('');
 
-  // Sort booths by AI match confidence (descending) so the highest match
-  // sits at the top — easier for the user to see "why this booth first".
-  // Stable: same booth always has the same dummy %, so order is consistent.
+  // Booths display in matcher rank order (rank=1 first). When real
+  // match_confidence ships, sort by that desc; until then the matcher's
+  // existing rank order is the truthful "highest match first" — the
+  // dummy values just need to follow that order, not redefine it.
   const sortedBooths = [...booths].sort((a, b) => {
-    const ca = a.match_confidence ?? aiMatchConfidence(a.stand_number || a.company_name, 'booth');
-    const cb = b.match_confidence ?? aiMatchConfidence(b.stand_number || b.company_name, 'booth');
-    return cb - ca;
+    const ca = a.match_confidence;
+    const cb = b.match_confidence;
+    if (ca != null && cb != null) return cb - ca;
+    if (ca != null) return -1;
+    if (cb != null) return 1;
+    return (a.rank || 999) - (b.rank || 999);
   });
-  const boothItems = sortedBooths.map((item, i) => renderBoothRow(item, i)).join('');
+  const boothItems = sortedBooths.map((item, i) => renderBoothRow(item, i, i + 1)).join('');
 
 
   return `

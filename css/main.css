@@ -4569,15 +4569,15 @@ button.app-pill.purple.clickable:hover {
   letter-spacing: -0.005em;
 }
 .checklist-alternative-btn.swap {
-  color: var(--amber);
-  border: 1px solid rgba(251,191,36,0.45);
-  background: rgba(251,191,36,0.08);
+  color: var(--mint);
+  border: 1px solid rgba(34,230,168,0.45);
+  background: rgba(34,230,168,0.08);
 }
 .checklist-alternative-btn.swap:hover {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: #2a2005;
-  box-shadow: 0 0 16px rgba(251,191,36,0.3);
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #0a1a12;
+  box-shadow: 0 0 16px rgba(34,230,168,0.3);
 }
 .checklist-alternative-btn.dismiss {
   color: var(--text-muted);
@@ -5020,7 +5020,7 @@ button.app-pill.purple.clickable:hover {
 .checklist-box {
   width: 28px; height: 28px;
   border-radius: 7px;
-  border: 2px solid var(--ink-3);
+  border: 2px solid rgba(255,255,255,0.22);
   background: var(--ink);
   display: flex;
   align-items: center;

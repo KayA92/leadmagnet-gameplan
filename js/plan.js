@@ -1161,8 +1161,10 @@ function renderTeamTab() {
 
 function renderCpdTab() {
   const sessions = _plan?.sessions || [];
-  const attended = sessions.filter(s => s.attended).length;
-  const cpdHours = (attended * 40 / 60).toFixed(1);
+  // CPD shows the full hours from the user's plan from the start —
+  // they shouldn't have to "earn" their own CPD by ticking sessions
+  // off; that's not our call to police.
+  const cpdHours = (sessions.length * 40 / 60).toFixed(1);
   const isTeam   = !!(_plan?.team_id);
   return `
     <div class="app-header">

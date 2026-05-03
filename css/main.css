@@ -4329,18 +4329,29 @@ button.app-pill.purple.clickable:hover {
    Mint and purple are reserved for sessions/booths as entity colours.
    Tags use amber (AI-driven matches) and pink (session content signals) so
    they feel distinct from "in your plan" mint / "booth" purple. */
-/* Match line — pink % MATCH on its own row. No "WHY AI PICKED THIS"
-   eyebrow; the % does the heavy lifting and the tags below speak
-   for themselves. Pink ties this back to AI MATCH CONFIDENCE on the
-   reveal/preview screens — same colour, same meaning. */
-.checklist-match-line {
+/* AI MATCH CONFIDENCE hero block — large pink number, small grey mono
+   caps label beneath. Pink ties this back to AI MATCH CONFIDENCE on
+   the reveal/preview screens; mint stays reserved for utility (Going,
+   swap, completion). */
+.checklist-match-hero {
+  margin-top: 10px;
+}
+.checklist-match-num {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--pink);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.checklist-match-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 9.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--pink);
-  font-weight: 700;
-  margin-top: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 5px;
 }
 /* Tags row — quiet outline pills, muted grey. No fill, no "+" prefix,
    no yellow; tags are descriptive labels, not interactive controls. */
@@ -4364,7 +4375,7 @@ button.app-pill.purple.clickable:hover {
   white-space: nowrap;
 }
 .checklist-row.attended .checklist-why-tags,
-.checklist-row.attended .checklist-match-line { opacity: 0.4; }
+.checklist-row.attended .checklist-match-hero { opacity: 0.4; }
 
 /* Turn E2: Strong-alternative session suggestions. Appears under a session
    you've picked if another session at the same time also matches your

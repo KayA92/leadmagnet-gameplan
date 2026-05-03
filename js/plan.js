@@ -167,15 +167,15 @@ function whyMatched(session, plan) {
   }
 
   // Pain matches — plan.problem is a comma-separated string of full pain
-  // labels (synthesised at save time). Split, lookup the haystack on the
-  // first salient word from each label so we surface relevant pains
-  // without false-positive single-letter matches.
+  // labels (synthesised at save time). Check ANY 4+ char word from the
+  // label against the session haystack (was: only the first significant
+  // word) so genuinely relevant pains surface more reliably.
   const haystack = `${session.title || ''} ${session.description || ''}`.toLowerCase();
   const painLabels = (plan.problem || '').split(/\s*,\s*/).filter(Boolean);
   for (const painLabel of painLabels) {
     if (tags.length >= 3) break;
-    const firstSig = painLabel.toLowerCase().split(/\W+/).find(w => w.length >= 5);
-    if (firstSig && haystack.includes(firstSig)) {
+    const sigWords = painLabel.toLowerCase().split(/\W+/).filter(w => w.length >= 4);
+    if (sigWords.some(w => haystack.includes(w))) {
       tags.push({ text: painLabel });
     }
   }
@@ -454,11 +454,14 @@ function renderChecklistTab() {
       : '';
 
     const confidence = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
-    // Match line on its own — no "Why AI picked this" eyebrow. Tags below
-    // sit quietly; only render at all if confidence >= 80% (whyMatched
-    // returns [] otherwise).
+    // AI MATCH CONFIDENCE hero block — large pink number, small mono caps
+    // grey label beneath. Tags only render for strong picks (>= 80%);
+    // borderline cards (75-79%) stay clean — number alone is honest.
     const whyHtml = `
-      <div class="checklist-match-line">${confidence}% MATCH</div>
+      <div class="checklist-match-hero">
+        <div class="checklist-match-num">${confidence}%</div>
+        <div class="checklist-match-label">AI Match Confidence</div>
+      </div>
       ${whyTags.length ? `<div class="checklist-why-tags">
         ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
@@ -646,7 +649,10 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta"><span class="type-pill booth">Booth</span></div>
             ${desc ? `<p class="checklist-main-sub" style="font-size:13px;color:var(--text-muted);margin:4px 0 0;line-height:1.5;">${escHtml(desc)}</p>` : ''}
-            <div class="checklist-match-line">${confidence}% MATCH</div>
+            <div class="checklist-match-hero">
+              <div class="checklist-match-num">${confidence}%</div>
+              <div class="checklist-match-label">AI Match Confidence</div>
+            </div>
             ${reason ? `<div class="checklist-why-tags"><span class="checklist-why-tag">${escHtml(reason)}</span></div>` : ''}
             ${notePanel}
           </div>

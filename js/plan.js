@@ -583,10 +583,6 @@ function renderChecklistTab() {
                 ${teamAvatarHtml}
               </div>
             </div>
-            <button class="checklist-remove-btn" onclick="planRemoveSession('${escHtml(item.session_id)}','${escHtml(item.day||'')}','${escHtml(item.start_time||'')}')" type="button" aria-label="Remove from checklist">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              Remove
-            </button>
           </div>
         </div>
       </div>`;
@@ -661,10 +657,6 @@ function renderChecklistTab() {
               <div class="row-rate-caption">${ratingLabel}</div>
               <div class="row-rate-inline">${rowFlames(item.rating)}</div>
             </div>
-            <button class="checklist-remove-btn" onclick="planRemoveBooth('${escHtml(String(item.stand_number))}')" type="button" aria-label="Remove from checklist">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              Remove
-            </button>
           </div>
         </div>
       </div>`;
@@ -2069,6 +2061,17 @@ function attachPlanListeners(planId, sessions, booths) {
         b.classList.toggle('lit', i < newRating);
       });
       await updateRating(planId, itemId, itemType, newRating);
+      // Auto-open the note panel after rating — but only when the user
+      // is setting a new rating (not clearing one) and there's no saved
+      // note yet. Pulls the note moment forward to where the user is
+      // already in "reflect" mode.
+      if (newRating > 0 && currentRating === 0) {
+        const noteId = `${itemType}:${itemId}`;
+        const panel = card.querySelector(`.checklist-note-panel[data-note-id="${CSS.escape(noteId)}"]`);
+        if (panel && panel.classList.contains('idle')) {
+          window.planOpenNote(noteId);
+        }
+      }
     });
   });
 

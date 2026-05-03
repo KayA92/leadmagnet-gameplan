@@ -4711,11 +4711,11 @@ button.app-pill.purple.clickable:hover {
   gap: 6px;
   padding: 7px 14px 7px 10px;
   background: transparent;
-  border: 1px dashed var(--ink-4);
+  border: 1px dashed rgba(255,255,255,0.35);
   border-radius: 100px;
-  color: var(--text-muted);
+  color: var(--text);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -4724,9 +4724,9 @@ button.app-pill.purple.clickable:hover {
   border-color: var(--mint);
   border-style: solid;
   color: var(--mint);
-  background: rgba(34,230,168,0.04);
+  background: rgba(34,230,168,0.06);
 }
-.note-add-btn svg { color: inherit; }
+.note-add-btn svg { color: inherit; opacity: 0.9; }
 .note-add-hint {
   font-size: 11.5px;
   color: var(--text-faint);
@@ -8444,9 +8444,6 @@ button.app-pill.purple.clickable:hover {
 }
 .checklist-time-swap:hover { opacity: 1; }
 .checklist-time-swap svg { flex-shrink: 0; }
-.checklist-remove-btn { display: flex; align-items: center; gap: 4px; background: none; border: none; padding: 4px 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s; margin-top: 6px; }
-.checklist-row:hover .checklist-remove-btn { opacity: 1; }
-.checklist-remove-btn:hover { color: var(--pink); }
 
 /* Slot-swap modal */
 .slot-swap-modal .login-modal-panel { max-height: 80vh; overflow-y: auto; }

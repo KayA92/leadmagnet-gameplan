@@ -369,7 +369,7 @@ body::before {
   100% { background-position: -120% 0; }
 }
 .q-progress-seg.current { box-shadow: 0 0 10px rgba(255,94,132,0.45); }
-.q-title { font-family: 'Fraunces', serif; font-size: clamp(32px,5vw,52px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; color: var(--text); font-variation-settings: 'SOFT' 40; }
+.q-title { font-family: 'Fraunces', serif; font-size: clamp(32px,5vw,52px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; color: var(--text); font-variation-settings: 'SOFT' 40; max-width: 24ch; text-wrap: balance; }
 .q-title em { font-style: italic; font-variation-settings: 'SOFT' 90; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .q-title .optional-tag {
   display: inline-block;

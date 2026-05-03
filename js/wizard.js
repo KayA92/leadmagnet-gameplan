@@ -113,7 +113,12 @@ let _statusTimers = [];
 function startTicker() {
   const el = $('reveal-ticker');
   if (!el) return;
-  const sessions = shuffleArray([...state.allSessions, ...state.allSessions]).slice(0, 16);
+  // Pick 16 unique sessions then duplicate the list. The CSS scrolls
+  // translateY(0 → -50%) so when it loops back, items 16–31 are
+  // identical to 0–15 → no visible "jump" at the wrap point even when
+  // the API takes longer than one scroll cycle.
+  const unique = shuffleArray([...state.allSessions]).slice(0, 16);
+  const sessions = [...unique, ...unique];
   el.innerHTML = sessions.map(s => {
     const score = Math.random();
     const scoreClass = score > 0.75 ? '' : score > 0.45 ? 'mid' : 'low';
@@ -130,19 +135,25 @@ function stopTicker() {
   _statusTimers = [];
 }
 
-async function animateProgress() {
+// Asymptote-style progress: bar creeps toward 95% indefinitely so it
+// never fills before the API resolves. Caller jumps it to 100% via the
+// returned stop function once matchSessions returns. Avoids the "bar's
+// done but I'm still waiting — is this broken?" feel.
+let _progressId = null;
+function startProgress() {
   const bar = $('reveal-progress-fill');
   if (!bar) return;
-  // Ease to 90% over 4s, then jump to 100% when done
   let pct = 0;
-  const step = () => {
-    pct = Math.min(pct + (90 - pct) * 0.025, 90);
+  bar.style.width = '0%';
+  _progressId = setInterval(() => {
+    pct = pct + (95 - pct) * 0.015;
     bar.style.width = pct + '%';
-  };
-  const id = setInterval(step, 80);
-  await wait(4200);
-  clearInterval(id);
-  bar.style.width = '100%';
+  }, 100);
+}
+function stopProgress() {
+  if (_progressId) { clearInterval(_progressId); _progressId = null; }
+  const bar = $('reveal-progress-fill');
+  if (bar) bar.style.width = '100%';
 }
 
 // Sessions guaranteed to appear when their trigger fires AND their time slot matches.
@@ -245,26 +256,25 @@ async function startReveal() {
   state.filteredExhibitors = preFilterExhibitors(state.answers, state.allExhibitors);
 
   startTicker();
+  startProgress();
   _statusTimers = STATUS_STEPS.map(({ t, text }) =>
     setTimeout(() => { const el = $('revealStatusText'); if (el) el.textContent = text; }, t),
   );
 
-  const [apiResult] = await Promise.all([
-    matchSessions(
-      {
-        attend_mode: state.answers.attendMode,
-        problem: state.answers.problem,
-        categories: state.answers.categories,
-        time_window: state.answers.time,
-        role: state.answers.role,
-        first_name: '', // not collected yet at this point
-      },
-      state.filteredSessions,
-      state.filteredExhibitors,
-    ),
-    animateProgress(),
-  ]);
+  const apiResult = await matchSessions(
+    {
+      attend_mode: state.answers.attendMode,
+      problem: state.answers.problem,
+      categories: state.answers.categories,
+      time_window: state.answers.time,
+      role: state.answers.role,
+      first_name: '', // not collected yet at this point
+    },
+    state.filteredSessions,
+    state.filteredExhibitors,
+  );
 
+  stopProgress();
   stopTicker();
 
   if (!apiResult || apiResult.fallback || !Array.isArray(apiResult.sessions)) {
@@ -370,7 +380,7 @@ function renderPlanPreview() {
         <span style="width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint);"></span>
         Our AI ran the room · ${rankedSessions.length + rankedBooths.length} picks
       </div>
-      <h2 class="confirm-title">250+ sessions read.<br>Your <em>shortlist of ${rankedSessions.length}</em>,<br>ready to go.</h2>
+      <h2 class="confirm-title">240+ sessions read.<br>Your <em>shortlist of ${rankedSessions.length}</em>,<br>ready to go.</h2>
       <p class="confirm-sub">${whyExplanation}</p>
       <div class="confirm-summary-pills">
         <div class="confirm-pill mint"><strong>${rankedSessions.length}</strong> sessions</div>

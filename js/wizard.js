@@ -681,9 +681,9 @@ function decorateAndRankByCategory() {
     });
   };
 
-  // Stage 3 options: tier styling only (the existing option-icon already
-  // visualises the category — adding a flame would clutter)
-  decorate('#stage-3 .option[data-cat]', false);
+  // No stage-3 popularity sort — categories are now grouped into 3 sections
+  // (CORE PLATFORMS / CLIENT WORK / GROWTH & STRATEGY) with curated order.
+  // The new slugs also don't yet exist in canonical_categories.
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -727,7 +727,7 @@ export async function initWizard() {
   updatePrecisionBars();
 
   // ── Stage 3: categories
-  document.querySelectorAll('.option[data-cat]').forEach(btn => {
+  document.querySelectorAll('#stage-3 .tag-pill[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => toggleCategory(btn.dataset.cat));
   });
   $('cat-back')?.addEventListener('click', () => history.back());

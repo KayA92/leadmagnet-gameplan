@@ -39,7 +39,7 @@ let _inviteNudgeDismissed = false;
 try { _inviteNudgeDismissed = localStorage.getItem('inviteNudgeDismissed') === '1'; } catch (_) {}
 
 const INVITE_NUDGE_COPY = {
-  checklist: 'Going with colleagues? <strong>Send them your invite link</strong> — see their sessions, ratings, notes, and get an AI team summary.',
+  checklist: 'Going with colleagues? <strong>Invite them to your team</strong> — see their sessions, ratings, notes, and get an AI team summary.',
   cpd:       'Bringing colleagues? <strong>Their CPD logs roll up here too</strong> — one report, whole team.',
   debrief:   'Going alone, this writes from your notes only. <strong>Add a teammate</strong> and the debrief synthesises everyone\'s.',
 };
@@ -723,16 +723,9 @@ function renderChecklistTab() {
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
           </div>
           <div class="checklist-main">
-            <div class="booth-head-row">
-              <div class="booth-head-text">
-                <div class="checklist-main-title">${escHtml(item.company_name)}</div>
-                <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
-              </div>
-              <div class="booth-confidence-block">
-                <div class="row-confidence-num">${confidence}%</div>
-                <div class="row-confidence-label">AI Match<br>Confidence</div>
-              </div>
-            </div>
+            <div class="checklist-main-title">${escHtml(item.company_name)}</div>
+            <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
+            <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
             ${truncatedDesc ? `<p class="booth-desc">${escHtml(truncatedDesc)}</p>` : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">

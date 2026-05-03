@@ -405,19 +405,31 @@ function renderChecklistTab() {
          </button>`
       : '';
 
-    const whyHtml = whyTags.length ? `
-      <div class="checklist-why-header">${STAR_SVG} Why AI picked this</div>
-      <div class="checklist-why-tags">
+    const confidence = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
+    // "Why AI picked this · 77% MATCH" merged eyebrow — confidence
+    // lives inline so the right-column doesn't need its own % block.
+    const whyHtml = `
+      <div class="checklist-why-header">${STAR_SVG} Why AI picked this · <span class="checklist-why-pct">${confidence}% MATCH</span></div>
+      ${whyTags.length ? `<div class="checklist-why-tags">
         ${whyTags.map(t => `<span class="checklist-why-tag why-${t.type}">${escHtml(t.text)}</span>`).join('')}
-      </div>` : '';
+      </div>` : ''}`;
 
-    const altsHtml = showSwap && alts.length ? `
-      <div class="checklist-alternatives">
-        <div class="checklist-alternatives-label">${ALT_SVG} Also strong at ${escHtml(item.start_time || '')}</div>
-        ${[...alts]
-          .map(alt => ({ alt, conf: alt.match_confidence ?? aiMatchConfidence(alt.session_id, 'session') }))
-          .sort((a, b) => b.conf - a.conf)
-          .map(({ alt, conf }) => `
+    // Collapsed-by-default alternatives. Default state is a tiny inline
+    // text link; click to expand the full cards. Keeps the primary
+    // session uncluttered while making the swap option discoverable.
+    const sortedAlts = [...alts]
+      .map(alt => ({ alt, conf: alt.match_confidence ?? aiMatchConfidence(alt.session_id, 'session') }))
+      .sort((a, b) => b.conf - a.conf);
+    const altCount = sortedAlts.length;
+    const altLabel = altCount === 1 ? '1 alternative' : `${altCount} alternatives`;
+    const altsHtml = showSwap && altCount ? `
+      <details class="checklist-alternatives">
+        <summary class="checklist-alternatives-summary">
+          ${ALT_SVG}
+          <span><strong>${altLabel}</strong> available at ${escHtml(item.start_time || '')}</span>
+          <span class="checklist-alternatives-toggle"><span class="show">show</span><span class="hide">hide</span></span>
+        </summary>
+        ${sortedAlts.map(({ alt, conf }) => `
           <div class="checklist-alternative-card">
             <div class="checklist-alternative-body">
               <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
@@ -435,7 +447,7 @@ function renderChecklistTab() {
               <button class="checklist-alternative-btn dismiss" onclick="planDismissAlternative('${escHtml(item.session_id)}','${escHtml(alt.session_id)}',event)" type="button">Not for me</button>
             </div>
           </div>`).join('')}
-      </div>` : '';
+      </details>` : '';
 
     const teamNotesHtml = teamNotes.length ? `
       <div style="margin-top:8px;padding:8px 10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px;">
@@ -471,7 +483,6 @@ function renderChecklistTab() {
 
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
-    const confidence  = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
 
     const avatarColors = ['t1', 't2', 't4'];
     let avatarColorIdx = 0;
@@ -509,10 +520,6 @@ function renderChecklistTab() {
             ${teamNotesHtml}
           </div>
           <div class="checklist-row-right">
-            <div class="row-confidence-wrap">
-              <div class="row-confidence-num">${confidence}%</div>
-              <div class="row-confidence-label">AI MATCH<br>CONFIDENCE</div>
-            </div>
             <div class="row-rate-wrap">
               <div class="row-rate-caption">${ratingLabel}</div>
               <div class="row-rate-inline">${rowFlames(item.rating)}</div>
@@ -590,16 +597,11 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta"><span class="type-pill booth">Booth</span></div>
             ${desc ? `<p class="checklist-main-sub" style="font-size:13px;color:var(--text-muted);margin:4px 0 0;line-height:1.5;">${escHtml(desc)}</p>` : ''}
-            ${reason ? `
-              <div class="checklist-why-header">${STAR_SVG} Why AI picked this</div>
-              <div class="checklist-why-tags"><span class="checklist-why-tag why-ai">${escHtml(reason)}</span></div>` : ''}
+            <div class="checklist-why-header">${STAR_SVG} ${reason ? 'Why AI picked this · ' : ''}<span class="checklist-why-pct">${confidence}% MATCH</span></div>
+            ${reason ? `<div class="checklist-why-tags"><span class="checklist-why-tag why-ai">${escHtml(reason)}</span></div>` : ''}
             ${notePanel}
           </div>
           <div class="checklist-row-right">
-            <div class="row-confidence-wrap">
-              <div class="row-confidence-num">${confidence}%</div>
-              <div class="row-confidence-label">AI MATCH<br>CONFIDENCE</div>
-            </div>
             <div class="row-rate-wrap">
               <div class="row-rate-caption">${ratingLabel}</div>
               <div class="row-rate-inline">${rowFlames(item.rating)}</div>

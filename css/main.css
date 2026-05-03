@@ -1359,7 +1359,7 @@ body::before {
   font-family: 'Fraunces', serif;
   font-size: 26px;
   font-weight: 600;
-  color: var(--pink);
+  color: var(--mint);
   line-height: 1;
   letter-spacing: -0.01em;
 }
@@ -3810,7 +3810,7 @@ button.app-pill.purple.clickable:hover {
   font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 600;
-  color: var(--pink);
+  color: var(--mint);
   line-height: 1;
   letter-spacing: -0.01em;
 }
@@ -4343,6 +4343,12 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 6px;
 }
 .checklist-why-header svg { color: var(--amber); }
+/* Inline % match in the merged eyebrow — mint signals positive
+   match-quality (vs pink which is reserved for negative pain heat). */
+.checklist-why-pct {
+  color: var(--mint);
+  font-weight: 700;
+}
 .checklist-why-tags {
   display: flex;
   flex-wrap: wrap;
@@ -4397,26 +4403,47 @@ button.app-pill.purple.clickable:hover {
 /* Turn E2: Strong-alternative session suggestions. Appears under a session
    you've picked if another session at the same time also matches your
    onboarding. Amber AI accent to match the "Why AI picked this" tag palette. */
+/* Alternatives: collapsed by default — small inline pill that expands to
+   reveal the full alternative cards. Keeps the primary session
+   uncluttered while making the swap discoverable. */
 .checklist-alternatives {
-  margin-top: 12px;
-  padding: 10px 12px 8px;
-  background: rgba(251,191,36,0.04);
-  border: 1px dashed rgba(251,191,36,0.28);
-  border-radius: 10px;
+  margin-top: 10px;
 }
-.checklist-alternatives-label {
+.checklist-alternatives-summary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--amber);
-  margin-bottom: 6px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 100px;
+  background: rgba(251,191,36,0.06);
+  border: 1px dashed rgba(251,191,36,0.30);
+  list-style: none;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+  font-weight: 500;
 }
-.checklist-alternatives-label svg { color: var(--amber); }
+.checklist-alternatives-summary strong { font-weight: 700; }
+.checklist-alternatives-summary:hover {
+  background: rgba(251,191,36,0.12);
+  border-color: rgba(251,191,36,0.50);
+}
+.checklist-alternatives-summary::-webkit-details-marker { display: none; }
+.checklist-alternatives-summary::marker { display: none; }
+.checklist-alternatives-summary svg { color: var(--amber); flex-shrink: 0; }
+.checklist-alternatives-toggle {
+  margin-left: 4px;
+  opacity: 0.7;
+  font-size: 9.5px;
+}
+.checklist-alternatives-toggle .hide { display: none; }
+.checklist-alternatives[open] .checklist-alternatives-toggle .show { display: none; }
+.checklist-alternatives[open] .checklist-alternatives-toggle .hide { display: inline; }
 .checklist-alternative-card {
   padding: 10px 12px;
   margin-top: 6px;
@@ -7246,10 +7273,10 @@ button.app-pill.purple.clickable:hover {
 /* "Add to contacts" pro tip — sits above the junk-folder reminder.
    Mint-tinted to feel like a positive opt-in, not an alert. */
 .magic-contacts-tip {
-  margin: 0 auto 14px;
+  margin: 0 auto 28px;
   padding: 14px 18px;
-  background: rgba(34,230,168,0.06);
-  border: 1px solid rgba(34,230,168,0.30);
+  background: rgba(106,169,255,0.06);
+  border: 1px solid rgba(106,169,255,0.30);
   border-radius: 12px;
   display: flex;
   gap: 12px;
@@ -7258,7 +7285,7 @@ button.app-pill.purple.clickable:hover {
 }
 .magic-contacts-tip-icon {
   flex-shrink: 0;
-  color: var(--mint);
+  color: var(--cool-blue);
   margin-top: 1px;
 }
 .magic-contacts-tip-text {
@@ -7268,7 +7295,7 @@ button.app-pill.purple.clickable:hover {
 }
 .magic-contacts-tip-text strong { color: var(--text); font-weight: 700; }
 .magic-spam-card {
-  margin: 0 auto 28px;
+  margin: 0 auto 14px;
   padding: 16px 18px;
   background: rgba(251,191,36,0.06);
   border: 1px solid rgba(251,191,36,0.30);

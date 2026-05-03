@@ -1607,9 +1607,9 @@ body::before {
   display: block;
 }
 @media (max-width: 640px) {
-  .app-tabs-credits { gap: 10px; }
-  .app-tabs-credits img { height: 20px; }
-  .app-tabs-credits-label { display: none; }
+  .app-tabs-credits { gap: 8px; }
+  .app-tabs-credits img { height: 18px; }
+  .app-tabs-credits-label { font-size: 8.5px; letter-spacing: 0.12em; }
 }
 .app-tabs-brand {
   display: inline-flex;

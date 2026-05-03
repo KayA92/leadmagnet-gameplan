@@ -140,15 +140,34 @@ const CATEGORY_LABELS = {
   'marketing-growth':    'Marketing & growth',
 };
 
+// Human-readable role labels — used as a tag on every >=80% match
+// since role drives matcher weighting site-wide.
+const ROLE_LABELS = {
+  'founder':         'Founder',
+  'partner':         'Partner',
+  'director':        'Director',
+  'senior':          'Senior accountant / manager',
+  'accountant':      'Accountant',
+  'ops-admin':       'Practice manager / ops',
+  'bookkeeper':      'Bookkeeper',
+  'advisor':         'Tax advisor',
+  'industry':        'CFO / Finance Director',
+  'finance-manager': 'Finance manager',
+  'controller':      'Controller',
+  'other':           'Other',
+};
+
 // Tag rules:
 // - Only show tags for sessions with confidence >= 80% (top picks).
-//   Below that the % alone is honest and prevents weak heuristic matches
-//   from leaking into the UI.
-// - Pull tags from the user's actual onboarding selections (full labels,
-//   never extracted single-word fragments).
-// - 2–3 tags max; categories first (strongest signal), then pains.
-// TODO: Once the matcher returns explicit driver-tags per session, replace
-// this heuristic with the real signals.
+//   Borderline matches (75-79%) get a clean card — number alone is honest.
+// - Surface every onboarding answer the matcher would have weighted, using
+//   the user's full labels (never extracted fragments). Sources:
+//     · Selected categories that overlap session.canonical_categories
+//     · Pains whose label keywords land in session title/description
+//     · Role (always shown — it shapes every match)
+//     · TODO: firm_size / mode / role_bucket once persisted in plans table
+//       (currently only `role` is stored alongside categories + problem)
+// - Cap at 6 tags so cards stay legible on mobile.
 function whyMatched(session, plan) {
   const conf = session.match_confidence ?? aiMatchConfidence(session.session_id, 'session');
   if (conf < 80) return [];
@@ -157,30 +176,32 @@ function whyMatched(session, plan) {
   const sessionCats = session.canonical_categories || [];
   const userCats    = plan.categories || [];
 
-  // Category matches — surface the user's full label, not the slug.
+  // Category matches — every user-picked category that overlaps this session.
   for (const cat of userCats) {
-    if (tags.length >= 2) break;
     const wanted = PLAN_CATEGORY_MATCH[cat] || [cat];
     if (wanted.some(w => sessionCats.includes(w))) {
       tags.push({ text: CATEGORY_LABELS[cat] || cat });
     }
   }
 
-  // Pain matches — plan.problem is a comma-separated string of full pain
-  // labels (synthesised at save time). Check ANY 4+ char word from the
-  // label against the session haystack (was: only the first significant
-  // word) so genuinely relevant pains surface more reliably.
+  // Pain matches — heuristic keyword check (4+ char) against title/desc.
+  // Tags every pain that genuinely appears related, not just the first.
   const haystack = `${session.title || ''} ${session.description || ''}`.toLowerCase();
   const painLabels = (plan.problem || '').split(/\s*,\s*/).filter(Boolean);
   for (const painLabel of painLabels) {
-    if (tags.length >= 3) break;
     const sigWords = painLabel.toLowerCase().split(/\W+/).filter(w => w.length >= 4);
     if (sigWords.some(w => haystack.includes(w))) {
       tags.push({ text: painLabel });
     }
   }
 
-  return tags.slice(0, 3);
+  // Role tag — always include for 80%+ matches. Role is a per-user
+  // dimension the matcher weights on every session.
+  if (plan.role && ROLE_LABELS[plan.role]) {
+    tags.push({ text: ROLE_LABELS[plan.role] });
+  }
+
+  return tags.slice(0, 6);
 }
 
 const PLAN_CATEGORY_MATCH = {

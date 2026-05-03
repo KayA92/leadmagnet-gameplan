@@ -6850,9 +6850,12 @@ button.app-pill.purple.clickable:hover {
   height: 22px;
   border-radius: 50%;
 }
-.save-unlock-chip.tint-pink .save-unlock-chip-icon { color: var(--pink); background: rgba(255,94,132,0.14); }
-.save-unlock-chip.tint-purple .save-unlock-chip-icon { color: var(--purple); background: rgba(168,85,247,0.14); }
-.save-unlock-chip.tint-mint .save-unlock-chip-icon { color: var(--mint); background: rgba(34,230,168,0.14); }
+.save-unlock-chip.tint-pink   .save-unlock-chip-icon { color: var(--pink);      background: rgba(255,94,132,0.14); }
+.save-unlock-chip.tint-purple .save-unlock-chip-icon { color: var(--purple);    background: rgba(168,85,247,0.14); }
+.save-unlock-chip.tint-mint   .save-unlock-chip-icon { color: var(--mint);      background: rgba(34,230,168,0.14); }
+.save-unlock-chip.tint-amber  .save-unlock-chip-icon { color: var(--amber);     background: rgba(251,191,36,0.14); }
+.save-unlock-chip.tint-coral  .save-unlock-chip-icon { color: var(--coral);     background: rgba(255,138,92,0.14); }
+.save-unlock-chip.tint-blue   .save-unlock-chip-icon { color: var(--cool-blue); background: rgba(106,169,255,0.14); }
 
 /* Legacy unlock card CSS kept as no-op for backwards compat (will be removed) */
 .save-unlock-cards { display: none; }
@@ -6989,7 +6992,7 @@ button.app-pill.purple.clickable:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1px;
+  margin-top: -2px;
   transition: all 0.2s;
 }
 .opt-in-check-visual svg {
@@ -7030,22 +7033,25 @@ button.app-pill.purple.clickable:hover {
 }
 .opt-in-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.005em;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 .opt-in-icon {
   flex-shrink: 0;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 18px;
-  height: 18px;
+  height: 22px;
   color: var(--mint);
+  margin-top: -1px;
 }
-.opt-in-icon svg { width: 18px; height: 18px; }
+.opt-in-icon svg { width: 18px; height: 18px; display: block; }
 .opt-in-sub {
   font-size: 13.5px;
   line-height: 1.55;

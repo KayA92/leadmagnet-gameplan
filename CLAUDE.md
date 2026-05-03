@@ -26,7 +26,7 @@ Repo: GitHub Pages — pushing to `main` auto-deploys.
 | Hosting | GitHub Pages, CNAME → autoevent.io |
 
 **Edge Function changes require a deploy:** `supabase functions deploy match-sessions`  
-**Data changes (CSV → JSON):** Run `node scripts/csv-to-json.js` and `node scripts/exhibitors-csv-to-json.js`, then commit the output files in `data/`.
+**Data changes (CSV → JSON):** Run `node scripts/sessions-csv-to-json.js` and `node scripts/exhibitors-csv-to-json.js`, then commit the output files in `data/`.
 
 ---
 
@@ -139,4 +139,4 @@ RPCs (all `SECURITY DEFINER`, grant to `authenticated`):
 **Change the AI prompt** → edit `supabase/functions/match-sessions/index.ts`, then `supabase functions deploy match-sessions`  
 **Change pre-filter logic** → edit `js/filter.js` (`CATEGORY_MATCH`, `EXHIBITOR_PRODUCT_MATCH`, `ROLE_THEATRE`)  
 **Add a database migration** → new file in `supabase/migrations/` with timestamp prefix  
-**Update session/exhibitor data** → edit CSVs, run `node scripts/csv-to-json.js` + `node scripts/exhibitors-csv-to-json.js`, commit JSON files
+**Update session/exhibitor data** → edit CSVs, run `node scripts/sessions-csv-to-json.js` + `node scripts/exhibitors-csv-to-json.js`, commit JSON files

@@ -1031,6 +1031,16 @@ body::before {
     padding-left: 14px;
     padding-right: 14px;
   }
+  /* Launch card ("Get your plan in 60 seconds") — outer padding was eating
+     too much horizontal room on mobile, making the card feel cramped vs
+     the rest of the page. Pull both the bar gutter and the card padding
+     inward so the content matches the breadth of other mobile sections. */
+  .launch-bar {
+    padding: 0 14px;
+  }
+  .launch-card {
+    padding: 26px 20px 22px;
+  }
 }
 
 .text-input-wrap { background: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 14px; padding: 0; transition: all 0.2s; }

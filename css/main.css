@@ -4580,14 +4580,15 @@ button.app-pill.purple.clickable:hover {
   box-shadow: 0 0 16px rgba(34,230,168,0.3);
 }
 .checklist-alternative-btn.dismiss {
-  color: var(--text-muted);
-  border: 1px solid var(--ink-4);
-  background: transparent;
+  color: var(--mint);
+  border: 1px solid rgba(34,230,168,0.45);
+  background: rgba(34,230,168,0.08);
 }
 .checklist-alternative-btn.dismiss:hover {
-  color: var(--text);
-  border-color: var(--text-muted);
-  background: rgba(255,255,255,0.04);
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #0a1a12;
+  box-shadow: 0 0 16px rgba(34,230,168,0.3);
 }
 
 /* Day labels (extracted from inline styles) */

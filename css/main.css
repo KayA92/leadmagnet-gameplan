@@ -1602,14 +1602,14 @@ body::before {
 }
 .app-tabs-credits a:hover { opacity: 1; }
 .app-tabs-credits img {
-  height: 16px;
+  height: 26px;
   width: auto;
   display: block;
 }
 @media (max-width: 640px) {
-  .app-tabs-credits { gap: 8px; }
-  .app-tabs-credits img { height: 13px; }
-  .app-tabs-credits-label { font-size: 8.5px; letter-spacing: 0.12em; }
+  .app-tabs-credits { gap: 10px; }
+  .app-tabs-credits img { height: 20px; }
+  .app-tabs-credits-label { display: none; }
 }
 .app-tabs-brand {
   display: inline-flex;

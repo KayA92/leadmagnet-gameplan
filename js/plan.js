@@ -578,10 +578,10 @@ function renderChecklistTab() {
                 </div>
               </div>
             </div>
-            ${notePanel}
-            ${teamNotesHtml}
           </div>
         </div>
+        ${notePanel}
+        ${teamNotesHtml}
       </div>`;
   }
 
@@ -650,9 +650,9 @@ function renderChecklistTab() {
                 <div class="row-rate-inline">${rowFlames(item.rating)}</div>
               </div>
             </div>
-            ${notePanel}
           </div>
         </div>
+        ${notePanel}
       </div>`;
   }
 

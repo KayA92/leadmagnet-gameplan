@@ -8442,16 +8442,17 @@ button.app-pill.purple.clickable:hover {
 .slot-swap-modal .login-modal-panel { max-height: 80vh; overflow-y: auto; }
 .slot-swap-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
 .slot-swap-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 12px 14px;
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--ink-3);
   border-radius: 10px;
 }
 .slot-swap-row.already-in-plan { opacity: 0.45; }
-.slot-swap-row-main { flex: 1; min-width: 0; }
+.slot-swap-row-main { min-width: 0; }
 .slot-swap-row-title {
   font-size: 14px;
   font-weight: 600;
@@ -8465,16 +8466,42 @@ button.app-pill.purple.clickable:hover {
   color: var(--text-muted);
   letter-spacing: 0.04em;
 }
-.slot-swap-match-tag, .slot-swap-already-tag {
+.slot-swap-already-tag {
   display: inline-block;
   margin-top: 5px;
   padding: 2px 8px;
   border-radius: 100px;
   font-size: 11px;
   font-weight: 600;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-muted);
 }
-.slot-swap-match-tag { background: rgba(0,229,178,0.1); color: var(--mint); }
-.slot-swap-already-tag { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+/* Hero-treated % match — large pink + tiny mono caps label, matches
+   the AI Match Confidence on the live plan cards. Visual continuity
+   between live cards and swap modal. */
+.slot-swap-row-confidence {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.slot-swap-row-confidence .row-confidence-num {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--pink);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.slot-swap-row-confidence .row-confidence-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
 .slot-swap-row-btn {
   flex-shrink: 0;
   padding: 7px 14px;
@@ -8486,10 +8513,42 @@ button.app-pill.purple.clickable:hover {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: all 0.15s;
 }
 .slot-swap-row-btn:hover { opacity: 0.88; }
 .slot-swap-row-btn.disabled { background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: default; }
+/* Outlined variant — used on swap rows so the % match number can be
+   the visual hero. Still mint, just transparent fill + mint border. */
+.slot-swap-row-btn.outlined {
+  background: transparent;
+  color: var(--mint);
+  border: 1px solid rgba(34,230,168,0.50);
+  font-weight: 600;
+}
+.slot-swap-row-btn.outlined:hover {
+  background: rgba(34,230,168,0.08);
+  border-color: var(--mint);
+  opacity: 1;
+}
+/* Free-time row at the top of the swap list — distinct purple tint
+   so it reads as a different KIND of action vs the session swap rows
+   below it. Mirrors the gap-card / break-card colour. */
+.slot-swap-row.slot-swap-free-time {
+  grid-template-columns: 1fr auto;
+  background: rgba(168,85,247,0.06);
+  border-color: rgba(168,85,247,0.30);
+}
+.slot-swap-row.slot-swap-free-time .slot-swap-row-title {
+  color: var(--purple);
+}
+.slot-swap-row.slot-swap-free-time .slot-swap-row-btn.outlined {
+  color: var(--purple);
+  border-color: rgba(168,85,247,0.50);
+}
+.slot-swap-row.slot-swap-free-time .slot-swap-row-btn.outlined:hover {
+  background: rgba(168,85,247,0.08);
+  border-color: var(--purple);
+}
 
 /* ── Sponsors footer ("Brought to you by") ──────────────────────── */
 .sponsors-footer {

@@ -428,30 +428,20 @@ function renderChecklistTab() {
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
 
-  // Only show swap on the top 3 sessions by best-alternative score (quality gate)
-  const swapEligibleIds = new Set(
-    sortedSessions
-      .map(s => ({ id: s.session_id, score: bestAlternativeScore(s) }))
-      .filter(s => s.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map(s => s.id),
-  );
-
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
     const whyTags      = whyMatched(item, plan);
     const alts         = findStrongAlternatives(item);
-    const showSwap     = swapEligibleIds.has(item.session_id);
     const teamNotes    = teamNotesByItem[noteKey] || [];
 
-    const swapLink = showSwap
-      ? `<button class="checklist-time-swap" onclick="planOpenSlotSwap('${escHtml(item.session_id)}', event)" type="button">
+    // Universal SWAP badge — shown under the time block on EVERY session.
+    // Tapping opens the slot-swap modal which now also handles the
+    // "make this slot free time" path (replaces the dropped REMOVE link).
+    const swapLink = `<button class="checklist-time-swap" onclick="planOpenSlotSwap('${escHtml(item.session_id)}', event)" type="button">
            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
            Swap
-         </button>`
-      : '';
+         </button>`;
 
     const confidence = item.match_confidence ?? aiMatchConfidence(item.session_id, 'session');
     // Single-line match — "96% AI Match Confidence" in pink at the title's
@@ -471,7 +461,7 @@ function renderChecklistTab() {
       .sort((a, b) => b.conf - a.conf);
     const altCount = sortedAlts.length;
     const topAltConf = sortedAlts[0]?.conf ?? 0;
-    const altsHtml = showSwap && altCount ? `
+    const altsHtml = altCount ? `
       <details class="checklist-alternatives">
         <summary class="checklist-alternatives-summary">
           ${SWAP_SVG}
@@ -2620,19 +2610,22 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No sessions in this time window.</div>'
-    : scored.map(({ session: s, score, confidence }) => {
+    : scored.map(({ session: s, confidence }) => {
         const inPlan = planIds.has(s.session_id);
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
-              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''} · <strong style="color:var(--pink)">${confidence}% match</strong></div>
-              ${score > 0 && !inPlan ? '<span class="slot-swap-match-tag">Matches your categories</span>' : ''}
+              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
+            </div>
+            <div class="slot-swap-row-confidence">
+              <div class="row-confidence-num">${confidence}%</div>
+              <div class="row-confidence-label">AI Match</div>
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
-              : `<button class="slot-swap-row-btn" onclick="planAddSession('${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Add to plan</button>`
+              : `<button class="slot-swap-row-btn outlined" onclick="planAddSession('${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Add →</button>`
             }
           </div>`;
       }).join('');
@@ -2681,21 +2674,37 @@ window.planOpenSlotSwap = function(currentId, ev) {
   );
   const dayLabel = current.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  // Free-time row sits at the top of the list — distinct purple tint
+  // matches the gap-card / break treatment, signalling "this becomes
+  // a break". Tap removes the current session; the next render auto-
+  // detects the now-bigger gap and shows the booth-recommendation card.
+  const freeTimeRow = `
+    <div class="slot-swap-row slot-swap-free-time">
+      <div class="slot-swap-row-main">
+        <div class="slot-swap-row-title">Make this slot free time</div>
+        <div class="slot-swap-row-meta">Skip a session — visit the floor, see booth recommendations instead</div>
+      </div>
+      <button class="slot-swap-row-btn outlined" onclick="planMakeSlotFreeTime('${escHtml(currentId)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Free up slot →</button>
+    </div>`;
+
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other sessions at this time slot.</div>'
-    : scored.map(({ session: s, score, confidence }) => {
+    : scored.map(({ session: s, confidence }) => {
         const inPlan = planIds.has(s.session_id);
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
-              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''} · <strong style="color:var(--pink)">${confidence}% match</strong></div>
-              ${score > 0 && !inPlan ? '<span class="slot-swap-match-tag">Matches your categories</span>' : ''}
+              <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
+            </div>
+            <div class="slot-swap-row-confidence">
+              <div class="row-confidence-num">${confidence}%</div>
+              <div class="row-confidence-label">AI Match</div>
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
-              : `<button class="slot-swap-row-btn" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Swap to this</button>`
+              : `<button class="slot-swap-row-btn outlined" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Swap →</button>`
             }
           </div>`;
       }).join('');
@@ -2711,11 +2720,22 @@ window.planOpenSlotSwap = function(currentId, ev) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(current.start_time || '')}–${escHtml(current.end_time || '')}</div>
-      <h2 class="login-modal-title">Swap this <em>slot.</em></h2>
-      <p class="login-modal-sub">Currently: <strong>${escHtml(current.title || '')}</strong>. Pick a different session at the same time.</p>
-      <div class="slot-swap-list">${candidatesHtml}</div>
+      <h2 class="login-modal-title">Edit this <em>slot.</em></h2>
+      <p class="login-modal-sub">Currently: <strong>${escHtml(current.title || '')}</strong>. Swap for another session, or free the slot for booth visits.</p>
+      <div class="slot-swap-list">${freeTimeRow}${candidatesHtml}</div>
     </div>`;
   document.body.appendChild(modal);
+};
+
+// Free up a session slot — removes it from plan. The next render's gap
+// detection will auto-show a break card with booth recommendations.
+window.planMakeSlotFreeTime = function(sessionId) {
+  if (!_plan) return;
+  const s = (_plan.sessions || []).find(x => x.session_id === sessionId);
+  if (!s) return;
+  _plan.sessions = (_plan.sessions || []).filter(x => x.session_id !== sessionId);
+  savePlanSessions();
+  renderApp();
 };
 
 window.planRemoveTeamMember = async function(userId) {

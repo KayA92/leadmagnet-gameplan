@@ -7044,18 +7044,19 @@ button.app-pill.purple.clickable:hover {
 .opt-in-icon {
   flex-shrink: 0;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   width: 18px;
-  height: 22px;
+  height: 18px;
   color: var(--mint);
-  margin-top: -1px;
+  margin-top: 3px;
 }
 .opt-in-icon svg { width: 18px; height: 18px; display: block; }
 .opt-in-sub {
   font-size: 13.5px;
   line-height: 1.55;
   color: var(--text-muted);
+  padding-left: 26px;
 }
 .opt-in-sub strong { color: var(--text); font-weight: 600; }
 

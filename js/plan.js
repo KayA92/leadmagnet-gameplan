@@ -1191,7 +1191,7 @@ function renderTeamTab() {
     : `Your firm at <em>Accountex.</em>`;
 
   const pageSub = isSolo
-    ? `Email a colleague to join your workspace — they'll get their own AI-matched plan, their notes flow into yours.`
+    ? ``
     : `Who's covering what, whose notes are flowing in live, and what the team has actually decided.`;
 
   const aiBlock = isSolo ? `
@@ -1222,7 +1222,7 @@ function renderTeamTab() {
       <div class="app-header-top">
         <div>
           <h2 class="app-title">${pageTitle}</h2>
-          <p class="app-sub" style="margin-top:6px;">${pageSub}</p>
+          ${pageSub ? `<p class="app-sub" style="margin-top:6px;">${pageSub}</p>` : ''}
         </div>
       </div>
     </div>
@@ -1233,7 +1233,7 @@ function renderTeamTab() {
       <div class="team-section-eyebrow tone-purple">Pre-show intel</div>
       <h3 class="team-section-title">Who's going &amp; <em>why.</em></h3>
       <p class="team-section-lede">
-        Each teammate's onboarding answers, side by side. Top problem, role, software they're evaluating.
+        Each teammate's onboarding answers, side by side. What they think are your firm's top problems and software to evaluate — invaluable intel to align before, during and after Accountex.
       </p>
       <div class="team-section-count-row">
         <span class="team-section-count-label">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</span>

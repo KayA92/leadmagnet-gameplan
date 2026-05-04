@@ -1727,7 +1727,7 @@ body::before {
 
 /* App header inside each tab */
 .app-header {
-  margin-bottom: 24px;
+  margin-bottom: 40px;
 }
 .app-header-top {
   display: flex;
@@ -1739,7 +1739,7 @@ body::before {
 }
 .app-title {
   font-family: 'Fraunces', serif;
-  font-size: clamp(32px, 4.5vw, 44px);
+  font-size: clamp(34px, 5.2vw, 54px);
   font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 1.05;
@@ -1848,7 +1848,7 @@ button.app-pill.purple.clickable:hover {
 
 /* Section within a tab */
 .app-section {
-  margin-bottom: 36px;
+  margin-bottom: 56px;
 }
 .app-section-header {
   display: flex;
@@ -3225,8 +3225,8 @@ button.app-pill.purple.clickable:hover {
 
 /* AI synthesis block — one paragraph summary above the cards */
 .team-synthesis {
-  padding: 28px 30px 26px;
-  margin-bottom: 32px;
+  padding: 32px 32px 30px;
+  margin: 0 0 56px;
   background: linear-gradient(135deg, rgba(168,85,247,0.06) 0%, rgba(0,212,214,0.04) 100%);
   border: 1px solid rgba(168,85,247,0.2);
   border-radius: 16px;
@@ -6105,7 +6105,7 @@ button.app-pill.purple.clickable:hover {
 .team-section-eyebrow.tone-mint   { color: var(--mint); }
 .team-section-title {
   font-family: 'Fraunces', serif;
-  font-size: clamp(26px, 3.6vw, 34px);
+  font-size: clamp(28px, 4vw, 40px);
   font-weight: 500;
   letter-spacing: -0.015em;
   line-height: 1.2;
@@ -7879,8 +7879,8 @@ button.app-pill.purple.clickable:hover {
 
 /* Team invite block (prominent within Team tab) */
 .team-invite-hero {
-  padding: 24px 28px;
-  margin: 0 0 28px;
+  padding: 28px 32px 30px;
+  margin: 0 0 56px;
   background: linear-gradient(135deg, rgba(255,94,132,0.06) 0%, rgba(168,85,247,0.08) 100%);
   border: 1px solid rgba(168,85,247,0.25);
   border-radius: 18px;
@@ -7907,7 +7907,7 @@ button.app-pill.purple.clickable:hover {
 }
 .team-invite-hero-title {
   font-family: 'Fraunces', serif;
-  font-size: 22px;
+  font-size: clamp(22px, 2.8vw, 28px);
   font-weight: 500;
   letter-spacing: -0.01em;
   margin-bottom: 6px;
@@ -7927,8 +7927,8 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 14px;
   max-width: 600px;
 }
-/* Email invite form */
-.team-invite-form { margin-top: 18px; }
+/* Email invite form — input is the hero, button sits inline-right on desktop */
+.team-invite-form { margin-top: 22px; }
 .team-invite-input-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -7936,26 +7936,35 @@ button.app-pill.purple.clickable:hover {
   align-items: stretch;
 }
 .team-invite-email-input {
-  background: rgba(0,0,0,0.35);
-  border: 1px solid var(--ink-3);
-  border-radius: 10px;
-  padding: 12px 14px;
+  background: rgba(0,0,0,0.45);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 18px 20px;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13.5px;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text);
   width: 100%;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.team-invite-email-input::placeholder { color: var(--text-faint); }
-.team-invite-email-input:focus { outline: none; border-color: var(--pink); }
+.team-invite-email-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.team-invite-email-input:focus {
+  outline: none;
+  border-color: var(--pink);
+  background: rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
+}
 .team-invite-send-btn {
-  padding: 12px 18px;
+  padding: 0 20px;
   background: var(--grad);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;

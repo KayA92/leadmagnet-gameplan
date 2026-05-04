@@ -53,6 +53,20 @@
   font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--text-muted);
 }
+#loading-step {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-faint, rgba(255,255,255,0.35));
+  min-height: 12px; margin-top: -10px;
+}
+#loading-stuck {
+  display: none; margin-top: 18px; text-align: center;
+  font-size: 13px; color: var(--text-muted);
+}
+#loading-stuck a {
+  color: var(--mint); text-decoration: none; font-weight: 600;
+  border-bottom: 1px dashed currentColor; padding-bottom: 1px;
+}
+#loading-stuck a:hover { color: white; }
 
 /* ── Error banner ── */
 #plan-error {
@@ -216,7 +230,22 @@
     <rect class="ae-sq-lit s6" x="77" y="38" width="16" height="16" rx="3"/>
   </svg>
   <span class="loading-label">Loading your plan…</span>
+  <span id="loading-step"></span>
+  <div id="loading-stuck">
+    Stuck for a moment? <a href="/plan/?reset=1">Reset session</a> · <a href="/">Start over</a>
+  </div>
 </div>
+
+<script>
+  // After 7s of loading, show a self-rescue link. Cleared if the loader hides.
+  setTimeout(function() {
+    var stuck = document.getElementById('loading-stuck');
+    var loading = document.getElementById('plan-loading');
+    if (stuck && loading && loading.style.display !== 'none') {
+      stuck.style.display = 'block';
+    }
+  }, 7000);
+</script>
 
 <p id="plan-error"></p>
 

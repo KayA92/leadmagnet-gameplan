@@ -276,7 +276,7 @@ function bucketLabel(bucket) {
 function renderMatchBadge({ bucket, rank, type, compact = false }) {
   const total   = matchTotal(type);
   const sparkle = bucket === 'top'
-    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/></svg>'
+    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>'
     : '';
   return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
     <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>

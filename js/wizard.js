@@ -400,7 +400,7 @@ function matchTotal(type) {
 function renderMatchBadge({ bucket, rank, type, compact = false }) {
   const total   = matchTotal(type);
   const sparkle = bucket === 'top'
-    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/></svg>'
+    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>'
     : '';
   return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
     <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
@@ -485,18 +485,20 @@ function renderPlanPreview() {
   const topPickCount  = rankedSessions.length;
   const sessionsTotal = state.allSessions?.length    || 240;
   const boothsTotal   = state.allExhibitors?.length  || 90;
+  const otherSessions = Math.max(0, sessionsTotal - topPickCount);
   const hiddenAlternativesHtml = `
     <div class="hidden-alternatives">
       <div class="hidden-alt-eyebrow">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/></svg>
-        More waiting in your active plan
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+        All ${sessionsTotal} sessions are ranked to you — activate plan for full access
       </div>
       <p class="hidden-alt-body">
-        You're seeing the top <strong>${topPickCount}</strong> picks. The AI ranked all <strong>${sessionsTotal} sessions</strong> and <strong>${boothsTotal} booths</strong> for you — sorted, ready to browse, swap, and re-rank live as the day unfolds.
+        You're seeing the top <strong>${topPickCount}</strong>. The other <strong>${otherSessions} sessions</strong> and all <strong>${boothsTotal} booths</strong> are ranked the same way, in your active plan.
       </p>
-      <p class="hidden-alt-body">
-        Activate your plan to use the live tool on the day.
-      </p>
+      <button class="hidden-alt-cta" type="button" onclick="document.getElementById('preview-save')?.click()">
+        Activate my plan
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
     </div>
   `;
 

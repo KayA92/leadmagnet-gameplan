@@ -3420,7 +3420,16 @@ async function initDemoMode() {
     // shows its full populated state (AI synthesis, who's-going-and-why,
     // etc.). Real users get a team auto-created on first sign-in; demo
     // skips auth, so we fake one here.
-    const teamPlanFor = (uid, problem, categories, role, sessIds, sessRatings = {}) => ({
+    //
+    // Critical for the Checklist team-rated-row to show: each teammate's
+    // plan must contain sessions/booths whose IDs MATCH items in the
+    // user's plan (renderTeamRatedRow keys by session_id / stand_number).
+    // Both Sarah's and James's plans now overlap with the user's plan.
+    const planSess = sessions;
+    const planBooths = booths;
+    const planSessIds = planSess.map(s => s.session_id);
+    const planBoothNums = planBooths.map(b => String(b.stand_number));
+    const teamPlanFor = (uid, problem, categories, role, sessIds, boothNums, sessRatings = {}, boothRatings = {}) => ({
       id: `demo-plan-${uid}`,
       user_id: uid,
       problem,
@@ -3428,18 +3437,44 @@ async function initDemoMode() {
       role,
       sessions: (allSessions || [])
         .filter(s => sessIds.includes(s.session_id))
-        .slice(0, 6)
         .map(s => ({ ...s, rating: sessRatings[s.session_id] || 0 })),
-      booths: [],
+      booths: (allExhibitors || [])
+        .filter(e => boothNums.includes(String(e.stand_number)))
+        .map(e => ({ ...e, rating: boothRatings[String(e.stand_number)] || 0 })),
       ai_themes: [],
     });
-    const sarahSessIds = (allSessions || []).slice(8, 14).map(s => s.session_id);
-    const jamesSessIds = (allSessions || []).slice(4, 10).map(s => s.session_id);
-    // Pick a few of the user's own plan items for cross-team notes —
-    // shows what other teammates left on items the user is also tracking.
-    const planSess = sessions;
-    const planBooths = booths;
     const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString();
+    // Sarah's session ratings — overlap with the user's plan so the
+    // team-rated row surfaces. Uses planSessIds[0..5] — i.e. her plan
+    // contains the user's first 6 sessions, with ratings on 4 of them.
+    const sarahSessIds = planSessIds.slice(0, 6);
+    const sarahSessRatings = {
+      [planSessIds[0]]: 3, // 🔥🔥🔥
+      [planSessIds[1]]: 2, // 🔥🔥
+      [planSessIds[3]]: 3,
+      [planSessIds[5]]: 1, // 🔥
+    };
+    // James — overlaps differently, rates a different mix
+    const jamesSessIds = planSessIds.slice(0, 7);
+    const jamesSessRatings = {
+      [planSessIds[0]]: 3, // also rated by Sarah → row shows BOTH
+      [planSessIds[2]]: 2,
+      [planSessIds[4]]: 3,
+      [planSessIds[6]]: 2,
+    };
+    // Booth ratings — Sarah on 3, James on 2. planBooths[0] gets rated
+    // by both so the user sees a multi-rater row on it.
+    const sarahBoothNums = planBoothNums.slice(0, 4);
+    const sarahBoothRatings = {
+      [planBoothNums[0]]: 3,
+      [planBoothNums[2]]: 2,
+      [planBoothNums[3]]: 3,
+    };
+    const jamesBoothNums = planBoothNums.slice(0, 3);
+    const jamesBoothRatings = {
+      [planBoothNums[0]]: 2,
+      [planBoothNums[1]]: 1,
+    };
     _teamData = {
       teamId: 'demo-team',
       company: 'Demo Firm Ltd',
@@ -3458,15 +3493,14 @@ async function initDemoMode() {
           'Slow client onboarding, AML / KYC pressure, Document chaos',
           ['aml-onboarding', 'doc-mgmt', 'practice-mgmt'],
           'senior',
-          sarahSessIds,
-          // Sarah's own session ratings — show range across her plan
-          Object.fromEntries(sarahSessIds.slice(0, 4).map((id, i) => [id, [3, 2, 3, 1][i]]))),
+          sarahSessIds, sarahBoothNums,
+          sarahSessRatings, sarahBoothRatings),
         teamPlanFor('demo-james',
           'Margin squeeze, Charging for advice, Stuck in compliance',
           ['proposals', 'forecasting', 'practice-mgmt'],
           'partner',
-          jamesSessIds,
-          Object.fromEntries(jamesSessIds.slice(0, 3).map((id, i) => [id, [3, 2, 3][i]]))),
+          jamesSessIds, jamesBoothNums,
+          jamesSessRatings, jamesBoothRatings),
       ],
       // Variety of team notes — chip-prefixed and free-form, on both
       // sessions and booths, some with multiple notes per item so the

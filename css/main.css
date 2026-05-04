@@ -3805,10 +3805,16 @@ button.app-pill.purple.clickable:hover {
   align-items: center;
   justify-content: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
   border: 2px solid var(--ink-3);
+  color: #fff;
+  /* Same depth treatment as .mini-av so the initials stay legible
+     across any hash-generated gradient backdrop. */
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.18), inset 0 -2px 3px rgba(0,0,0,0.20);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.30);
+  letter-spacing: 0.02em;
 }
 .teammate-avatar.t1 { background: linear-gradient(135deg, rgba(255,94,132,0.4), rgba(168,85,247,0.4)); color: var(--pink); }
 .teammate-avatar.t2 { background: linear-gradient(135deg, rgba(168,85,247,0.4), rgba(0,212,214,0.4)); color: var(--purple); }
@@ -5601,6 +5607,11 @@ button.app-pill.purple.clickable:hover {
   border: 2px solid var(--ink-2);
   margin-left: -6px;
   flex-shrink: 0;
+  /* Inner highlight + text shadow gives the gradient a touch of depth
+     so initials stay legible across any hash-generated background. */
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.18), inset 0 -1px 2px rgba(0,0,0,0.20);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  color: #fff;
 }
 .mini-av:first-child { margin-left: 0; }
 /* Invite pip — soft dashed circle with a user-plus icon, sits at the

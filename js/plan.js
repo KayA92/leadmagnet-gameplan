@@ -759,7 +759,8 @@ function renderChecklistTab() {
             const initial = member?.users?.first_name?.[0]?.toUpperCase()
                           || member?.users?.last_name?.[0]?.toUpperCase() || '?';
             const name    = [member?.users?.first_name, member?.users?.last_name].filter(Boolean).join(' ') || 'Teammate';
-            return `<div class="mini-av ${avatarColors[avatarColorIdx++ % avatarColors.length]}" title="${escHtml(name)}">${escHtml(initial)}</div>`;
+            avatarColorIdx++; // bump for legacy compatibility (some places still read the index)
+            return `<div class="mini-av" style="background:${avatarGradient(name)};color:#fff;" title="${escHtml(name)}">${escHtml(initial)}</div>`;
           })
           .join('')
       : '';
@@ -792,7 +793,7 @@ function renderChecklistTab() {
               <div class="row-team-wrap">
                 <div class="row-rate-caption">Going</div>
                 <div class="checklist-avatars">
-                  <div class="mini-av t3" title="You">${userInitial}</div>
+                  <div class="mini-av" style="background:${avatarGradient(_userProfile?.first_name || _authUser?.email || 'You')};color:#fff;" title="You">${userInitial}</div>
                   ${teamAvatarHtml}
                   ${(_teamData?.members?.length ?? 0) < 2 ? `<button class="invite-pip" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button" aria-label="Invite a teammate" title="Invite a teammate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
@@ -868,7 +869,8 @@ function renderChecklistTab() {
             const initial = member?.users?.first_name?.[0]?.toUpperCase()
                           || member?.users?.last_name?.[0]?.toUpperCase() || '?';
             const name    = [member?.users?.first_name, member?.users?.last_name].filter(Boolean).join(' ') || 'Teammate';
-            return `<div class="mini-av ${avatarColors[avatarColorIdx++ % avatarColors.length]}" title="${escHtml(name)}">${escHtml(initial)}</div>`;
+            avatarColorIdx++; // bump for legacy compatibility (some places still read the index)
+            return `<div class="mini-av" style="background:${avatarGradient(name)};color:#fff;" title="${escHtml(name)}">${escHtml(initial)}</div>`;
           })
           .join('')
       : '';
@@ -900,7 +902,7 @@ function renderChecklistTab() {
               <div class="row-team-wrap">
                 <div class="row-rate-caption">Visiting</div>
                 <div class="checklist-avatars">
-                  <div class="mini-av t3" title="You">${userInitial}</div>
+                  <div class="mini-av" style="background:${avatarGradient(_userProfile?.first_name || _authUser?.email || 'You')};color:#fff;" title="You">${userInitial}</div>
                   ${teamAvatarHtml}
                   ${(_teamData?.members?.length ?? 0) < 2 ? `<button class="invite-pip" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button" aria-label="Invite a teammate" title="Invite a teammate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
@@ -1115,7 +1117,7 @@ function renderTeammateCard(m, index) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>` : ''}
       <div class="teammate-top">
-        <div class="teammate-avatar ${avatarClass}">${escHtml(initials)}</div>
+        <div class="teammate-avatar" style="background:${avatarGradient(fullName)};color:#fff;">${escHtml(initials)}</div>
         <div class="teammate-info">
           <div class="teammate-name-row">
             <span class="teammate-name">${escHtml(u.first_name)} ${escHtml(u.last_name)}</span>
@@ -1149,6 +1151,30 @@ function renderTeammateCard(m, index) {
       </div>
     </div>
   `;
+}
+
+// Hash-based deterministic avatar gradient. Same name always produces
+// the same gradient; every distinct name produces a distinct one.
+// Two HSL stops chosen from a controlled range (vibrant saturation,
+// mid lightness) so every result is on-brand without muddy combos.
+// Replaces the cycling 4-colour t1/t2/t3/t4 class system — every
+// teammate now gets a unique recognisable visual identity without
+// any demographic assumptions.
+function avatarGradient(name) {
+  const s = String(name || '').trim();
+  if (!s) return 'linear-gradient(135deg, #6b6b8a, #4a4a6e)';
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  h = Math.abs(h);
+  const hue1 = h % 360;
+  const hue2 = (hue1 + 60 + ((h >> 8) % 100)) % 360; // 60–160° hue offset
+  const sat  = 68 + ((h >> 16) % 16);                 // 68–83%
+  const l1   = 56 + ((h >> 4)  % 9);                  // 56–64%
+  const l2   = Math.max(40, l1 - 12 - ((h >> 12) % 6));
+  return `linear-gradient(135deg, hsl(${hue1}, ${sat}%, ${l1}%), hsl(${hue2}, ${sat}%, ${l2}%))`;
 }
 
 // Pending team invites — UX-only memory of recently-sent emails. Lives
@@ -1293,9 +1319,9 @@ function renderTeamPreview() {
                 <div class="row-team-wrap">
                   <div class="row-rate-caption">Going</div>
                   <div class="checklist-avatars">
-                    <div class="mini-av t3" title="You">Y</div>
-                    <div class="mini-av t1" title="Sarah">S</div>
-                    <div class="mini-av t2" title="James">J</div>
+                    <div class="mini-av" style="background:${avatarGradient('You')};color:#fff;" title="You">Y</div>
+                    <div class="mini-av" style="background:${avatarGradient('Sarah Reid')};color:#fff;" title="Sarah">S</div>
+                    <div class="mini-av" style="background:${avatarGradient('James O\\'Connor')};color:#fff;" title="James">J</div>
                   </div>
                 </div>
               </div>
@@ -1737,7 +1763,7 @@ function renderDebriefTab() {
           const ini  = initials(u);
           return `
             <div class="debrief-hot-note">
-              <div class="mini-av" style="flex-shrink:0;">${escHtml(ini)}</div>
+              <div class="mini-av" style="flex-shrink:0;background:${avatarGradient(name)};color:#fff;">${escHtml(ini)}</div>
               <div class="debrief-hot-note-body">
                 <div class="debrief-hot-note-head"><strong>${escHtml(name)}</strong></div>
                 <div class="debrief-hot-note-text">${escHtml(n.note_text)}</div>
@@ -2412,12 +2438,14 @@ function _renderSponsorPainsBlock(sponsorKey, plan) {
     <div class="sponsor-card-felt-by">
       <span class="sponsor-felt-label">Also felt by</span>
       <div class="sponsor-felt-list">
-        ${feltBy.map((u, i) => `
+        ${feltBy.map(u => {
+          const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Teammate';
+          return `
           <span class="sponsor-felt-pill">
-            <span class="mini-av t${(i % 4) + 1}">${escHtml((u.first_name?.[0] || '?').toUpperCase())}</span>
+            <span class="mini-av" style="background:${avatarGradient(fullName)};color:#fff;">${escHtml((u.first_name?.[0] || '?').toUpperCase())}</span>
             <span class="sponsor-felt-name">${escHtml(u.first_name || 'Teammate')}</span>
-          </span>
-        `).join('')}
+          </span>`;
+        }).join('')}
       </div>
     </div>
   ` : '';

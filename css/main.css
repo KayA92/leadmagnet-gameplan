@@ -8063,6 +8063,7 @@ button.app-pill.purple.clickable:hover {
   .magic-action-card { padding: 20px 18px; gap: 16px; }
   .magic-action-step-head { font-size: 15px; }
   .magic-action-step-sub { font-size: 13.5px; }
+  .magic-confirm-sub { margin-bottom: 36px; }
 }
 .magic-confirm-eyebrow {
   display: inline-flex;
@@ -8112,7 +8113,7 @@ button.app-pill.purple.clickable:hover {
   font-size: 16px;
   line-height: 1.6;
   color: var(--text-muted);
-  margin: 0 auto 8px;
+  margin: 0 auto 20px;
   max-width: 480px;
 }
 .magic-confirm-sub strong { color: var(--text); font-weight: 600; }

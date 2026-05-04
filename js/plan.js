@@ -1017,32 +1017,6 @@ function renderChecklistTab() {
         </button>
       </div>
     </div>
-
-    <section class="sponsors-footer" style="max-width:760px;">
-      <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
-      <div class="sponsors-grid">
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <img src="/images/workiro-logo.svg" alt="Workiro">
-          </div>
-          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
-          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-          </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
   `;
 }
 
@@ -2227,16 +2201,78 @@ window.togglePlanBooth = async function(standNumber) {
 
 // ── Sponsors footer ───────────────────────────────────────────────────────────
 
-function sponsorsFooterHtml() {
+// Per-sponsor "pains we solve" mapping. Pain labels match the
+// humanised strings stored in plan.problem (PAIN_LABELS in wizard.js).
+// Category slugs match plan.categories. If a user's onboarding has
+// nothing in common with a sponsor, the pains-we-solve block is hidden
+// for that card — we don't fake relevance.
+const SPONSOR_SOLVES = {
+  workiro: {
+    name: 'Workiro',
+    painLabels: [
+      'Document chaos', 'Audit-ready client files', 'Portal adoption / clients hate it',
+      'AML / KYC pressure', 'Chasing clients for records', 'Cyber threats / phishing',
+      'FRS 102 transition', 'Disconnected tech stack',
+    ],
+    categories: [
+      'doc-mgmt', 'doc-management', 'portals-esign', 'aml-onboarding', 'practice-mgmt',
+      'practice-management', 'cyber', 'cyber-security',
+    ],
+  },
+  xu: {
+    name: 'XU Magazine',
+    painLabels: [
+      'AI — where to even start', 'Data mess blocking AI', 'AI — proving the ROI',
+      'AI — team adoption', 'AI skills gap', 'AI governance & risk',
+      'Disconnected tech stack', 'Stuck in compliance',
+    ],
+    categories: [
+      'cloud-accounting', 'ai-automation', 'practice-mgmt', 'practice-management',
+      'tax-mtd', 'forecasting', 'reporting', 'data-analytics',
+    ],
+  },
+};
+function _matchSponsorRelevance(sponsorKey, plan) {
+  const sp = SPONSOR_SOLVES[sponsorKey];
+  if (!sp || !plan) return { pains: [], cats: [] };
+  const userPains = (plan.problem || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
+  const userCats  = plan.categories || [];
+  const lc = (s) => s.toLowerCase();
+  const matchedPains = userPains.filter(p =>
+    sp.painLabels.some(want => lc(want) === lc(p))
+  );
+  const matchedCats = userCats.filter(c => sp.categories.includes(c));
+  return { pains: matchedPains, cats: matchedCats };
+}
+function _renderSponsorPainsBlock(sponsorKey, plan) {
+  const { pains, cats } = _matchSponsorRelevance(sponsorKey, plan);
+  if (!pains.length && !cats.length) return '';
+  const painPills = pains.map(p =>
+    `<span class="sponsor-pain-pill">${escHtml(p)}</span>`).join('');
+  const catPills = cats.map(c =>
+    `<span class="sponsor-stack-pill">${escHtml(CATEGORY_LABELS[c] || c)}</span>`).join('');
+  return `
+    <div class="sponsor-card-relevance">
+      <div class="sponsor-card-relevance-label">Pains we solve</div>
+      <div class="sponsor-card-relevance-pills">${painPills}${catPills}</div>
+    </div>
+  `;
+}
+
+function sponsorsFooterHtml(plan = _plan) {
   return `
     <section class="sponsors-footer" style="max-width:760px;">
-      <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
+      <h2 class="sponsors-footer-heading">This <em>free Accountex 2026 Planner</em> is brought to you by</h2>
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
             <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
+          <p class="sponsor-card-desc">
+            Cloud document management for UK accountants — trusted by 65,000+ professionals.
+            <span class="sponsor-card-booth">Come visit us at booth <strong>1144</strong>.</span>
+          </p>
+          ${_renderSponsorPainsBlock('workiro', plan)}
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
             workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -2246,7 +2282,11 @@ function sponsorsFooterHtml() {
           <div class="sponsor-card-logo">
             <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
+          <p class="sponsor-card-desc">
+            The independent news source for accounting app users.
+            <span class="sponsor-card-booth">Come visit us at booth <strong>510</strong>.</span>
+          </p>
+          ${_renderSponsorPainsBlock('xu', plan)}
           <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
             xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -2254,8 +2294,20 @@ function sponsorsFooterHtml() {
         </div>
       </div>
     </section>
+
+    <section class="autoevent-cta">
+      <div class="autoevent-cta-eyebrow">Powered by</div>
+      <img class="autoevent-cta-logo" src="/images/AutoEvent.svg" alt="AutoEvent">
+      <h3 class="autoevent-cta-headline">Want an AI-matched event app like this for <em>your next event?</em></h3>
+      <a class="autoevent-cta-btn" href="/" target="_blank" rel="noopener">
+        About AutoEvent
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <div class="autoevent-cta-built">Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></div>
+    </section>
+
     <div class="hero-page-footer">
-      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+      Free · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
     </div>
   `;
 }
@@ -2347,27 +2399,14 @@ function renderApp() {
   }
 }
 
-const _teamFooterHtml = `
-    <div class="hero-page-footer">
-      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
-    </div>
-    <div class="sponsors-footer" style="border-top:none;">
-      <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
-      <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
-        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
-      </div>
-    </div>
-  `;
-
 function renderCurrentTab() {
-  const footer = sponsorsFooterHtml();
+  const footer = sponsorsFooterHtml(_plan);
   switch (_currentTab) {
-    case 'checklist': return renderChecklistTab();
-    case 'team':      return renderTeamTab() + _teamFooterHtml;
-    case 'cpd':       return renderCpdTab() + footer;
-    case 'debrief':   return renderDebriefTab() + footer;
-    default:          return renderChecklistTab();
+    case 'checklist': return renderChecklistTab() + footer;
+    case 'team':      return renderTeamTab()      + footer;
+    case 'cpd':       return renderCpdTab()       + footer;
+    case 'debrief':   return renderDebriefTab()   + footer;
+    default:          return renderChecklistTab() + footer;
   }
 }
 

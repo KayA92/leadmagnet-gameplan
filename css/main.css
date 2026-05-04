@@ -9727,6 +9727,64 @@ button.app-pill.purple.clickable:hover {
   max-width: 36ch;
   flex: 1;
 }
+/* Booth-number callout inside the sponsor desc — purple so it stands
+   apart from the body copy without yelling. */
+.sponsor-card-booth {
+  display: inline;
+  color: var(--purple);
+  font-style: normal;
+  font-weight: 600;
+}
+.sponsor-card-booth strong {
+  color: var(--purple);
+  font-weight: 800;
+}
+/* "Pains we solve" — only renders when there's overlap between the
+   sponsor's solve list and the user's onboarding answers. */
+.sponsor-card-relevance {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255,255,255,0.12);
+  width: 100%;
+  text-align: center;
+}
+.sponsor-card-relevance-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.sponsor-card-relevance-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+.sponsor-pain-pill,
+.sponsor-stack-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sponsor-pain-pill {
+  border-color: rgba(255,94,132,0.30);
+  background: rgba(255,94,132,0.06);
+  color: var(--text);
+}
+.sponsor-stack-pill {
+  border-color: rgba(168,85,247,0.30);
+  background: rgba(168,85,247,0.07);
+  color: var(--purple);
+}
+
 .sponsor-card-link {
   font-size: 15px;
   font-weight: 500;
@@ -9738,6 +9796,109 @@ button.app-pill.purple.clickable:hover {
   gap: 6px;
 }
 .sponsor-card-link:hover { opacity: 0.8; }
+
+/* ── AutoEvent CTA section ─────────────────────────────────────────────
+   Sits below the sponsor cards. Slick + centred — eyebrow, logo, head-
+   line, primary button, "Built by Workiro" tagline. Branded gradient
+   border so it reads as a polished outro, not a third sponsor card. */
+.autoevent-cta {
+  max-width: 720px;
+  margin: 28px auto 24px;
+  padding: 38px 32px 32px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.0) 100%);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.autoevent-cta::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 18px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,94,132,0.30), rgba(168,85,247,0.30));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+.autoevent-cta-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.autoevent-cta-logo {
+  height: 42px;
+  width: auto;
+  display: block;
+  margin: 0 auto 18px;
+}
+.autoevent-cta-headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 0 auto 22px;
+  max-width: 28ch;
+  font-variation-settings: 'SOFT' 50;
+}
+.autoevent-cta-headline em {
+  font-style: italic;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variation-settings: 'SOFT' 80;
+}
+.autoevent-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: var(--grad);
+  color: #fff;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(255,94,132,0.30);
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.autoevent-cta-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(255,94,132,0.42);
+}
+.autoevent-cta-built {
+  margin-top: 16px;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.autoevent-cta-built a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px dashed rgba(255,255,255,0.20);
+}
+.autoevent-cta-built a:hover {
+  border-bottom-color: var(--mint);
+  color: var(--mint);
+}
+@media (max-width: 600px) {
+  .autoevent-cta { padding: 32px 22px 28px; margin: 24px 16px 20px; }
+  .autoevent-cta-headline { font-size: 22px; }
+  .autoevent-cta-logo { height: 36px; }
+}
 @media (max-width: 600px) {
   .sponsors-footer { padding: 48px 20px 48px; margin-top: 60px; }
   .sponsors-footer-heading { font-size: 34px; margin-bottom: 28px; }

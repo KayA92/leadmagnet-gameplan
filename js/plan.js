@@ -542,20 +542,20 @@ function renderGapCard(day, startTime, endTime, _gapIndex) {
 // user types context. Saved note is just text — no parallel chip array,
 // no schema change. AI debrief later groups by emoji prefix.
 const NOTE_CHIPS_SESSION = [
-  { emoji: '⚡', label: 'Action item' },
-  { emoji: '💡', label: 'New idea' },
-  { emoji: '📤', label: 'Worth sharing' },
-  { emoji: '❗', label: 'Surprised me' },
-  { emoji: '✅', label: 'Reinforced' },
-  { emoji: '👎', label: 'Disappointing' },
+  { emoji: '❤️', label: 'Loved it' },
+  { emoji: '🔥', label: 'Game-changer' },
+  { emoji: '💡', label: 'Idea' },
+  { emoji: '🧠', label: 'Made me think' },
+  { emoji: '👎', label: 'Skip it' },
+  { emoji: '📝', label: 'To do' },
 ];
 const NOTE_CHIPS_BOOTH = [
-  { emoji: '🎯', label: 'Pursue' },
+  { emoji: '❤️', label: 'Love it' },
+  { emoji: '🔍', label: 'Look into' },
+  { emoji: '🔥', label: 'Best in show' },
   { emoji: '🤔', label: 'Maybe' },
-  { emoji: '❌', label: 'Pass' },
-  { emoji: '💰', label: 'Need pricing' },
-  { emoji: '📅', label: 'Need demo' },
-  { emoji: '👤', label: 'Send to partner' },
+  { emoji: '👎', label: 'Skip' },
+  { emoji: '⏱', label: 'Not now' },
 ];
 const NOTE_HINT = 'Notes & ratings visible across your team';
 

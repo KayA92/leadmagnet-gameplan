@@ -475,24 +475,28 @@ function renderPlanPreview() {
     .map((b, i) => renderBooth(b, i, sessionItems.length + i))
     .join('');
 
-  // TODO: Replace with real reserve_list from matcher response.
-  // Backend will return a `reserve_list` array of 4-7 sessions whose
-  // bucket = 'high' (just below the primary picks). Each carries
-  // { bucket, rank, total }. Display: count + tier label only. Titles
-  // stay hidden until the user saves their plan.
-  // If reserve_list is empty or null, hide this entire section.
-  const altCount   = HIDDEN_ALT_DUMMY.count;
-  const altTier    = bucketLabel(HIDDEN_ALT_DUMMY.bucket).toUpperCase();
-  const altPlural  = altCount === 1 ? 'alternative' : 'alternatives';
+  // TODO: Replace with real counts from matcher output.
+  //   topPickCount  = rankedSessions.length (user's shortlist)
+  //   sessionsTotal = full programme count for the event
+  //   boothsTotal   = full exhibitor count for the event
+  // The whole section is a transformation tease, not a feature list —
+  // honest depth (240 ranked, 90 booths) + transformation verb ("Activate")
+  // does the conversion work without overselling the live tool.
+  const topPickCount  = rankedSessions.length;
+  const sessionsTotal = state.allSessions?.length    || 240;
+  const boothsTotal   = state.allExhibitors?.length  || 90;
   const hiddenAlternativesHtml = `
     <div class="hidden-alternatives">
       <div class="hidden-alt-eyebrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        HIDDEN ALTERNATIVES
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/></svg>
+        More waiting in your active plan
       </div>
-      <div class="hidden-alt-body">
-        <strong>${altCount} ${altTier}</strong> ${altPlural} ready to swap in. Save your plan to unlock.
-      </div>
+      <p class="hidden-alt-body">
+        You're seeing the top <strong>${topPickCount}</strong> picks. The AI ranked all <strong>${sessionsTotal} sessions</strong> and <strong>${boothsTotal} booths</strong> for you — sorted, ready to browse, swap, and re-rank live as the day unfolds.
+      </p>
+      <p class="hidden-alt-body">
+        Activate your plan to use the live tool on the day.
+      </p>
     </div>
   `;
 
@@ -520,7 +524,7 @@ function renderPlanPreview() {
       </div>
       <div class="confirm-preview-banner">
         <span class="confirm-preview-tag">Preview</span>
-        To change anything, tap 'Save my plan' below. That's where you untick, swap, search for more, or invite teammates.
+        To change anything, tap 'Activate my plan' below. That's where you untick, swap, search for more, or invite teammates.
       </div>
       <div class="mini-item-list">
         ${sessionsListHtml}

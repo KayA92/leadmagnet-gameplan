@@ -9899,15 +9899,23 @@ button.app-pill.purple.clickable:hover {
 }
 
 /* ── Team notes inline block on Checklist cards ───────────────────────
-   Caps at 2 visible rows; "+N more" link opens planShowTeamNotes
-   modal. Purple-tinted to match the booth identity since both share
-   the team-data colour family. */
+   Caps at 4 visible rows; "+N more" link opens planShowTeamNotes
+   modal. Tone follows the card's identity colour: mint on session
+   cards (matches the utility/team-data palette), purple on booth
+   cards (matches booth identity). */
 .team-notes-block {
   margin-top: 10px;
   padding: 10px 12px;
-  background: rgba(168,85,247,0.07);
-  border: 1px solid rgba(168,85,247,0.22);
   border-radius: 8px;
+  border: 1px solid;
+}
+.team-notes-block.tone-mint {
+  background: rgba(34,230,168,0.06);
+  border-color: rgba(34,230,168,0.26);
+}
+.team-notes-block.tone-purple {
+  background: rgba(168,85,247,0.07);
+  border-color: rgba(168,85,247,0.22);
 }
 .team-note-row {
   font-size: 12.5px;
@@ -9917,30 +9925,92 @@ button.app-pill.purple.clickable:hover {
 }
 .team-note-row:last-child { margin-bottom: 0; }
 .team-note-name {
-  color: var(--purple);
   font-weight: 700;
   margin-right: 4px;
 }
+.team-notes-block.tone-mint   .team-note-name { color: var(--mint); }
+.team-notes-block.tone-purple .team-note-name { color: var(--purple); }
 .team-notes-more {
   display: inline-block;
   margin-top: 4px;
   padding: 0;
   background: transparent;
   border: none;
-  color: var(--purple);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  border-bottom: 1px dashed rgba(168,85,247,0.40);
+  border-bottom: 1px dashed;
   transition: color 0.15s, border-color 0.15s;
+}
+.team-notes-block.tone-mint   .team-notes-more {
+  color: var(--mint);
+  border-bottom-color: rgba(34,230,168,0.40);
+}
+.team-notes-block.tone-purple .team-notes-more {
+  color: var(--purple);
+  border-bottom-color: rgba(168,85,247,0.40);
 }
 .team-notes-more:hover {
   color: #fff;
-  border-bottom-color: var(--purple);
+  border-bottom-color: currentColor;
 }
+
+/* ── Team-rated row — small inline pills showing teammate ratings ─────
+   "Sarah 🔥🔥🔥 · James 🔥🔥". Sits below the user's own rate panel.
+   Mint-tinted on sessions, purple-tinted on booths. Flame stays pink
+   so the rating semantics read consistently. */
+.team-rated-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed;
+}
+.team-rated-row.tone-mint   { border-top-color: rgba(34,230,168,0.18); }
+.team-rated-row.tone-purple { border-top-color: rgba(168,85,247,0.20); }
+.team-rated-caption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-right: 2px;
+}
+.team-rated-row.tone-mint   .team-rated-caption { color: var(--mint); }
+.team-rated-row.tone-purple .team-rated-caption { color: var(--purple); }
+.team-rated-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 100px;
+  border: 1px solid;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.02);
+}
+.team-rated-row.tone-mint   .team-rated-pill {
+  border-color: rgba(34,230,168,0.30);
+  color: var(--text);
+}
+.team-rated-row.tone-purple .team-rated-pill {
+  border-color: rgba(168,85,247,0.32);
+  color: var(--text);
+}
+.team-rated-flames {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: rgba(255,108,144,0.95);
+  filter: drop-shadow(0 0 3px rgba(255,94,132,0.45));
+}
+.team-rated-flame-icon { display: block; }
 
 /* Team-notes modal — variant of the confirm modal panel, scrollable
    list inside, no destructive accent. */

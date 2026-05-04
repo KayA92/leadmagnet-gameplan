@@ -626,13 +626,15 @@ function renderChecklistTab() {
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
 
-  // Inline team-notes block on a card. Caps at 2 notes; if more exist,
+  // Inline team-notes block on a card. Caps at 4 notes; if more exist,
   // shows a "+N more · View all" link that opens a modal listing every
   // teammate note for the item. Stops a single chatty teammate from
-  // pushing the card off-screen.
-  const TEAM_NOTES_INLINE_CAP = 2;
+  // pushing the card off-screen. Tone follows the card colour identity:
+  // mint on sessions, purple on booths.
+  const TEAM_NOTES_INLINE_CAP = 4;
   function renderTeamNotesBlock(teamNotes, noteKey, itemTitle) {
     if (!teamNotes.length) return '';
+    const tone = noteKey.startsWith('booth:') ? 'purple' : 'mint';
     const sorted = [...teamNotes].sort((a, b) =>
       new Date(b.created_at || 0) - new Date(a.created_at || 0));
     const visible = sorted.slice(0, TEAM_NOTES_INLINE_CAP);
@@ -645,7 +647,40 @@ function renderChecklistTab() {
     const moreLink = overflow > 0
       ? `<button class="team-notes-more" type="button" data-title="${escHtml(itemTitle || '')}" onclick="planShowTeamNotes('${escHtml(noteKey)}', this.dataset.title)">+${overflow} more · View all team notes</button>`
       : '';
-    return `<div class="team-notes-block">${visible.map(noteRow).join('')}${moreLink}</div>`;
+    return `<div class="team-notes-block tone-${tone}">${visible.map(noteRow).join('')}${moreLink}</div>`;
+  }
+
+  // Build a per-item lookup of team ratings — surfaces Sarah/James-style
+  // flame ratings on each card so the user sees what their team thought
+  // without flipping to Debrief.
+  const teamRatingsByKey = {};
+  for (const tp of (_teamData?.teamPlans || [])) {
+    if (tp.user_id === _authUser?.id) continue;
+    const author = _teamData?.members.find(m => m.users?.id === tp.user_id);
+    const name = author ? author.users.first_name : 'Teammate';
+    for (const s of (tp.sessions || [])) {
+      if (!s.rating) continue;
+      const key = `session:${s.session_id}`;
+      (teamRatingsByKey[key] = teamRatingsByKey[key] || []).push({ name, rating: s.rating });
+    }
+    for (const b of (tp.booths || [])) {
+      if (!b.rating) continue;
+      const key = `booth:${b.stand_number}`;
+      (teamRatingsByKey[key] = teamRatingsByKey[key] || []).push({ name, rating: b.rating });
+    }
+  }
+  function renderTeamRatedRow(noteKey) {
+    const raters = teamRatingsByKey[noteKey];
+    if (!raters || !raters.length) return '';
+    const tone = noteKey.startsWith('booth:') ? 'purple' : 'mint';
+    const flame = `<svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>`;
+    return `<div class="team-rated-row tone-${tone}">
+      <span class="team-rated-caption">Team rated</span>
+      ${raters.map(r => `<span class="team-rated-pill">
+        <span class="team-rated-name">${escHtml(r.name)}</span>
+        <span class="team-rated-flames">${flame.repeat(Math.max(1, Math.min(3, r.rating)))}</span>
+      </span>`).join('')}
+    </div>`;
   }
 
   function renderSessionRow(item, i) {
@@ -764,6 +799,7 @@ function renderChecklistTab() {
                 </div>
               </div>
             </div>
+            ${renderTeamRatedRow(noteKey)}
           </div>
         </div>
         ${notePanel}
@@ -871,6 +907,7 @@ function renderChecklistTab() {
                 </div>
               </div>
             </div>
+            ${renderTeamRatedRow(noteKey)}
             ${renderTeamNotesBlock(teamNotes, noteKey, item.company_name || '')}
           </div>
         </div>

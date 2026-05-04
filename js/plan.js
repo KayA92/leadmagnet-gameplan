@@ -1321,7 +1321,7 @@ function renderTeamPreview() {
                   <div class="checklist-avatars">
                     <div class="mini-av" style="background:${avatarGradient('You')};color:#fff;" title="You">Y</div>
                     <div class="mini-av" style="background:${avatarGradient('Sarah Reid')};color:#fff;" title="Sarah">S</div>
-                    <div class="mini-av" style="background:${avatarGradient('James O\\'Connor')};color:#fff;" title="James">J</div>
+                    <div class="mini-av" style="background:${avatarGradient("James O'Connor")};color:#fff;" title="James">J</div>
                   </div>
                 </div>
               </div>

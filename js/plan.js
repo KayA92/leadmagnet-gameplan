@@ -644,8 +644,9 @@ function renderChecklistTab() {
       const name = author ? author.users.first_name : 'Teammate';
       return `<p class="team-note-row"><span class="team-note-name">${escHtml(name)}:</span> ${escHtml(n.note_text || '')}</p>`;
     };
+    const total = sorted.length;
     const moreLink = overflow > 0
-      ? `<button class="team-notes-more" type="button" data-title="${escHtml(itemTitle || '')}" onclick="planShowTeamNotes('${escHtml(noteKey)}', this.dataset.title)">+${overflow} more · View all team notes</button>`
+      ? `<button class="team-notes-more" type="button" data-title="${escHtml(itemTitle || '')}" onclick="planShowTeamNotes('${escHtml(noteKey)}', this.dataset.title)">See all ${total} →</button>`
       : '';
     return `<div class="team-notes-block tone-${tone}">${visible.map(noteRow).join('')}${moreLink}</div>`;
   }
@@ -3503,10 +3504,10 @@ async function initDemoMode() {
           jamesSessRatings, jamesBoothRatings),
       ],
       // Variety of team notes — chip-prefixed and free-form, on both
-      // sessions and booths, some with multiple notes per item so the
-      // "+N more · View all" overflow path actually triggers.
+      // sessions and booths. Several items deliberately carry 5+ notes
+      // so the "See all N →" overflow link is visible immediately.
       allNotes: [
-        // Session 1 — gets 3 notes from Sarah + James (overflow path)
+        // ── Session 0 (6 notes from both teammates → overflow) ──────
         planSess[0] && {
           plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
           note_text: '🔥 Game-changer: speakers nailed the AML angle — exactly what we\'ve been wrestling with for our top-50 clients.',
@@ -3520,21 +3521,78 @@ async function initDemoMode() {
         planSess[0] && {
           plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
           note_text: '💡 Idea: run a 30-min internal lunch-and-learn from this — could replace our Q3 training session entirely.',
+          created_by: 'demo-sarah', created_at: hoursAgo(14),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '🧠 Made me think: we\'re probably 6 months behind where the speaker said the leading firms are.',
+          created_by: 'demo-james', created_at: hoursAgo(10),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '❤️ Loved it: speaker is on LinkedIn, dropped them a connect — would be great to bring in for our December offsite.',
           created_by: 'demo-sarah', created_at: hoursAgo(6),
         },
-        // Session 2 — single note from James
+        planSess[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '📝 To do: cross-check their compliance framework against ours, bring deltas to next leadership meeting.',
+          created_by: 'demo-james', created_at: hoursAgo(2),
+        },
+        // ── Session 1 (1 note inline only) ─────────────────────────
         planSess[1] && {
           plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[1].session_id,
           note_text: '🧠 Made me think: are we overcomplicating our pricing model? Worth a partner conversation.',
           created_by: 'demo-james', created_at: hoursAgo(4),
         },
-        // Session 4 — Sarah, free-form
+        // ── Session 2 (5 notes → overflow) ─────────────────────────
+        planSess[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '💡 Idea: that anecdote about the rollout failure → we should pre-empt the same pattern with our 2026 plan.',
+          created_by: 'demo-sarah', created_at: hoursAgo(22),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '🔥 Game-changer: clearest articulation of advisory pricing I\'ve seen at any conference.',
+          created_by: 'demo-james', created_at: hoursAgo(15),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: 'Liked the framing of "outcomes vs deliverables" — we\'ve been pricing the wrong thing.',
+          created_by: 'demo-sarah', created_at: hoursAgo(11),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '📝 To do: redraft our top 3 engagement letters using the framework before quarter-end.',
+          created_by: 'demo-james', created_at: hoursAgo(7),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '👎 Skip it: their case study client felt cherry-picked. Skip if you\'re tight on time.',
+          created_by: 'demo-sarah', created_at: hoursAgo(3),
+        },
+        // ── Session 3 (free-form, single note) ─────────────────────
         planSess[3] && {
           plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[3].session_id,
           note_text: 'Wasn\'t expecting this to land but the practical examples on data migration were spot on. Will recommend to the implementation team.',
           created_by: 'demo-sarah', created_at: hoursAgo(2),
         },
-        // Booth 1 — both teammates, overflow
+        // ── Session 5 (3 notes — under cap, all visible inline) ────
+        planSess[5] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[5].session_id,
+          note_text: '🔍 Look into: their AI sandbox demo — feels relevant for our Q1 internal pilot.',
+          created_by: 'demo-james', created_at: hoursAgo(26),
+        },
+        planSess[5] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[5].session_id,
+          note_text: '💡 Idea: book a follow-up call with the speaker — they\'re open to small-firm consulting.',
+          created_by: 'demo-sarah', created_at: hoursAgo(9),
+        },
+        planSess[5] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[5].session_id,
+          note_text: '🧠 Made me think: do our junior team actually need a separate AI literacy programme?',
+          created_by: 'demo-james', created_at: hoursAgo(1),
+        },
+        // ── Booth 0 (5 notes → overflow) ───────────────────────────
         planBooths[0] && {
           plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
           note_text: '🔥 Best in show: easily the slickest demo we saw. Their integration story with our practice mgmt stack is exactly what we need.',
@@ -3543,24 +3601,55 @@ async function initDemoMode() {
         planBooths[0] && {
           plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
           note_text: '🔍 Look into: pricing tier 3 + bulk client onboarding — they hinted at a partner programme worth exploring.',
-          created_by: 'demo-james', created_at: hoursAgo(18),
+          created_by: 'demo-james', created_at: hoursAgo(22),
         },
         planBooths[0] && {
           plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
           note_text: '❤️ Love it: their CEO walked us through the roadmap — Q3 release lines up with our migration window.',
-          created_by: 'demo-sarah', created_at: hoursAgo(8),
+          created_by: 'demo-sarah', created_at: hoursAgo(13),
         },
-        // Booth 2 — single skip note from James
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '📅 Demo booked for next Tuesday with their solution architect — Sarah, James, and ops on the call.',
+          created_by: 'demo-james', created_at: hoursAgo(8),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '🔍 Look into: ask about migration support during pilot — would be a deal-breaker if we have to fund it.',
+          created_by: 'demo-sarah', created_at: hoursAgo(3),
+        },
+        // ── Booth 1 — single skip note ─────────────────────────────
         planBooths[1] && {
           plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[1].stand_number),
           note_text: '👎 Skip: same playbook as last year. No real differentiation from incumbents.',
           created_by: 'demo-james', created_at: hoursAgo(5),
         },
-        // Booth 3 — Sarah maybe
+        // ── Booth 2 (4 notes — exactly at cap, no overflow) ────────
         planBooths[2] && {
           plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
           note_text: '🤔 Maybe: tech is interesting but their UK support story isn\'t there yet. Re-evaluate next year.',
-          created_by: 'demo-sarah', created_at: hoursAgo(1),
+          created_by: 'demo-sarah', created_at: hoursAgo(24),
+        },
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: '⏱ Not now: pricing is right but onboarding effort doesn\'t fit our 2026 roadmap. Keep on watchlist.',
+          created_by: 'demo-james', created_at: hoursAgo(16),
+        },
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: 'Liked the founder. Worth a coffee even if we don\'t use the product right now.',
+          created_by: 'demo-sarah', created_at: hoursAgo(11),
+        },
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: '🤔 Maybe: their analytics module is genuinely better than ours, but the rest is a downgrade.',
+          created_by: 'demo-james', created_at: hoursAgo(4),
+        },
+        // ── Booth 3 (single short note) ────────────────────────────
+        planBooths[3] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[3].stand_number),
+          note_text: '❤️ Love it: by far our favourite team to talk to. Genuine, knowledgeable, no sales pitch.',
+          created_by: 'demo-sarah', created_at: hoursAgo(2),
         },
       ].filter(Boolean),
     };

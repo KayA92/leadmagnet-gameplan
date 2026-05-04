@@ -8603,55 +8603,72 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 14px;
   max-width: 600px;
 }
-/* Email invite form — input is the hero, button sits inline-right on desktop */
+/* Email invite form — input is the hero, button is attached inside the
+   right edge on desktop, stacks below on mobile. The "shell" wrapper
+   gives the input + button a single visually-unified pill while keeping
+   them separate elements. */
 .team-invite-form { margin-top: 22px; }
-.team-invite-input-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  align-items: stretch;
-}
-.team-invite-email-input {
+.team-invite-input-shell {
+  position: relative;
   background: rgba(0,0,0,0.45);
   border: 1.5px solid rgba(255,255,255,0.18);
-  border-radius: 12px;
-  padding: 18px 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: stretch;
+  padding: 5px;
+  gap: 0;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.team-invite-input-shell:focus-within {
+  border-color: var(--pink);
+  background: rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
+}
+.team-invite-email-input {
+  background: transparent;
+  border: none;
+  padding: 14px 14px 14px 16px;
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--text);
   width: 100%;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  flex: 1;
+  min-width: 0;
+  outline: none;
 }
 .team-invite-email-input::placeholder {
   color: var(--text-muted);
   font-weight: 400;
 }
-.team-invite-email-input:focus {
-  outline: none;
-  border-color: var(--pink);
-  background: rgba(0,0,0,0.6);
-  box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
-}
 .team-invite-send-btn {
-  padding: 0 20px;
+  flex-shrink: 0;
+  padding: 0 22px;
   background: var(--grad);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-family: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  transition: all 0.15s;
   white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(255,94,132,0.3);
+  box-shadow: 0 3px 14px rgba(255,94,132,0.32);
+  transition: filter 0.15s, box-shadow 0.15s, transform 0.1s;
+  min-height: 44px;
 }
-.team-invite-send-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,94,132,0.4); }
-.team-invite-send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.team-invite-send-btn:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 6px 22px rgba(255,94,132,0.42);
+}
+.team-invite-send-btn:active { transform: scale(0.98); }
+.team-invite-send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.team-invite-send-btn.sending { opacity: 0.85; cursor: progress; }
+.team-invite-send-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .team-invite-status {
   margin-top: 10px;
   font-size: 13px;
@@ -8659,6 +8676,90 @@ button.app-pill.purple.clickable:hover {
 }
 .team-invite-status.success { color: var(--mint); }
 .team-invite-status.error   { color: var(--pink); }
+
+/* ── Pending invites — UX-only memory of recently-sent emails ──────── */
+.team-invite-pending {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+.team-invite-pending-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.team-invite-pending-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.team-invite-pending-row:first-of-type { border-top: none; padding-top: 4px; }
+.team-invite-pending-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.team-invite-pending-email {
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.team-invite-pending-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint, rgba(255,255,255,0.40));
+}
+.team-invite-pending-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.team-invite-pending-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.team-invite-pending-btn.resend:hover {
+  border-color: var(--mint);
+  color: var(--mint);
+  background: rgba(34,230,168,0.08);
+}
+.team-invite-pending-btn.cancel {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.team-invite-pending-btn.cancel:hover {
+  border-color: rgba(255,94,132,0.42);
+  color: var(--pink);
+  background: rgba(255,94,132,0.08);
+}
 
 /* Join team prompt banner */
 .team-join-prompt {
@@ -9179,8 +9280,40 @@ button.app-pill.purple.clickable:hover {
   .plan-tab-content { padding: 0 16px 80px; }
   .intel-grid { grid-template-columns: 1fr; }
   .team-invite-hero { padding: 18px 20px; }
-  .team-invite-input-row { grid-template-columns: 1fr; }
-  .team-invite-send-btn { justify-content: center; }
+  /* Mobile — stack the button below the input. Pull the wrapper out of
+     the pill chrome so the input + button each get their own visual
+     boundary. */
+  .team-invite-input-shell {
+    flex-direction: column;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    gap: 10px;
+  }
+  .team-invite-input-shell:focus-within {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  .team-invite-email-input {
+    background: rgba(0,0,0,0.45);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .team-invite-email-input:focus {
+    border-color: var(--pink);
+    background: rgba(0,0,0,0.6);
+    box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
+  }
+  .team-invite-send-btn {
+    width: 100%;
+    border-radius: 12px;
+    padding: 14px 22px;
+    min-height: 50px;
+  }
   .team-join-prompt { padding: 12px 16px; }
   .team-join-prompt-inner { flex-direction: column; align-items: flex-start; }
   .confirm-fixed-cta { padding: 12px 16px 16px; }

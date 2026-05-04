@@ -1176,10 +1176,78 @@ function renderTeammateCard(m, index) {
   `;
 }
 
+// Pending team invites — UX-only memory of recently-sent emails. Lives
+// in localStorage so it survives reloads but doesn't require any DB
+// schema changes. Auto-expires entries older than 7 days. The user can
+// resend (re-fires the magic link) or cancel (just removes from the
+// list — once sent, the email is sent; "cancel" is a memory clean-up).
+const PENDING_INVITES_KEY = 'pendingTeamInvites';
+const PENDING_INVITE_TTL_MS = 7 * 24 * 3600 * 1000;
+
+function _readPendingInvites() {
+  try {
+    const raw = localStorage.getItem(PENDING_INVITES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    const now = Date.now();
+    const fresh = arr.filter(e => e?.email && e?.sentAt && (now - e.sentAt) < PENDING_INVITE_TTL_MS);
+    if (fresh.length !== arr.length) {
+      try { localStorage.setItem(PENDING_INVITES_KEY, JSON.stringify(fresh)); } catch {}
+    }
+    return fresh;
+  } catch { return []; }
+}
+function _writePendingInvites(arr) {
+  try { localStorage.setItem(PENDING_INVITES_KEY, JSON.stringify(arr)); } catch {}
+}
+function rememberPendingInvite(email) {
+  const list = _readPendingInvites().filter(e => e.email !== email);
+  list.unshift({ email, sentAt: Date.now() });
+  _writePendingInvites(list);
+}
+function forgetPendingInvite(email) {
+  _writePendingInvites(_readPendingInvites().filter(e => e.email !== email));
+}
+function _formatRelativeTime(ms) {
+  const diff = Math.max(0, Date.now() - ms);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function renderPendingInvitesBlock() {
+  const list = _readPendingInvites();
+  if (!list.length) return '';
+  return `
+    <div class="team-invite-pending">
+      <div class="team-invite-pending-label">Pending invites</div>
+      ${list.map(e => `
+        <div class="team-invite-pending-row" data-email="${escHtml(e.email)}">
+          <div class="team-invite-pending-meta">
+            <span class="team-invite-pending-email">${escHtml(e.email)}</span>
+            <span class="team-invite-pending-time">Sent ${escHtml(_formatRelativeTime(e.sentAt))}</span>
+          </div>
+          <div class="team-invite-pending-actions">
+            <button class="team-invite-pending-btn resend" type="button" data-email="${escHtml(e.email)}" onclick="planResendInvite(this.dataset.email)">Resend</button>
+            <button class="team-invite-pending-btn cancel" type="button" aria-label="Remove from list" data-email="${escHtml(e.email)}" onclick="planCancelPendingInvite(this.dataset.email)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const MAX_TEAM_MEMBERS = 8;
+  const MAX_TEAM_MEMBERS = 10;
   const memberCount = _teamData.members.length;
   const isSolo      = memberCount < 2;
   const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
@@ -1195,16 +1263,20 @@ function renderTeamTab() {
 
   const inviteForm = `
     <div class="team-invite-form" id="team-invite-form">
-      <div class="team-invite-input-row">
+      <div class="team-invite-input-shell">
         <input type="email" class="team-invite-email-input" id="team-invite-email"
           placeholder="colleague@firm.com" autocomplete="email"
           onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
         <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
-          Send invite
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <svg class="team-invite-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M22 6 12 13 2 6"/>
+          </svg>
+          <span class="team-invite-send-label">Send invite</span>
         </button>
       </div>
       <div class="team-invite-status" id="team-invite-status"></div>
+      ${renderPendingInvitesBlock()}
     </div>
   `;
 
@@ -1226,9 +1298,7 @@ function renderTeamTab() {
 
   const heroTitle = isFull
     ? `Your <em>${MAX_TEAM_MEMBERS}-strong</em> team is locked in.`
-    : (isSolo
-        ? `Invite up to <em>${MAX_TEAM_MEMBERS} teammates.</em>`
-        : `Bring more colleagues. <em>${MAX_TEAM_MEMBERS} seats total.</em>`);
+    : `Invite up to <em>${MAX_TEAM_MEMBERS} teammates.</em>`;
 
   const heroSub = isFull
     ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
@@ -1252,9 +1322,9 @@ function renderTeamTab() {
     </div>
   `;
 
-  const pageTitle = isSolo
-    ? `Bring your team to <em>Accountex.</em>`
-    : `Your firm at <em>Accountex.</em>`;
+  // Single H1 across both states — "Bring your team to Accountex." is
+  // the right framing whether they have teammates yet or not.
+  const pageTitle = `Bring your team to <em>Accountex.</em>`;
 
   const pageSub = isSolo
     ? ``
@@ -2529,7 +2599,7 @@ async function handleSignIn(authUser, teamToken) {
             lead_user_id: authUser.id,
             company:      userRow?.company || null,
             invite_token: crypto.randomUUID(),
-            max_members:  8,
+            max_members:  10,
           })
           .select('id, invite_token')
           .single();
@@ -3218,43 +3288,72 @@ window.planRemoveTeamMember = async function(userId) {
   renderApp();
 };
 
-window.planSendInvite = async function() {
-  const input  = document.getElementById('team-invite-email');
+// Shared markup for the send button — body of innerHTML reused after
+// resetting the .sending state. Keep in sync with the inline render.
+const _SEND_INVITE_BTN_HTML = `<svg class="team-invite-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6 12 13 2 6"/></svg><span class="team-invite-send-label">Send invite</span>`;
+
+// Core send routine — runs both the initial Send and the Resend path.
+// Resend skips reading the input (email comes from the pending list),
+// so we don't disturb whatever the user has typed for the next invite.
+async function _sendTeamInvite(email, opts = {}) {
   const status = document.getElementById('team-invite-status');
   const btn    = document.querySelector('.team-invite-send-btn');
-  const email  = (input?.value || '').trim().toLowerCase();
 
   if (!email || !email.includes('@') || !email.includes('.')) {
     if (status) { status.textContent = 'Please enter a valid email address.'; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
   if (email === _authUser?.email) {
     if (status) { status.textContent = 'That\'s your own email address.'; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
   if (!_teamData?.inviteToken) {
     if (status) { status.textContent = 'Team not ready yet — please try again.'; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
 
-  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  if (opts.fromInputBtn && btn) {
+    btn.disabled = true;
+    btn.classList.add('sending');
+    btn.innerHTML = `<span class="team-invite-send-label">Sending…</span>`;
+  }
 
   const redirectTo = `${window.location.origin}/magic-link-confirm/?team=${_teamData.inviteToken}&`;
   const { error } = await sendMagicLink(email, redirectTo);
 
-  if (btn) {
+  if (opts.fromInputBtn && btn) {
     btn.disabled = false;
-    btn.innerHTML = 'Send invite <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+    btn.classList.remove('sending');
+    btn.innerHTML = _SEND_INVITE_BTN_HTML;
   }
 
   if (error) {
     if (status) { status.textContent = `Could not send invite: ${error.message}`; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
 
-  if (input) input.value = '';
-  if (status) { status.textContent = `Invite sent to ${email}`; status.className = 'team-invite-status success'; }
+  rememberPendingInvite(email);
+  if (status) { status.textContent = `${opts.resend ? 'Resent' : 'Invite sent'} to ${email}`; status.className = 'team-invite-status success'; }
   setTimeout(() => { if (status) status.textContent = ''; }, 5000);
+  return true;
+}
+
+window.planSendInvite = async function() {
+  const input = document.getElementById('team-invite-email');
+  const email = (input?.value || '').trim().toLowerCase();
+  const ok = await _sendTeamInvite(email, { fromInputBtn: true });
+  if (ok && input) input.value = '';
+  if (ok) renderApp(); // refresh so the new pending row appears
+};
+
+window.planResendInvite = async function(email) {
+  const ok = await _sendTeamInvite(email, { resend: true });
+  if (ok) renderApp(); // bumps the "sent X ago" timestamp + reorders
+};
+
+window.planCancelPendingInvite = function(email) {
+  forgetPendingInvite(email);
+  renderApp();
 };
 
 // ── Demo mode (no auth, no DB) ────────────────────────────────────────────────

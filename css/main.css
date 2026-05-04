@@ -4130,6 +4130,32 @@ button.app-pill.purple.clickable:hover {
   margin: 4px 0 12px;
 }
 
+/* Subtle divider + 1-line blurb pattern used on every Checklist card.
+   The divider sits above the blurb, fading in from the bucket badge so
+   the eye reads "match → context line" as one unit. Booth variant gets
+   a purple-tinted divider to match the card's identity. */
+.checklist-blurb-divider {
+  height: 1px;
+  margin: 14px 0 10px;
+  background: linear-gradient(to right,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0) 100%);
+}
+.checklist-blurb-divider.tone-purple {
+  background: linear-gradient(to right,
+    rgba(168,85,247,0) 0%,
+    rgba(168,85,247,0.30) 50%,
+    rgba(168,85,247,0) 100%);
+}
+.checklist-blurb {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
 /* Booth cards get a much stronger purple identity so they stand apart
    from session cards as the user scrolls past the day's sessions into
    the booths block — purple = booths everywhere in the app. */
@@ -4243,12 +4269,13 @@ button.app-pill.purple.clickable:hover {
 .checklist-section-title {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
   font-family: 'Fraunces', serif;
-  font-size: 22px;
+  font-size: clamp(26px, 3.4vw, 30px);
   font-weight: 500;
   letter-spacing: -0.015em;
+  line-height: 1.15;
   color: var(--text);
 }
 .checklist-section-title svg {

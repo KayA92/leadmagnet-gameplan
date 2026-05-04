@@ -504,13 +504,15 @@ function parseTimeToMinutes(hhmm) {
 function truncateBoothDesc(desc) {
   if (!desc) return '';
   const trimmed = desc.trim();
+  // Tighter caps — short and punchy reads better on mobile (~2 lines).
+  // First sentence if ≤22 words, else hard cap at 18 words + ellipsis.
   const firstSentence = trimmed.match(/^[^.!?]+[.!?]/);
-  if (firstSentence && firstSentence[0].split(/\s+/).length <= 30) {
+  if (firstSentence && firstSentence[0].split(/\s+/).length <= 22) {
     return firstSentence[0].trim();
   }
   const words = trimmed.split(/\s+/);
-  if (words.length <= 25) return trimmed;
-  return words.slice(0, 25).join(' ') + '…';
+  if (words.length <= 18) return trimmed;
+  return words.slice(0, 18).join(' ') + '…';
 }
 
 function renderGapCard(day, startTime, endTime, _gapIndex) {
@@ -707,6 +709,7 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.title || item.session_id)}</div>
             <div class="checklist-main-meta">${item.theatre ? escHtml(item.theatre) + ' · ' : ''}<span class="type-pill session">Session</span></div>
             ${whyHtml}
+            ${item.description ? `<div class="checklist-blurb-divider"></div><p class="checklist-blurb">${escHtml(truncateBoothDesc(item.description))}</p>` : ''}
             ${altsHtml}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
@@ -813,7 +816,7 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
             ${renderMatchBadge({ bucket: boothMatch.bucket, rank: boothMatch.rank, type: 'booth' })}
-            ${truncatedDesc ? `<p class="booth-desc">${escHtml(truncatedDesc)}</p>` : ''}
+            ${truncatedDesc ? `<div class="checklist-blurb-divider tone-purple"></div><p class="checklist-blurb">${escHtml(truncatedDesc)}</p>` : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
                 <div class="row-rate-caption">${ratingLabel}</div>

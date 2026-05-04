@@ -1332,7 +1332,12 @@ function renderTeamTab() {
     : `${remaining} of ${MAX_TEAM_MEMBERS} spots left`;
   const capacityPill = `
     <div class="team-capacity-pill ${pillTone}">
-      <span class="team-capacity-count">${memberCount}/${MAX_TEAM_MEMBERS}</span>
+      <svg class="team-capacity-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <line x1="19" x2="19" y1="8" y2="14"/>
+        <line x1="22" x2="16" y1="11" y2="11"/>
+      </svg>
       <span class="team-capacity-scarce">${escHtml(spotsLeftLine)}</span>
     </div>
   `;
@@ -1402,9 +1407,10 @@ function renderTeamTab() {
   // the right framing whether they have teammates yet or not.
   const pageTitle = `Bring your team to <em>Accountex.</em>`;
 
-  const pageSub = isSolo
-    ? ``
-    : `Who's covering what, whose notes are flowing in live, and what the team has actually decided.`;
+  // Page subtitle deliberately blank — H1 alone names the section,
+  // the workspace invite + Pre-show team intel below carry the
+  // descriptive load.
+  const pageSub = '';
 
   // AI synthesis section + TaxReady promo deliberately cut from the
   // Team tab. AI synthesis on pre-event onboarding answers is theatre

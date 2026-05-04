@@ -339,11 +339,74 @@ async function startReveal() {
 // ── Plan preview rendering (stage 7) ─────────────────────────────────────────
 const TICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
-// TODO: Replace with real match_confidence values from matcher response.
-// Backend will return a `match_confidence` field (0-100) per session and per booth.
-// When live, remove these dummy arrays and read each item's `match_confidence`.
-const SESSION_DUMMY_CONFIDENCE = [96, 94, 91, 89, 87, 85, 83, 81, 79, 77, 76];
-const BOOTH_DUMMY_CONFIDENCE   = [94, 91, 88, 85, 82, 79, 77, 75, 73];
+// ── Match bucket + ranking display model ─────────────────────────────────
+// 4-tier bucket replaces raw % everywhere (top / high / medium / neutral).
+// Display: bucket label pill + "#3 of 240". Tier palette mirrors Stage 1
+// heat bands (pink → coral → amber → cool-blue) so users decode without
+// a legend. NEUTRAL is browse-only; the user's plan only contains
+// top / high / medium picks per the spec.
+//
+// TODO: Replace dummy bucket label and ranking with real values from matcher.
+//   match.bucket: "top" | "high" | "medium" | "neutral"
+//   match.rank:   number  (global rank in matcher output)
+//   match.total:  number  (total session/booth pool count)
+const SESSION_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 3  },
+  { bucket: 'top',    rank: 7  },
+  { bucket: 'high',   rank: 11 },
+  { bucket: 'high',   rank: 18 },
+  { bucket: 'high',   rank: 24 },
+  { bucket: 'high',   rank: 31 },
+  { bucket: 'medium', rank: 42 },
+  { bucket: 'medium', rank: 58 },
+  { bucket: 'medium', rank: 71 },
+  { bucket: 'medium', rank: 84 },
+  { bucket: 'medium', rank: 97 },
+];
+const BOOTH_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 1  },
+  { bucket: 'high',   rank: 4  },
+  { bucket: 'high',   rank: 8  },
+  { bucket: 'high',   rank: 12 },
+  { bucket: 'medium', rank: 18 },
+  { bucket: 'medium', rank: 24 },
+  { bucket: 'medium', rank: 31 },
+  { bucket: 'medium', rank: 38 },
+];
+const FALLBACK_MATCH_TOTAL = { session: 240, booth: 90 };
+const HIDDEN_ALT_DUMMY = { bucket: 'high', count: 3, ranks: [14, 17, 21] };
+
+function dummyMatchByPlanRank(rankInPlan, type) {
+  const arr = type === 'booth' ? BOOTH_PLAN_DUMMY : SESSION_PLAN_DUMMY;
+  if (!Number.isFinite(rankInPlan) || rankInPlan < 1) return arr[arr.length - 1];
+  return arr[Math.min(rankInPlan - 1, arr.length - 1)];
+}
+
+function bucketLabel(bucket) {
+  switch (bucket) {
+    case 'top':     return 'Top match';
+    case 'high':    return 'High match';
+    case 'medium':  return 'Medium match';
+    case 'neutral': return 'Neutral match';
+    default:        return 'Match';
+  }
+}
+
+function matchTotal(type) {
+  if (type === 'booth') return (state.allExhibitors?.length) || FALLBACK_MATCH_TOTAL.booth;
+  return (state.allSessions?.length) || FALLBACK_MATCH_TOTAL.session;
+}
+
+function renderMatchBadge({ bucket, rank, type, compact = false }) {
+  const total   = matchTotal(type);
+  const sparkle = bucket === 'top'
+    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>'
+    : '';
+  return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
+    <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
+    <span class="match-rank">AI ranked #${rank} of ${total}</span>
+  </div>`;
+}
 
 function renderPlanPreview() {
   const container = $('plan-preview-content');
@@ -379,39 +442,31 @@ function renderPlanPreview() {
     if (b) boothItems.push(b);
   });
 
-  const confidenceFor = (arr, i) => arr[Math.min(i, arr.length - 1)];
-
   const renderSession = (s, i) => {
     const dayNum = s.day === 'Day 1' ? 1 : 2;
     const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
-    const confidence = confidenceFor(SESSION_DUMMY_CONFIDENCE, i);
+    const m = dummyMatchByPlanRank(i + 1, 'session');
     return `<div class="mini-item" style="animation-delay:${i * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(s.title)}</div>
         <div class="mini-meta"><span class="type-pill session">Session</span>${timeStr}</div>
       </div>
-      <div class="mini-confidence">
-        <div class="mini-confidence-num">${confidence}%</div>
-        <div class="mini-confidence-label">AI MATCH<br>CONFIDENCE</div>
-      </div>
+      ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session' })}
     </div>`;
   };
 
   const renderBooth = (b, i, animIndex) => {
     const desc = (b.normalised_products || []).slice(0, 2).join(', ');
     const hostMark = b.is_host ? ` · <span style="color:var(--purple);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Host partner</span>` : '';
-    const confidence = confidenceFor(BOOTH_DUMMY_CONFIDENCE, i);
+    const m = dummyMatchByPlanRank(i + 1, 'booth');
     return `<div class="mini-item" style="animation-delay:${animIndex * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(b.company_name)}${hostMark}</div>
         <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(b.stand_number || '')} · ${escHtml(desc)}</div>
       </div>
-      <div class="mini-confidence">
-        <div class="mini-confidence-num">${confidence}%</div>
-        <div class="mini-confidence-label">AI MATCH<br>CONFIDENCE</div>
-      </div>
+      ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth' })}
     </div>`;
   };
 
@@ -420,20 +475,30 @@ function renderPlanPreview() {
     .map((b, i) => renderBooth(b, i, sessionItems.length + i))
     .join('');
 
-  // TODO: Replace with real reserve_list from matcher response.
-  // Backend will return a `reserve_list` array of 4-7 sessions ranked just below
-  // the primary picks (within ~5% of the lowest top-pick score).
-  // Display: count + score range only. Titles stay hidden until user saves plan.
-  // If reserve_list is empty or null, hide this entire section.
+  // TODO: Replace with real counts from matcher output.
+  //   topPickCount  = rankedSessions.length (user's shortlist)
+  //   sessionsTotal = full programme count for the event
+  //   boothsTotal   = full exhibitor count for the event
+  // The whole section is a transformation tease, not a feature list —
+  // honest depth (240 ranked, 90 booths) + transformation verb ("Activate")
+  // does the conversion work without overselling the live tool.
+  const topPickCount  = rankedSessions.length;
+  const sessionsTotal = state.allSessions?.length    || 240;
+  const boothsTotal   = state.allExhibitors?.length  || 90;
+  const otherSessions = Math.max(0, sessionsTotal - topPickCount);
   const hiddenAlternativesHtml = `
     <div class="hidden-alternatives">
       <div class="hidden-alt-eyebrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        HIDDEN ALTERNATIVES
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+        All ${sessionsTotal} sessions are ranked to you — activate plan for full access
       </div>
-      <div class="hidden-alt-body">
-        3 sessions ranked 87-91% match, ready to swap in. Save your plan to unlock.
-      </div>
+      <p class="hidden-alt-body">
+        You're seeing the top <strong>${topPickCount}</strong>. The other <strong>${otherSessions} sessions</strong> and all <strong>${boothsTotal} booths</strong> are ranked the same way, in your active plan. Every slot has ranked alternatives too — ready to swap.
+      </p>
+      <button class="hidden-alt-cta" type="button" onclick="document.getElementById('preview-save')?.click()">
+        Activate my plan
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
     </div>
   `;
 
@@ -461,7 +526,7 @@ function renderPlanPreview() {
       </div>
       <div class="confirm-preview-banner">
         <span class="confirm-preview-tag">Preview</span>
-        To change anything, tap 'Save my plan' below. That's where you untick, swap, search for more, or invite teammates.
+        To change anything, tap 'Activate my plan' below. That's where you untick, swap, search for more, or invite teammates.
       </div>
       <div class="mini-item-list">
         ${sessionsListHtml}
@@ -564,6 +629,9 @@ async function handleSaveSubmit(e) {
     );
     if (userErr) throw userErr;
 
+    // NOTE: firm_size / firm_mode / pains are intentionally NOT inserted yet,
+    // pending migration 20260504000000. Once it lands, add them back here so
+    // new signups capture full Stage-5b context.
     const { data: savedPlan, error: planErr } = await supabase.from('plans').insert({
       user_id:     userId,
       attend_mode: state.answers.attendMode,
@@ -657,22 +725,52 @@ function togglePain(slug) {
   updatePrecisionBars();
 }
 
-// Stage-1 pain-only progress model. 3 pains = 100% (strong matches unlocked);
-// extra taps don't push the bar further, but the label evolves to reward
-// heavy tappers. Next button still gates on 1+ pain (not on this score).
+// Stage-1 pain progress model — coaching bar with zones:
+//   0    → empty       (tap your problems · 3+ to unlock)
+//   1-2  → pre-unlock  (tap N more to unlock)
+//   3    → unlock crossing — markers flash
+//   3-5  → unlocked    (matches unlocked · tap more for sharper picks)
+//   6    → sharp crossing — full bar pulse + sparkle
+//   6-12 → sharp zone  (✦ Sharp zone · the AI's read is at its best)
+//  13-15 → post-sharp  (Strong list · the AI's still focused)
+//  16    → too-many crossing — bar shifts amber
+//  16+   → too-many    (Picking a lot — try focusing on real top problems)
+//
+// Bar scale runs 0-16 pains = 0-100%. Past 16 the fill caps so it doesn't
+// keep growing and never feel punishing.
+const PAIN_BAR_MAX  = 16;
+const PAIN_UNLOCK   = 3;
+const PAIN_SHARP_LO = 6;
+const PAIN_SHARP_HI = 12;
 function computePainProgress() {
   const n = state.answers.pains.length;
-  const percent = n === 0 ? 0 : n === 1 ? 33 : n === 2 ? 66 : 100;
-  let label;
-  if (n === 0)      label = 'Tap 3+ to unlock AI matches';
-  else if (n === 1) label = '1 pain · 2 more to unlock matches';
-  else if (n === 2) label = '2 pains · 1 more to unlock matches';
-  else if (n === 3) label = '✓ Matches unlocked · tap more for sharper picks';
-  else if (n <= 5)  label = `✓ ${n} pains · matches getting sharper`;
-  else if (n <= 8)  label = `✓ ${n} pains · razor-sharp matching`;
-  else              label = `✓ ${n} pains · top 1% precision`;
-  return { percent, label };
+  const percent = Math.min(100, (n / PAIN_BAR_MAX) * 100);
+  let label, zone;
+  if (n === 0) {
+    label = 'Tap 3+ to start matching';
+    zone  = 'empty';
+  } else if (n < PAIN_UNLOCK) {
+    label = `${PAIN_UNLOCK - n} more to start matching`;
+    zone  = 'pre-unlock';
+  } else if (n < PAIN_SHARP_LO) {
+    label = 'Unlocked · keep tapping to hit the sweet spot';
+    zone  = 'unlocked';
+  } else if (n <= PAIN_SHARP_HI) {
+    label = '✦ You’re in the sweet spot';
+    zone  = 'sharp';
+  } else if (n < PAIN_BAR_MAX) {
+    label = 'Still in the sweet spot';
+    zone  = 'post-sharp';
+  } else {
+    label = 'Too many — stick to your real top problems';
+    zone  = 'too-many';
+  }
+  return { percent, label, zone, n };
 }
+
+// Track the previous zone across calls so we can fire one-time crossing
+// animations (unlock flash, sharp pulse, too-many warning).
+let _previousPainZone = 'empty';
 
 function prepareStage5b() {
   // Re-apply visual selection state on revisits
@@ -694,7 +792,7 @@ function prepareStage5b() {
 }
 
 function updatePrecisionBars() {
-  const { percent, label } = computePainProgress();
+  const { percent, label, zone, n } = computePainProgress();
   state.answers.precisionScore = percent;
   const bar = $('precision-bar-stage1');
   if (!bar) return;
@@ -702,7 +800,26 @@ function updatePrecisionBars() {
   const stateEl = bar.querySelector('.precision-bar-state');
   if (fill) fill.style.width = percent + '%';
   if (stateEl) stateEl.textContent = label;
-  bar.classList.toggle('active', percent > 0);
+  bar.classList.toggle('active', n > 0);
+  bar.dataset.zone = zone;
+  // One-time crossing animations — only fire when we cross INTO a zone
+  // from below (not when untapping back through it).
+  const prev = _previousPainZone;
+  const order = ['empty', 'pre-unlock', 'unlocked', 'sharp', 'post-sharp', 'too-many'];
+  const movedForward = order.indexOf(zone) > order.indexOf(prev);
+  if (movedForward) {
+    if (zone === 'unlocked') {
+      bar.classList.add('flash-unlock');
+      setTimeout(() => bar.classList.remove('flash-unlock'), 500);
+    } else if (zone === 'sharp') {
+      bar.classList.add('flash-sharp');
+      setTimeout(() => bar.classList.remove('flash-sharp'), 700);
+    } else if (zone === 'too-many') {
+      bar.classList.add('flash-toomany');
+      setTimeout(() => bar.classList.remove('flash-toomany'), 500);
+    }
+  }
+  _previousPainZone = zone;
 }
 
 // ── Popularity ranking ────────────────────────────────────────────────────────

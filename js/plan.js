@@ -39,7 +39,7 @@ let _inviteNudgeDismissed = false;
 try { _inviteNudgeDismissed = localStorage.getItem('inviteNudgeDismissed') === '1'; } catch (_) {}
 
 const INVITE_NUDGE_COPY = {
-  checklist: 'Going with colleagues? <strong>Invite them to your team</strong> — see their sessions, ratings, notes, and get an AI team summary.',
+  checklist: 'Going with colleagues? <strong>Add your team</strong> — see their pains, share live notes and ratings, get an AI debrief PDF at the end.',
   cpd:       'Bringing colleagues? <strong>Their CPD logs roll up here too</strong> — one report, whole team.',
   debrief:   'Going alone, this writes from your notes only. <strong>Add a teammate</strong> and the debrief synthesises everyone\'s.',
 };
@@ -93,6 +93,9 @@ async function loadLatestPlan(userId) {
 }
 
 async function loadTeamData(teamId) {
+  // NOTE: firm_size / firm_mode / pains are intentionally NOT in this select
+  // until migration 20260504000000 lands. Once it does, add them back here so
+  // the team card can render firm size in the identity row.
   const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
@@ -124,37 +127,138 @@ async function loadTeamData(teamId) {
   };
 }
 
-// ── AI match helpers ──────────────────────────────────────────────────────────
+// Firm-size + firm-mode labels used by the team card identity row.
+// (ROLE_LABELS and CATEGORY_LABELS are declared further down — the
+// originals from before the team-card work, with broader legacy-slug
+// coverage. Don't redeclare them here.)
+const FIRM_SIZE_LABELS = {
+  'solo':     'Solo',
+  '2-10':     '2–10 firm',
+  '11-50':    '11–50 firm',
+  '50+':      '50+ firm',
+  'industry': 'In-house team',
+};
 
-// TODO: Replace with real match_confidence from matcher response.
-// Backend will return a `match_confidence` (0-100) per session and per booth.
-// Until that ships:
-//   · For ranked items (matcher already ordered them — sessions/booths in
-//     the user's plan), use SESSION_DUMMY_CONFIDENCE / BOOTH_DUMMY_CONFIDENCE
-//     looked up by rank. This gives a believable descending order on screen
-//     that matches the matcher's intended ranking.
-//   · For unranked items (alternatives in swap modals, sessions browsed in
-//     the editor), fall back to a stable per-id hash so each session shows
-//     a consistent % across renders.
-const SESSION_DUMMY_CONFIDENCE = [96, 94, 91, 89, 87, 85, 83, 81, 79, 77, 76, 75];
-const BOOTH_DUMMY_CONFIDENCE   = [94, 91, 88, 85, 82, 79, 77, 75, 73, 71, 70];
+const FIRM_MODE_LABELS = {
+  grow: 'Growing fast', optimise: 'Optimising', niche: 'Niching',
+  exit: 'Exit / succession', explore: 'Exploring',
+};
 
-function dummyByRank(rank, type) {
-  const arr = type === 'booth' ? BOOTH_DUMMY_CONFIDENCE : SESSION_DUMMY_CONFIDENCE;
-  if (!Number.isFinite(rank) || rank < 1) return arr[arr.length - 1];
-  return arr[Math.min(rank - 1, arr.length - 1)];
+// ── Match bucket + ranking display model ─────────────────────────────────
+// Replaces raw "% AI Match Confidence" everywhere. Two-part display:
+//   1. Bucket tier label (top / high / medium / neutral) — coloured pill
+//   2. Ranking — "#3 of 240"
+//
+// Tier colour palette mirrors the Stage 1 onboarding heat bands so users
+// decode it without a legend (pink → coral → amber → cool-blue).
+//
+// TODO: Replace dummy bucket label and ranking with real values from matcher.
+//   match.bucket: "top" | "high" | "medium" | "neutral"
+//   match.rank:   number  (global rank in matcher output)
+//   match.total:  number  (total session/booth pool count)
+const SESSION_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 3  },
+  { bucket: 'top',    rank: 7  },
+  { bucket: 'high',   rank: 11 },
+  { bucket: 'high',   rank: 18 },
+  { bucket: 'high',   rank: 24 },
+  { bucket: 'high',   rank: 31 },
+  { bucket: 'medium', rank: 42 },
+  { bucket: 'medium', rank: 58 },
+  { bucket: 'medium', rank: 71 },
+  { bucket: 'medium', rank: 84 },
+  { bucket: 'medium', rank: 97 },
+];
+const BOOTH_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 1  },
+  { bucket: 'high',   rank: 4  },
+  { bucket: 'high',   rank: 8  },
+  { bucket: 'high',   rank: 12 },
+  { bucket: 'medium', rank: 18 },
+  { bucket: 'medium', rank: 24 },
+  { bucket: 'medium', rank: 31 },
+  { bucket: 'medium', rank: 38 },
+];
+const FALLBACK_MATCH_TOTAL = { session: 240, booth: 90 };
+const BUCKET_RANK_FLOOR    = { top: 1, high: 8, medium: 30, neutral: 100 };
+
+// In-plan items: by rank-in-plan (1-indexed). Sessions+booths that the
+// matcher put in the user's plan get top/high/medium per the spec.
+function dummyMatchByPlanRank(rankInPlan, type) {
+  const arr = type === 'booth' ? BOOTH_PLAN_DUMMY : SESSION_PLAN_DUMMY;
+  if (!Number.isFinite(rankInPlan) || rankInPlan < 1) return arr[arr.length - 1];
+  return arr[Math.min(rankInPlan - 1, arr.length - 1)];
 }
 
-function aiMatchConfidence(idStr, type) {
+// Browse contexts (Edit modals, Swap alternatives): hash by id so each
+// session/booth has a stable bucket+rank across renders. Distribution
+// roughly mirrors a real matcher: top 4%, high 14%, medium 27%, neutral rest.
+function dummyMatchByHash(idStr, type) {
   const s = String(idStr || '');
   let h = 0;
   for (let i = 0; i < s.length; i++) {
     h = ((h << 5) - h) + s.charCodeAt(i);
     h |= 0;
   }
-  const norm = (Math.abs(h) % 1000) / 1000;
-  const [lo, hi] = type === 'booth' ? [70, 95] : [75, 98];
-  return Math.round(lo + norm * (hi - lo));
+  const total = FALLBACK_MATCH_TOTAL[type === 'booth' ? 'booth' : 'session'];
+  const norm  = (Math.abs(h) % 1000) / 1000;
+  let bucket, rank;
+  if (norm < 0.04) {
+    bucket = 'top';
+    rank   = Math.max(1, Math.round(norm / 0.04 * (BUCKET_RANK_FLOOR.high - 1)));
+  } else if (norm < 0.18) {
+    bucket = 'high';
+    rank   = Math.round(BUCKET_RANK_FLOOR.high + ((norm - 0.04) / 0.14) * (BUCKET_RANK_FLOOR.medium - BUCKET_RANK_FLOOR.high));
+  } else if (norm < 0.45) {
+    bucket = 'medium';
+    rank   = Math.round(BUCKET_RANK_FLOOR.medium + ((norm - 0.18) / 0.27) * (BUCKET_RANK_FLOOR.neutral - BUCKET_RANK_FLOOR.medium));
+  } else {
+    bucket = 'neutral';
+    rank   = Math.round(BUCKET_RANK_FLOOR.neutral + ((norm - 0.45) / 0.55) * (total - BUCKET_RANK_FLOOR.neutral));
+  }
+  return { bucket, rank: Math.min(Math.max(rank, 1), total) };
+}
+
+function matchTotal(type) {
+  if (type === 'booth') return (typeof _allExhibitors !== 'undefined' && _allExhibitors?.length) || FALLBACK_MATCH_TOTAL.booth;
+  return (typeof _allSessions !== 'undefined' && _allSessions?.length) || FALLBACK_MATCH_TOTAL.session;
+}
+
+function bucketLabel(bucket) {
+  switch (bucket) {
+    case 'top':     return 'Top match';
+    case 'high':    return 'High match';
+    case 'medium':  return 'Medium match';
+    case 'neutral': return 'Neutral match';
+    default:        return 'Match';
+  }
+}
+
+// Compact two-line badge — used everywhere a card needs to show its match.
+// Pass { bucket, rank, type } where type is 'session' | 'booth' (used to
+// pick the total). Optional `compact` for tight contexts (alts row, swap modal).
+function renderMatchBadge({ bucket, rank, type, compact = false }) {
+  const total   = matchTotal(type);
+  const sparkle = bucket === 'top'
+    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>'
+    : '';
+  return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
+    <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
+    <span class="match-rank">AI ranked #${rank} of ${total}</span>
+  </div>`;
+}
+
+// Resolves a match for ANY session/booth — uses real matcher data if
+// present, otherwise picks the right dummy strategy.
+function matchForSession(s, planRankIndex) {
+  if (s?.match?.bucket && Number.isFinite(s?.match?.rank)) return s.match;
+  if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'session');
+  return dummyMatchByHash(s?.session_id, 'session');
+}
+function matchForBooth(b, planRankIndex) {
+  if (b?.match?.bucket && Number.isFinite(b?.match?.rank)) return b.match;
+  if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'booth');
+  return dummyMatchByHash(b?.stand_number || b?.company_name, 'booth');
 }
 
 // Human-readable labels for the user's selected categories. Includes both the
@@ -208,8 +312,10 @@ const ROLE_LABELS = {
 };
 
 // Tag rules:
-// - Only show tags for sessions with confidence >= 80% (top picks).
-//   Borderline matches (75-79%) get a clean card — number alone is honest.
+// - Only TOP and HIGH bucket matches get "why matched" tags. Medium and
+//   neutral cards stay clean — the bucket label alone is honest enough.
+// - Caller passes the resolved bucket so we don't double-compute. If
+//   omitted, fall back to dummyMatchByHash (browse contexts).
 // - Surface every onboarding answer the matcher would have weighted, using
 //   the user's full labels (never extracted fragments). Sources:
 //     · Selected categories that overlap session.canonical_categories
@@ -218,9 +324,9 @@ const ROLE_LABELS = {
 //     · TODO: firm_size / mode / role_bucket once persisted in plans table
 //       (currently only `role` is stored alongside categories + problem)
 // - Cap at 6 tags so cards stay legible on mobile.
-function whyMatched(session, plan) {
-  const conf = session.match_confidence ?? aiMatchConfidence(session.session_id, 'session');
-  if (conf < 80) return [];
+function whyMatched(session, plan, bucket) {
+  const resolved = bucket || dummyMatchByHash(session.session_id, 'session').bucket;
+  if (resolved !== 'top' && resolved !== 'high') return [];
 
   const tags = [];
   const sessionCats = session.canonical_categories || [];
@@ -289,26 +395,23 @@ function bestAlternativeScore(item) {
   return best;
 }
 
-function findStrongAlternatives(item) {
-  if (!item.day || !item.start_time) return [];
-  if (_resolvedSlots.has(`${item.day}-${item.start_time}`)) return [];
-  const cats = _plan?.categories || [];
-  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
-  if (!wantedCanonicals.size) return [];
+// Count of alternatives at the same time slot that fall in the SAME
+// bucket as the user's current pick (e.g. show "4 other HIGH MATCH
+// alternatives" only when there really are 4 same-bucket alts).
+// Excludes the current session and anything else already in the user's
+// plan. Click on the count line opens the same swap modal as the SWAP
+// button — the user picks for themselves from the full list.
+function sameBucketAlternativeCount(item, bucket) {
+  if (!item.day || !item.start_time || !bucket) return 0;
   const planKeys = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
-  const candidates = (_allSessions || []).filter(s =>
-    !(s.session_id === item.session_id && s.day === item.day && s.start_time === item.start_time) &&
-    s.day === item.day &&
-    s.start_time === item.start_time &&
-    !planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`) &&
-    !_dismissedAlternatives.has(`${item.session_id}|${s.session_id}`) &&
-    (s.canonical_categories || []).some(c => wantedCanonicals.has(c)),
-  );
-  candidates.sort((a, b) =>
-    (b.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length -
-    (a.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
-  );
-  return candidates.slice(0, 1);
+  let count = 0;
+  for (const s of (_allSessions || [])) {
+    if (s.day !== item.day || s.start_time !== item.start_time) continue;
+    if (s.session_id === item.session_id) continue;
+    if (planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)) continue;
+    if (matchForSession(s).bucket === bucket) count++;
+  }
+  return count;
 }
 
 // ── Render helpers ────────────────────────────────────────────────────────────
@@ -365,11 +468,11 @@ function renderTabNav() {
         </a>
         <div class="app-tabs-credits" aria-label="Made by">
           <span class="app-tabs-credits-label">Made by</span>
-          <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-          </a>
           <a href="https://workiro.com" target="_blank" rel="noopener" aria-label="Workiro">
             <img src="/images/workiro-logo.svg" alt="Workiro">
+          </a>
+          <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </a>
         </div>
       </div>
@@ -401,13 +504,15 @@ function parseTimeToMinutes(hhmm) {
 function truncateBoothDesc(desc) {
   if (!desc) return '';
   const trimmed = desc.trim();
+  // Tighter caps — short and punchy reads better on mobile (~2 lines).
+  // First sentence if ≤22 words, else hard cap at 18 words + ellipsis.
   const firstSentence = trimmed.match(/^[^.!?]+[.!?]/);
-  if (firstSentence && firstSentence[0].split(/\s+/).length <= 30) {
+  if (firstSentence && firstSentence[0].split(/\s+/).length <= 22) {
     return firstSentence[0].trim();
   }
   const words = trimmed.split(/\s+/);
-  if (words.length <= 25) return trimmed;
-  return words.slice(0, 25).join(' ') + '…';
+  if (words.length <= 18) return trimmed;
+  return words.slice(0, 18).join(' ') + '…';
 }
 
 function renderGapCard(day, startTime, endTime, _gapIndex) {
@@ -432,10 +537,29 @@ function renderGapCard(day, startTime, endTime, _gapIndex) {
     </div>`;
 }
 
+// Note chips — emoji + label pairs that stamp into the textarea on tap.
+// Same data model both ways: chips insert "${emoji} ${label}: " then the
+// user types context. Saved note is just text — no parallel chip array,
+// no schema change. AI debrief later groups by emoji prefix.
+const NOTE_CHIPS_SESSION = [
+  { emoji: '❤️', label: 'Loved it' },
+  { emoji: '🔥', label: 'Game-changer' },
+  { emoji: '💡', label: 'Idea' },
+  { emoji: '🧠', label: 'Made me think' },
+  { emoji: '👎', label: 'Skip it' },
+  { emoji: '📝', label: 'To do' },
+];
+const NOTE_CHIPS_BOOTH = [
+  { emoji: '❤️', label: 'Love it' },
+  { emoji: '🔍', label: 'Look into' },
+  { emoji: '🔥', label: 'Best in show' },
+  { emoji: '🤔', label: 'Maybe' },
+  { emoji: '👎', label: 'Skip' },
+  { emoji: '⏱', label: 'Not now' },
+];
+const NOTE_HINT = 'Notes & ratings visible across your team';
+
 function _renderNotePanel(panel, noteId, savedText) {
-  const hintText = noteId.startsWith('booth:')
-    ? 'Pricing · Demo scheduled · Decision blocker'
-    : 'What stood out · Who to follow up with';
   if (savedText) {
     panel.className = 'checklist-note-panel saved';
     panel.innerHTML = `
@@ -457,7 +581,7 @@ function _renderNotePanel(panel, noteId, savedText) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add a note
       </button>
-      <div class="note-add-hint">${escHtml(hintText)}</div>`;
+      <div class="note-add-hint">${escHtml(NOTE_HINT)}</div>`;
   }
 }
 
@@ -502,11 +626,71 @@ function renderChecklistTab() {
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
 
+  // Inline team-notes block on a card. Caps at 4 notes; if more exist,
+  // shows a "+N more · View all" link that opens a modal listing every
+  // teammate note for the item. Stops a single chatty teammate from
+  // pushing the card off-screen. Tone follows the card colour identity:
+  // mint on sessions, purple on booths.
+  const TEAM_NOTES_INLINE_CAP = 4;
+  function renderTeamNotesBlock(teamNotes, noteKey, itemTitle) {
+    if (!teamNotes.length) return '';
+    const tone = noteKey.startsWith('booth:') ? 'purple' : 'mint';
+    const sorted = [...teamNotes].sort((a, b) =>
+      new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    const visible = sorted.slice(0, TEAM_NOTES_INLINE_CAP);
+    const overflow = Math.max(0, sorted.length - TEAM_NOTES_INLINE_CAP);
+    const noteRow = (n) => {
+      const author = _teamData?.members.find(m => m.users?.id === n.created_by);
+      const name = author ? author.users.first_name : 'Teammate';
+      return `<p class="team-note-row"><span class="team-note-name">${escHtml(name)}:</span> ${escHtml(n.note_text || '')}</p>`;
+    };
+    const total = sorted.length;
+    const moreLink = overflow > 0
+      ? `<button class="team-notes-more" type="button" data-title="${escHtml(itemTitle || '')}" onclick="planShowTeamNotes('${escHtml(noteKey)}', this.dataset.title)">See all ${total} →</button>`
+      : '';
+    return `<div class="team-notes-block tone-${tone}">${visible.map(noteRow).join('')}${moreLink}</div>`;
+  }
+
+  // Build a per-item lookup of team ratings — surfaces Sarah/James-style
+  // flame ratings on each card so the user sees what their team thought
+  // without flipping to Debrief.
+  const teamRatingsByKey = {};
+  for (const tp of (_teamData?.teamPlans || [])) {
+    if (tp.user_id === _authUser?.id) continue;
+    const author = _teamData?.members.find(m => m.users?.id === tp.user_id);
+    const name = author ? author.users.first_name : 'Teammate';
+    for (const s of (tp.sessions || [])) {
+      if (!s.rating) continue;
+      const key = `session:${s.session_id}`;
+      (teamRatingsByKey[key] = teamRatingsByKey[key] || []).push({ name, rating: s.rating });
+    }
+    for (const b of (tp.booths || [])) {
+      if (!b.rating) continue;
+      const key = `booth:${b.stand_number}`;
+      (teamRatingsByKey[key] = teamRatingsByKey[key] || []).push({ name, rating: b.rating });
+    }
+  }
+  function renderTeamRatedRow(noteKey) {
+    const raters = teamRatingsByKey[noteKey];
+    if (!raters || !raters.length) return '';
+    const tone = noteKey.startsWith('booth:') ? 'purple' : 'mint';
+    const flame = `<svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>`;
+    return `<div class="team-rated-row tone-${tone}">
+      <span class="team-rated-caption">Team rated</span>
+      ${raters.map(r => `<span class="team-rated-pill">
+        <span class="team-rated-name">${escHtml(r.name)}</span>
+        <span class="team-rated-flames">${flame.repeat(Math.max(1, Math.min(3, r.rating)))}</span>
+      </span>`).join('')}
+    </div>`;
+  }
+
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
-    const whyTags      = whyMatched(item, plan);
-    const alts         = findStrongAlternatives(item);
+    const planRankIdx  = (item.rank && Number.isFinite(item.rank)) ? item.rank : (i + 1);
+    const match        = matchForSession(item, planRankIdx);
+    const whyTags      = whyMatched(item, plan, match.bucket);
+    const altCount     = sameBucketAlternativeCount(item, match.bucket);
     const teamNotes    = teamNotesByItem[noteKey] || [];
 
     // Universal SWAP badge — shown under the time block on EVERY session.
@@ -517,59 +701,26 @@ function renderChecklistTab() {
            Swap
          </button>`;
 
-    const confidence = item.match_confidence ?? dummyByRank(item.rank, 'session');
-    // Single-line match — "96% AI Match Confidence" in pink at the title's
-    // weight class. Tags only render for strong picks (>= 80%); borderline
-    // cards (75-79%) stay clean — the number alone is honest.
+    // Two-part match display: bucket pill + ranking line. Tags only
+    // render for top/high tiers — medium and neutral cards stay clean.
     const whyHtml = `
-      <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
+      ${renderMatchBadge({ bucket: match.bucket, rank: match.rank, type: 'session' })}
       ${whyTags.length ? `<div class="checklist-why-tags">
         ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
 
-    // Collapsed-by-default alternatives. The summary now leads with the
-    // top alternative's % match and a swap icon — no time repetition
-    // (already shown in the leftcol). Click to expand the full cards.
-    const sortedAlts = [...alts]
-      .map(alt => ({ alt, conf: alt.match_confidence ?? aiMatchConfidence(alt.session_id, 'session') }))
-      .sort((a, b) => b.conf - a.conf);
-    const altCount = sortedAlts.length;
-    const topAltConf = sortedAlts[0]?.conf ?? 0;
-    const altsHtml = altCount ? `
-      <details class="checklist-alternatives">
-        <summary class="checklist-alternatives-summary">
-          ${SWAP_SVG}
-          <span><strong>${topAltConf}%</strong> AI-matched session also available</span>
-          <span class="checklist-alternatives-toggle"><span class="show">show</span><span class="hide">hide</span></span>
-        </summary>
-        ${sortedAlts.map(({ alt, conf }) => `
-          <div class="checklist-alternative-card">
-            <div class="checklist-alternative-body">
-              <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
-              <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
-            </div>
-            <div class="checklist-alternative-confidence">
-              <div class="row-confidence-num">${conf}%</div>
-              <div class="row-confidence-label">AI MATCH</div>
-            </div>
-            <div class="checklist-alternative-actions">
-              <button class="checklist-alternative-btn swap" onclick="planSwapSession('${escHtml(item.session_id)}','${escHtml(alt.session_id)}')" type="button">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                Swap
-              </button>
-              <button class="checklist-alternative-btn dismiss" onclick="planDismissAlternative('${escHtml(item.session_id)}','${escHtml(alt.session_id)}',event)" type="button">Not for me</button>
-            </div>
-          </div>`).join('')}
-      </details>` : '';
+    // Single-line alts teaser: "↔ 4 other HIGH MATCH alternatives at this
+    // time". Only shown if same-bucket alternatives exist for this slot.
+    // Click opens the same swap modal as the inline SWAP button so the
+    // user sees ALL options in that slot and picks for themselves.
+    const altsHtml = altCount > 0 ? `
+      <button class="checklist-alternatives-link tier-${match.bucket}" type="button"
+        onclick="planOpenSlotSwap('${escHtml(item.session_id)}', event)">
+        ${SWAP_SVG}
+        <span>${altCount} other <strong>${escHtml(bucketLabel(match.bucket).toUpperCase())}</strong> alternative${altCount === 1 ? '' : 's'} at this time</span>
+      </button>` : '';
 
-    const teamNotesHtml = teamNotes.length ? `
-      <div style="margin-top:8px;padding:8px 10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px;">
-        ${teamNotes.map(n => {
-          const author = _teamData?.members.find(m => m.users?.id === n.created_by);
-          const name = author ? author.users.first_name : 'Teammate';
-          return `<p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><span style="color:var(--purple);font-weight:600;">${escHtml(name)}:</span> ${escHtml(n.note_text || '')}</p>`;
-        }).join('')}
-      </div>` : '';
+    const teamNotesHtml = renderTeamNotesBlock(teamNotes, noteKey, item.title || '');
 
     const noteItemId  = `session:${escHtml(item.session_id)}`;
     const notePanel   = existingNote
@@ -591,7 +742,7 @@ function renderChecklistTab() {
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
              Add a note
            </button>
-           <div class="note-add-hint">What stood out · Who to follow up with</div>
+           <div class="note-add-hint">${escHtml(NOTE_HINT)}</div>
          </div>`;
 
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
@@ -628,6 +779,10 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.title || item.session_id)}</div>
             <div class="checklist-main-meta">${item.theatre ? escHtml(item.theatre) + ' · ' : ''}<span class="type-pill session">Session</span></div>
             ${whyHtml}
+            ${(() => {
+              const blurb = item.description ? truncateBoothDesc(item.description).trim() : '';
+              return blurb ? `<div class="checklist-blurb-divider"></div><p class="checklist-blurb">${escHtml(blurb)}</p>` : '';
+            })()}
             ${altsHtml}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
@@ -639,9 +794,13 @@ function renderChecklistTab() {
                 <div class="checklist-avatars">
                   <div class="mini-av t3" title="You">${userInitial}</div>
                   ${teamAvatarHtml}
+                  ${(_teamData?.members?.length ?? 0) < 2 ? `<button class="invite-pip" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button" aria-label="Invite a teammate" title="Invite a teammate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                  </button>` : ''}
                 </div>
               </div>
             </div>
+            ${renderTeamRatedRow(noteKey)}
           </div>
         </div>
         ${notePanel}
@@ -652,6 +811,7 @@ function renderChecklistTab() {
   function renderBoothRow(item, i, displayRank) {
     const noteKey      = `booth:${item.stand_number}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
+    const teamNotes    = teamNotesByItem[noteKey] || [];
     const desc         = item.company_description || '';
     const reason       = item.reason || '';
     const isWorkiro    = item.company_name === 'Workiro';
@@ -685,11 +845,12 @@ function renderChecklistTab() {
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
              Add a note
            </button>
-           <div class="note-add-hint">Pricing · Demo scheduled · Decision blocker</div>
+           <div class="note-add-hint">${escHtml(NOTE_HINT)}</div>
          </div>`;
 
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
-    const confidence  = item.match_confidence ?? dummyByRank(displayRank || item.rank || (i + 1), 'booth');
+    const boothPlanRank = displayRank || item.rank || (i + 1);
+    const boothMatch    = matchForBooth(item, boothPlanRank);
     const truncatedDesc = truncateBoothDesc(desc);
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
 
@@ -716,17 +877,21 @@ function renderChecklistTab() {
       <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
         <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(String(item.stand_number))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
+            <button class="checklist-time-swap variant-booth" onclick="openPlanEditor('booths')" type="button" aria-label="Edit booths">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              Swap
+            </button>
           </div>
           <div class="checklist-main">
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
-            <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
-            ${truncatedDesc ? `<p class="booth-desc">${escHtml(truncatedDesc)}</p>` : ''}
+            ${renderMatchBadge({ bucket: boothMatch.bucket, rank: boothMatch.rank, type: 'booth' })}
+            ${(truncatedDesc && truncatedDesc.trim()) ? `<div class="checklist-blurb-divider tone-purple"></div><p class="checklist-blurb">${escHtml(truncatedDesc)}</p>` : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
                 <div class="row-rate-caption">${ratingLabel}</div>
@@ -737,9 +902,14 @@ function renderChecklistTab() {
                 <div class="checklist-avatars">
                   <div class="mini-av t3" title="You">${userInitial}</div>
                   ${teamAvatarHtml}
+                  ${(_teamData?.members?.length ?? 0) < 2 ? `<button class="invite-pip" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button" aria-label="Invite a teammate" title="Invite a teammate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                  </button>` : ''}
                 </div>
               </div>
             </div>
+            ${renderTeamRatedRow(noteKey)}
+            ${renderTeamNotesBlock(teamNotes, noteKey, item.company_name || '')}
           </div>
         </div>
         ${notePanel}
@@ -803,7 +973,7 @@ function renderChecklistTab() {
           <span class="checklist-section-count">${visibleSessions.length} ${visibleSessions.length === 1 ? 'session' : 'sessions'}</span>
           <button class="checklist-section-edit variant-sessions" onclick="openPlanEditor('sessions')" type="button">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Edit
+            Edit sessions
           </button>
         </div>
       </div>
@@ -823,7 +993,7 @@ function renderChecklistTab() {
             <span class="checklist-section-count">${booths.length} ${booths.length === 1 ? 'booth' : 'booths'}</span>
             <button class="checklist-section-edit variant-booths" onclick="openPlanEditor('booths')" type="button">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              Edit
+              Edit booths
             </button>
           </div>
         </div>
@@ -848,60 +1018,26 @@ function renderChecklistTab() {
       </div>
     </div>
 
-    ${(() => {
-      const userCats = (plan.categories || []).filter(c => _EDITOR_CATEGORY_LABELS[c] && c !== 'other');
-      if (!userCats.length) return '';
-      const boxes = userCats.map(cat => {
-        const label     = _EDITOR_CATEGORY_LABELS[cat] || cat;
-        const sessCount = (_allSessions  || []).filter(s => (s.canonical_categories  || []).includes(cat)).length;
-        const boothCount= (_allExhibitors|| []).filter(e => (e.canonical_categories  || []).includes(cat)).length;
-        return `
-          <button class="theme-box" onclick="openPlanEditorWithProblem('${escHtml(cat)}')" type="button">
-            <div class="theme-box-head">
-              <div class="theme-box-label">${escHtml(label)}</div>
-              <svg class="theme-box-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </div>
-            <div class="theme-box-stats">
-              <span><strong>${sessCount}</strong> session${sessCount === 1 ? '' : 's'}</span>
-              <span class="theme-box-dot">·</span>
-              <span><strong>${boothCount}</strong> booth${boothCount === 1 ? '' : 's'}</span>
-            </div>
-          </button>`;
-      }).join('');
-      return `
-        <div class="theme-browse">
-          <div class="theme-browse-head">
-            <div class="theme-browse-eyebrow">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg>
-              AI-matched to your answers
-            </div>
-            <div class="theme-browse-label">Browse by your <em>top problems.</em></div>
-            <div class="theme-browse-sub">The AI pulled these from what you told us in onboarding. Tap one to see every session and booth that matches.</div>
-          </div>
-          <div class="theme-browse-grid">${boxes}</div>
-        </div>`;
-    })()}
-
     <section class="sponsors-footer" style="max-width:760px;">
       <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+            <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
+          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
+          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
+            workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
-            <img src="/images/workiro-logo.svg" alt="Workiro">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants.</p>
-          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com
+          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
+          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+            xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
@@ -971,15 +1107,28 @@ function renderTeammateCard(m, index) {
   const u         = m.users;
   const isMe      = u.id === _authUser?.id;
   const initials  = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
-  const avatarClass = `t${(index % 4) + 1}`;
-  const memberPlan  = _teamData.teamPlans.find(p => p.user_id === u.id);
+  const avatarClass  = `t${(index % 4) + 1}`;
+  const memberPlan   = _teamData.teamPlans.find(p => p.user_id === u.id);
   const sessionCount = (memberPlan?.sessions || []).length;
-  const noteCount = _teamData.allNotes.filter(n => n.plan_id === memberPlan?.id).length;
-  const cats = (memberPlan?.categories || []).map(c => ({
-    'practice-management': 'Practice mgmt', 'ai-automation': 'AI & automation',
-    'bookkeeping': 'Bookkeeping', 'tax-mtd': 'Tax / MTD',
-    'doc-management': 'Docs / portals', 'payroll': 'Payroll',
-  }[c] || c));
+  const noteCount    = _teamData.allNotes.filter(n => n.plan_id === memberPlan?.id).length;
+
+  const roleLabel     = memberPlan?.role ? (ROLE_LABELS[memberPlan.role] || memberPlan.role) : '';
+  const firmSizeLabel = memberPlan?.firm_size ? (FIRM_SIZE_LABELS[memberPlan.firm_size] || memberPlan.firm_size) : '';
+  const rawFirm  = (u.company || '').trim();
+  const firmName = (!rawFirm || /^company$/i.test(rawFirm) || /^your[-\s]?firm$/i.test(rawFirm)) ? '' : rawFirm;
+  const identityParts = [roleLabel, firmSizeLabel, firmName].filter(Boolean).map(escHtml);
+
+  let painLabels = [];
+  if (Array.isArray(memberPlan?.pains) && memberPlan.pains.length) {
+    painLabels = memberPlan.pains.map(s => s);
+  } else if (memberPlan?.problem) {
+    painLabels = String(memberPlan.problem).split(/,\s*/).map(s => s.trim()).filter(Boolean);
+  }
+
+  const stackGapLabels = (memberPlan?.categories || [])
+    .map(c => CATEGORY_LABELS[c] || c)
+    .filter(Boolean);
+
   const joinedDate = new Date(m.joined_at);
   const joinedStr = isNaN(joinedDate) ? '' : `Joined · ${joinedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
 
@@ -992,20 +1141,22 @@ function renderTeammateCard(m, index) {
             <span class="teammate-name">${escHtml(u.first_name)} ${escHtml(u.last_name)}</span>
             ${isMe ? '<span class="teammate-you-tag">You</span>' : ''}
           </div>
-          <div class="teammate-role">${escHtml(u.company || '')}</div>
+          ${identityParts.length ? `<div class="teammate-identity">${identityParts.join(' <span class="teammate-identity-sep">·</span> ')}</div>` : ''}
         </div>
       </div>
-      ${memberPlan?.problem ? `
-        <div class="teammate-mission">
-          <div class="teammate-mission-label">Their mission</div>
-          <div class="teammate-mission-text">"${escHtml(memberPlan.problem)}"</div>
+      ${painLabels.length ? `
+        <div class="teammate-meta-block">
+          <div class="teammate-meta-label tone-pink">Their pains</div>
+          <div class="teammate-meta-pills">
+            ${painLabels.map(p => `<span class="teammate-meta-pill pain">${escHtml(p)}</span>`).join('')}
+          </div>
         </div>
       ` : ''}
-      ${cats.length ? `
+      ${stackGapLabels.length ? `
         <div class="teammate-meta-block">
-          <div class="teammate-meta-label">Evaluating</div>
+          <div class="teammate-meta-label tone-purple">Stack gaps</div>
           <div class="teammate-meta-pills">
-            ${cats.map(c => `<span class="teammate-meta-pill cat">${escHtml(c)}</span>`).join('')}
+            ${stackGapLabels.map(c => `<span class="teammate-meta-pill cat">${escHtml(c)}</span>`).join('')}
           </div>
         </div>
       ` : ''}
@@ -1028,64 +1179,140 @@ function renderTeammateCard(m, index) {
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const inviteFormHtml = `
+  const MAX_TEAM_MEMBERS = 8;
+  const memberCount = _teamData.members.length;
+  const isSolo      = memberCount < 2;
+  const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
+  const isFull      = memberCount >= MAX_TEAM_MEMBERS;
+  const pillTone    = isFull ? 'full' : (memberCount > 1 ? 'team' : 'solo');
+
+  const capacityPill = `
+    <div class="team-capacity-pill ${pillTone}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span><strong>${memberCount}</strong> of ${MAX_TEAM_MEMBERS}</span>
+    </div>
+  `;
+
+  const inviteForm = `
+    <div class="team-invite-form" id="team-invite-form">
+      <div class="team-invite-input-row">
+        <input type="email" class="team-invite-email-input" id="team-invite-email"
+          placeholder="colleague@firm.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
+        <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
+          Send invite
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="team-invite-status" id="team-invite-status"></div>
+    </div>
+  `;
+
+  const focusInviteEmail = "document.getElementById('team-invite-email')?.focus();";
+
+  const placeholderCard = !isFull ? `
+    <div class="teammate teammate-placeholder" onclick="${focusInviteEmail}">
+      <div class="teammate-placeholder-inner">
+        <div class="teammate-placeholder-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        </div>
+        <div class="teammate-placeholder-text">
+          Each teammate's brief lands here.<br>
+          <strong>Tap to invite by email.</strong>
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  const heroTitle = isFull
+    ? `Your <em>${MAX_TEAM_MEMBERS}-strong</em> team is locked in.`
+    : (isSolo
+        ? `Invite up to <em>${MAX_TEAM_MEMBERS} teammates.</em>`
+        : `Bring more colleagues. <em>${MAX_TEAM_MEMBERS} seats total.</em>`);
+
+  const heroSub = isFull
+    ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
+    : (isSolo
+        ? `Send each colleague an email invite. They get their own AI-matched plan in this workspace — with their notes, ratings, and CPD hours flowing into a shared debrief.`
+        : `Each colleague who joins unlocks <strong>their sessions on your map</strong>, <strong>their notes attributed in real time</strong>, <strong>their booth ratings</strong>, and a <strong>shared debrief</strong>.`);
+
+  const eyebrowLabel = isFull ? 'Workspace at capacity' : 'Workspace invite';
+
+  const inviteHero = `
     <div class="team-invite-hero">
       <div class="team-invite-hero-inner">
-        <div class="team-invite-hero-label">Invite a colleague</div>
-        <div class="team-invite-hero-title">You're in <em>${escHtml(_teamData.company || 'the team')}.</em></div>
-        <div class="team-invite-hero-sub">Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Invite more colleagues below.</div>
-        <div class="team-invite-form" id="team-invite-form">
-          <div class="team-invite-input-row">
-            <input type="email" class="team-invite-email-input" id="team-invite-email"
-              placeholder="colleague@firm.com" autocomplete="email"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
-            <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
-              Send invite
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-          </div>
-          <div class="team-invite-status" id="team-invite-status"></div>
+        <div class="team-capacity-row">
+          <div class="team-section-eyebrow tone-pink">${eyebrowLabel}</div>
+          ${capacityPill}
         </div>
+        <div class="team-invite-hero-title">${heroTitle}</div>
+        <div class="team-invite-hero-sub">${heroSub}</div>
+        ${isFull ? '' : inviteForm}
       </div>
     </div>
   `;
 
-  const memberCount = _teamData.members.length;
+  const pageTitle = isSolo
+    ? `Bring your team to <em>Accountex.</em>`
+    : `Your firm at <em>Accountex.</em>`;
+
+  const pageSub = isSolo
+    ? ``
+    : `Who's covering what, whose notes are flowing in live, and what the team has actually decided.`;
+
+  const aiBlock = isSolo ? `
+    <div class="team-synthesis ai-insights-locked">
+      <div class="team-section-eyebrow tone-mint">AI insights · waiting</div>
+      <h3 class="team-section-title">Patterns across <em>your team.</em></h3>
+      <p class="team-section-lede">
+        Where you're scouting in common, where you'd duplicate, what nobody's covering. Surfaces once a second teammate joins.
+      </p>
+      <div class="ai-insights-locked-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Needs at least <strong>2 teammates</strong> to generate insights.</span>
+      </div>
+    </div>
+  ` : `
+    <div class="team-synthesis">
+      <div class="team-section-eyebrow tone-mint">AI synthesis</div>
+      <h3 class="team-section-title">What the AI sees <em>across the team.</em></h3>
+      <p class="team-section-lede">Patterns nobody flagged on their own. Disagreements worth a 5-minute call. Blind spots in your collective coverage. Attributed by name — never averaged.</p>
+      <div class="intel-grid">
+        ${buildIntelBlocks()}
+      </div>
+    </div>
+  `;
 
   return `
     <div class="app-header">
       <div class="app-header-top">
         <div>
-          <h2 class="app-title">Your team, <em>already aligned.</em></h2>
-          <p class="app-sub">What everyone's scouting, who's covering what, and where the team's real problems are.</p>
+          <h2 class="app-title">${pageTitle}</h2>
+          ${pageSub ? `<p class="app-sub" style="margin-top:6px;">${pageSub}</p>` : ''}
         </div>
       </div>
     </div>
 
-    ${inviteFormHtml}
-
-    <div class="team-synthesis">
-      <div class="team-synthesis-label">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/></svg>
-        AI team intel
-      </div>
-      <div class="team-synthesis-title">The brief your team <em>hasn't written yet.</em></div>
-      <p class="team-synthesis-lede">We read every teammate's stated problem and priority pick. Here's what jumps out — attributed, not averaged.</p>
-      <div class="intel-grid">
-        ${buildIntelBlocks()}
-      </div>
-    </div>
+    ${inviteHero}
 
     <div class="app-section">
-      <div class="app-section-header">
-        <div class="app-section-title">Who's going &amp; why <span class="app-section-count">${memberCount} ${memberCount === 1 ? 'mission' : 'missions'}</span></div>
+      <div class="team-section-eyebrow tone-purple">Pre-show intel</div>
+      <h3 class="team-section-title">Who's going &amp; <em>why.</em></h3>
+      <p class="team-section-lede">
+        Each teammate's onboarding answers, side by side. What they think are your firm's top problems and software to evaluate — invaluable intel to align before, during and after Accountex.
+      </p>
+      <div class="team-section-count-row">
+        <span class="team-section-count-label">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</span>
       </div>
       <div class="teammate-grid">
         ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+        ${placeholderCard}
       </div>
     </div>
 
-    <div class="taxready-cta-v2">
+    ${aiBlock}
+
+    ${isSolo ? '' : `<div class="taxready-cta-v2">
       <div class="taxready-cta-v2-eyebrow">
         <span class="taxready-cta-v2-dot"></span>
         Bonus · Stand 1144
@@ -1177,7 +1404,7 @@ function renderTeamTab() {
       <div class="taxready-cta-v2-foot">
         Or drop by <strong>stand 1144</strong> for a hand · <a href="https://xumagazine.com" target="_blank" rel="noopener">As featured in XU Magazine</a>
       </div>
-    </div>
+    </div>`}
   `;
 }
 
@@ -1549,8 +1776,8 @@ function renderDebriefTab() {
 
 function _ensurePlanEditorOverlay() {
   if (document.getElementById('planEditorOverlay')) return;
-  const el = document.createElement('div');
-  el.innerHTML = `
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
     <div class="search-overlay plan-editor-overlay" id="planEditorOverlay">
       <div class="search-overlay-inner" style="max-width:980px;">
         <div class="search-overlay-header">
@@ -1571,8 +1798,42 @@ function _ensurePlanEditorOverlay() {
         <div class="plan-editor-results" id="planEditorResults"></div>
       </div>
     </div>`;
-  document.body.appendChild(el.firstElementChild);
+  const overlay = wrap.firstElementChild;
+  document.body.appendChild(overlay);
+
+  // The floating bar must live OUTSIDE the overlay — the overlay has
+  // backdrop-filter, which creates a new containing block and breaks
+  // position: fixed for descendants. Sibling-of-body keeps it pinned
+  // to the viewport.
+  const bar = document.createElement('div');
+  bar.id = 'planEditorFloatingBar';
+  bar.className = 'plan-editor-floating-bar';
+  bar.innerHTML = `
+    <button class="plan-editor-floating-btn" onclick="planEditorScrollTop()" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      Back to top
+    </button>
+    <button class="plan-editor-floating-btn" onclick="closePlanEditor()" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Close
+    </button>`;
+  document.body.appendChild(bar);
+
+  // Show the bar once the editor has scrolled past 480px. The overlay is
+  // the scroll container (overflow-y: auto). Reveal class lives on the
+  // bar itself so closePlanEditor can hide it cleanly without coupling
+  // to overlay state.
+  overlay.addEventListener('scroll', () => {
+    if (overlay.classList.contains('open')) {
+      bar.classList.toggle('visible', overlay.scrollTop > 480);
+    }
+  }, { passive: true });
 }
+
+window.planEditorScrollTop = function() {
+  const overlay = document.getElementById('planEditorOverlay');
+  if (overlay) overlay.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 let _planEditorEscHandler = null;
 
@@ -1599,7 +1860,15 @@ window.openPlanEditor = function(mode) {
   }
   if (search) search.value = '';
 
+  // Drives the booth-purple theme (vs the default mint for sessions) via
+  // CSS .plan-editor-overlay[data-mode="booths"] selectors.
+  overlay.dataset.mode = mode;
   overlay.classList.add('open');
+  // Reset scroll on reopen so the floating bar doesn't flash visible
+  // from a previous session, and the user starts at the filters again.
+  overlay.scrollTop = 0;
+  const bar = document.getElementById('planEditorFloatingBar');
+  if (bar) bar.classList.remove('visible');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
@@ -1628,6 +1897,7 @@ window.openPlanEditorWithProblem = function(cat) {
   sub.textContent = `${(_plan?.sessions || []).length} in your plan · ${(_allSessions || []).length} available`;
   if (search) search.value = '';
 
+  overlay.dataset.mode = 'sessions';
   overlay.classList.add('open');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
@@ -1642,6 +1912,8 @@ window.openPlanEditorWithProblem = function(cat) {
 window.closePlanEditor = function() {
   const overlay = document.getElementById('planEditorOverlay');
   if (overlay) overlay.classList.remove('open');
+  const bar = document.getElementById('planEditorFloatingBar');
+  if (bar) bar.classList.remove('visible');
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1852,14 +2124,11 @@ function renderPlanEditorSessions(container) {
         <span class="editor-day-divider-line"></span>
       </div>`;
     }
-    // Sort sessions within a start-time group by AI match confidence
-    // descending — top match shows first.
-    const sortedSlot = [...sessions].sort((a, b) => {
-      const ca = a.match_confidence ?? aiMatchConfidence(a.session_id, 'session');
-      const cb = b.match_confidence ?? aiMatchConfidence(b.session_id, 'session');
-      return cb - ca;
-    });
-    const slotPlanCount = sortedSlot.filter(s => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
+    // Sort sessions within a start-time group by ranking ascending —
+    // top match shows first. Compute match once per session, reuse below.
+    const enriched = sessions.map(s => ({ s, m: matchForSession(s) }));
+    enriched.sort((a, b) => a.m.rank - b.m.rank);
+    const slotPlanCount = enriched.filter(({ s }) => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
     const hasClash = slotPlanCount >= 2;
     html += `<div class="editor-slot${hasClash ? ' has-clash' : ''}">
       <div class="editor-slot-head">
@@ -1867,10 +2136,9 @@ function renderPlanEditorSessions(container) {
         ${hasClash ? `<div class="editor-clash-warning">${slotPlanCount} sessions selected at this time</div>` : ''}
       </div>
       <div class="editor-slot-rows">`;
-    for (const s of sortedSlot) {
-      const inPlan     = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
-      const confidence = s.match_confidence ?? aiMatchConfidence(s.session_id, 'session');
-      const speaker    = (s.speakers || [])[0];
+    for (const { s, m } of enriched) {
+      const inPlan  = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
+      const speaker = (s.speakers || [])[0];
       const metaParts = [
         s.theatre ? `<span>${escHtml(s.theatre)}</span>` : '',
         speaker ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>` : '',
@@ -1882,10 +2150,7 @@ function renderPlanEditorSessions(container) {
             <div class="editor-row-title">${escHtml(s.title || s.session_id)}</div>
             <div class="editor-row-meta">${metaParts}</div>
             ${blurb ? `<div class="editor-row-blurb">${escHtml(blurb)}</div>` : ''}
-          </div>
-          <div class="editor-row-confidence">
-            <div class="row-confidence-num">${confidence}%</div>
-            <div class="row-confidence-label">AI Match<br>Confidence</div>
+            ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
           </div>
           <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
             onclick="togglePlanSession('${escHtml(String(s.session_id))}','${escHtml(s.day||'')}','${escHtml(s.start_time||'')}')" type="button">
@@ -1936,27 +2201,29 @@ function renderPlanEditorBooths(container) {
     return;
   }
 
-  // Sort booths by AI match confidence desc — top matches first
-  const sortedBooths = [...filtered].sort((a, b) => {
-    const ca = a.match_confidence ?? aiMatchConfidence(a.stand_number || a.company_name, 'booth');
-    const cb = b.match_confidence ?? aiMatchConfidence(b.stand_number || b.company_name, 'booth');
-    return cb - ca;
+  // In-plan booths pin to top; out-of-plan sort by rank ascending.
+  const planBoothRankIndex = new Map();
+  (_plan?.booths || []).forEach((b, idx) => planBoothRankIndex.set(b.stand_number, idx + 1));
+
+  const enriched = filtered.map(e => {
+    const inPlan = planNums.has(e.stand_number);
+    const m = matchForBooth(e, inPlan ? planBoothRankIndex.get(e.stand_number) : null);
+    return { e, inPlan, m };
+  });
+  enriched.sort((a, b) => {
+    if (a.inPlan !== b.inPlan) return a.inPlan ? -1 : 1;
+    return a.m.rank - b.m.rank;
   });
 
-  const rows = sortedBooths.map(e => {
-    const inPlan     = planNums.has(e.stand_number);
-    const confidence = e.match_confidence ?? aiMatchConfidence(e.stand_number || e.company_name, 'booth');
-    const blurb      = e.company_description ? truncateBoothDesc(e.company_description) : '';
+  const rows = enriched.map(({ e, inPlan, m }) => {
+    const blurb = e.company_description ? truncateBoothDesc(e.company_description) : '';
     return `
       <div class="editor-row${inPlan ? ' in-plan' : ''}">
         <div class="editor-row-main">
           <div class="editor-row-title">${escHtml(e.company_name || '')}</div>
           <div class="editor-row-meta">Booth · Stand ${escHtml(String(e.stand_number || ''))}</div>
           ${blurb ? `<div class="editor-row-blurb">${escHtml(blurb)}</div>` : ''}
-        </div>
-        <div class="editor-row-confidence">
-          <div class="row-confidence-num">${confidence}%</div>
-          <div class="row-confidence-label">AI Match<br>Confidence</div>
+          ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
         </div>
         <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
           onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
@@ -2006,21 +2273,21 @@ function sponsorsFooterHtml() {
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+            <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
+          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
+          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
+            workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
-            <img src="/images/workiro-logo.svg" alt="Workiro">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants. Come say hi at stand <strong>1144</strong>.</p>
-          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com
+          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
+          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+            xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
@@ -2034,11 +2301,48 @@ function sponsorsFooterHtml() {
 
 // ── Main render ───────────────────────────────────────────────────────────────
 
+// "Install as app" promo strip — sits above the top-bar on mobile only.
+// Detects iOS vs Android and shows the right Add-to-Home-Screen path.
+// Dismisses for life via localStorage; if the page is loaded standalone
+// (already installed) we never show it.
+function renderInstallStrip() {
+  if (typeof navigator === 'undefined') return '';
+  if (localStorage.getItem('installStripDismissed') === '1') return '';
+  // If already running as an installed PWA, don't re-pitch the install.
+  const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                       || window.navigator.standalone === true;
+  if (isStandalone) return '';
+  const ua        = navigator.userAgent || '';
+  const isIOS     = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  if (!isIOS && !isAndroid) return '';
+  const steps = isIOS
+    ? 'Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>'
+    : 'Tap menu <strong>⋮</strong> → <strong>Install app</strong>';
+  return `
+    <div class="install-strip" id="installStrip">
+      <div class="install-strip-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </div>
+      <div class="install-strip-body">
+        <strong>Install this as an app for the show:</strong> ${steps}. Opens full-screen, always logged in.
+      </div>
+      <button class="install-strip-dismiss" onclick="dismissInstallStrip()" aria-label="Dismiss" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  `;
+}
+window.dismissInstallStrip = function() {
+  localStorage.setItem('installStripDismissed', '1');
+  document.getElementById('installStrip')?.remove();
+};
+
 function renderApp() {
   const root = $('plan-root');
   if (!root) return;
 
-  root.innerHTML = renderTabNav() + `<div class="plan-tab-content">${renderCurrentTab()}</div>`;
+  root.innerHTML = renderInstallStrip() + renderTabNav() + `<div class="plan-tab-content">${renderCurrentTab()}</div>`;
 
   if (_currentTab === 'checklist') {
     attachPlanListeners(_plan.id, _plan.sessions, _plan.booths);
@@ -2089,8 +2393,8 @@ const _teamFooterHtml = `
     <div class="sponsors-footer" style="border-top:none;">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
       <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
         <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
+        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
       </div>
     </div>
   `;
@@ -2195,6 +2499,8 @@ async function saveNote(planId, itemId, itemType, noteText, createdBy) {
 // ── Auth flow ─────────────────────────────────────────────────────────────────
 
 async function handleSignIn(authUser, teamToken) {
+  const log = (step, detail) => console.log(`[plan/signin] ${step}` + (detail ? ` — ${detail}` : ''));
+  log('start', `userId=${authUser?.id} anon=${authUser?.is_anonymous} teamToken=${teamToken || 'none'}`);
   try {
     if (!authUser.is_anonymous) {
       // Recover pending plan from localStorage only if no plan already exists in DB.
@@ -2298,11 +2604,13 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
+    log('loadPlan', 'fetching plan + programme + exhibitors');
     const [full, allSessions, allExhibitors] = await Promise.all([
       loadLatestPlan(authUser.id),
       fetch('/data/programme.json').then(r => r.json()).catch(() => []),
       fetch('/data/exhibitors.json').then(r => r.json()).catch(() => []),
     ]);
+    log('loadPlan', `plan=${full ? full.id : 'none'} sessions=${allSessions.length} booths=${allExhibitors.length}`);
 
     if (!full) {
       if (teamToken) {
@@ -2334,7 +2642,7 @@ async function handleSignIn(authUser, teamToken) {
             lead_user_id: authUser.id,
             company:      userRow?.company || null,
             invite_token: crypto.randomUUID(),
-            max_members:  5,
+            max_members:  8,
           })
           .select('id, invite_token')
           .single();
@@ -2357,7 +2665,9 @@ async function handleSignIn(authUser, teamToken) {
 
     let teamData = null;
     if (full.team_id) {
+      log('loadTeamData', `team=${full.team_id}`);
       teamData = await loadTeamData(full.team_id);
+      log('loadTeamData', `members=${teamData?.members?.length ?? 0}`);
     }
 
     // Re-hydrate booth metadata from current exhibitors data so name/description
@@ -2388,10 +2698,15 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
+    log('renderApp', 'all data ready');
+    showLoading(false);
     renderApp();
+    log('done');
   } catch (err) {
     const detail = err?.message || err?.details || String(err);
-    showError(`Could not load your plan: ${detail} — <a href="/" style="color:var(--mint)">Start again →</a>`);
+    console.error('[plan/signin] error:', err);
+    showLoading(false);
+    showError(`Could not load your plan: ${detail} — <a href="/" style="color:var(--mint)">Start again →</a> · <a href="/plan/?reset=1" style="color:var(--mint)">Reset session</a>`);
   }
 }
 
@@ -2564,13 +2879,113 @@ window.planRemoveBooth = function(standNumber) {
   renderApp();
 };
 
-// Confirm-wrapped remove for the in-card subtle × button. Native confirm
-// is enough — booth removal is reversible (re-add via the editor).
+// In-app confirm modal — replaces native window.confirm() so the
+// experience reads as part of the app, not the browser. Reusable:
+// pass a body string + onConfirm callback. Tone "danger" turns the
+// confirm button pink to signal a destructive action.
+function planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }) {
+  // If a previous confirm is still open (rapid re-invocation), clean
+  // up its keydown listener before stomping the DOM — otherwise stale
+  // Esc/Enter handlers leak onto document.
+  if (planShowConfirm._cleanup) planShowConfirm._cleanup();
+  document.getElementById('planConfirmModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'planConfirmModal';
+  modal.className = 'plan-confirm-modal open';
+  modal.innerHTML = `
+    <div class="plan-confirm-backdrop" data-action="cancel"></div>
+    <div class="plan-confirm-panel">
+      <h2 class="plan-confirm-title">${escHtml(title)}</h2>
+      <p class="plan-confirm-body">${body}</p>
+      <div class="plan-confirm-actions">
+        <button class="plan-confirm-btn cancel" type="button" data-action="cancel">Cancel</button>
+        <button class="plan-confirm-btn confirm tone-${confirmTone || 'mint'}" type="button" data-action="confirm">${escHtml(confirmLabel || 'Confirm')}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  const close = () => {
+    document.removeEventListener('keydown', onKey);
+    modal.remove();
+    if (planShowConfirm._cleanup === close) planShowConfirm._cleanup = null;
+  };
+  const onKey = (e) => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'Enter') { onConfirm?.(); close(); }
+  };
+  document.addEventListener('keydown', onKey);
+  planShowConfirm._cleanup = close;
+  modal.addEventListener('click', (e) => {
+    const action = e.target.closest('[data-action]')?.dataset?.action;
+    if (action === 'cancel') close();
+    else if (action === 'confirm') { onConfirm?.(); close(); }
+  });
+  // Auto-focus the confirm button so Enter works straight away.
+  modal.querySelector('.plan-confirm-btn.confirm')?.focus();
+}
+
+// Modal listing every teammate note for a single item. Triggered from
+// the "+N more" link in the inline team-notes block when an item has
+// more notes than the inline cap.
+window.planShowTeamNotes = function(noteKey, itemTitle) {
+  const allNotes = (_teamData?.allNotes || []).filter(n => {
+    if (!n.created_by || n.created_by === _authUser?.id) return false;
+    const colon = noteKey.indexOf(':');
+    return n.item_type === noteKey.slice(0, colon) && String(n.item_id) === noteKey.slice(colon + 1);
+  });
+  const sorted = [...allNotes].sort((a, b) =>
+    new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const fmtDate = (d) => {
+    if (!d) return '';
+    try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
+  };
+  document.getElementById('planTeamNotesModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'planTeamNotesModal';
+  modal.className = 'plan-confirm-modal open';
+  modal.innerHTML = `
+    <div class="plan-confirm-backdrop" data-action="close"></div>
+    <div class="plan-confirm-panel team-notes-panel">
+      <div class="team-notes-modal-eyebrow">Team notes</div>
+      <h2 class="plan-confirm-title">${escHtml(itemTitle)}</h2>
+      <div class="team-notes-modal-list">
+        ${sorted.map(n => {
+          const author = _teamData?.members.find(m => m.users?.id === n.created_by);
+          const name = author ? `${author.users.first_name || ''} ${author.users.last_name || ''}`.trim() : 'Teammate';
+          return `
+            <div class="team-notes-modal-row">
+              <div class="team-notes-modal-row-head">
+                <span class="team-notes-modal-name">${escHtml(name)}</span>
+                ${n.created_at ? `<span class="team-notes-modal-time">${escHtml(fmtDate(n.created_at))}</span>` : ''}
+              </div>
+              <p class="team-notes-modal-text">${escHtml(n.note_text || '')}</p>
+            </div>`;
+        }).join('') || '<p class="team-notes-modal-empty">No team notes yet.</p>'}
+      </div>
+      <div class="plan-confirm-actions">
+        <button class="plan-confirm-btn cancel" type="button" data-action="close">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  const close = () => { document.removeEventListener('keydown', onKey); modal.remove(); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  modal.addEventListener('click', (e) => {
+    if (e.target.closest('[data-action="close"]')) close();
+  });
+};
+
 window.planConfirmRemoveBooth = function(standNumber, companyName) {
-  const label = companyName ? `"${companyName}"` : 'this booth';
-  if (window.confirm(`Remove ${label} from your plan?`)) {
-    window.planRemoveBooth(standNumber);
-  }
+  const label = companyName
+    ? `Remove <strong>${escHtml(companyName)}</strong> from your plan?`
+    : 'Remove this booth from your plan?';
+  planShowConfirm({
+    title: 'Remove booth',
+    body: `${label} You can re-add it any time from <strong>Edit booths</strong>.`,
+    confirmLabel: 'Remove',
+    confirmTone: 'danger',
+    onConfirm: () => window.planRemoveBooth(standNumber),
+  });
 };
 
 // Toggle a booth's visited state from the in-card Visited button. Mirrors
@@ -2622,11 +3037,17 @@ window.planOpenNote = function(noteId) {
   const panel = document.querySelector(`.checklist-note-panel[data-note-id="${CSS.escape(noteId)}"]`);
   if (!panel) return;
   const savedText = panel.dataset.savedText || '';
+  const chips = noteId.startsWith('booth:') ? NOTE_CHIPS_BOOTH : NOTE_CHIPS_SESSION;
+  const chipsHtml = chips.map((c, i) => `
+    <button class="note-chip" type="button" data-chip-idx="${i}"
+      onclick="planInsertChip('${escHtml(noteId)}', ${i}, this)">
+      <span class="note-chip-emoji">${c.emoji}</span><span class="note-chip-label">${escHtml(c.label)}</span>
+    </button>`).join('');
   panel.className = 'checklist-note-panel editing';
   panel.innerHTML = `
     <div class="note-edit-head"><span class="note-edit-label">Your note</span></div>
+    <div class="note-chip-row">${chipsHtml}</div>
     <textarea class="rate-panel-note" id="noteDraft-${escHtml(noteId)}"
-      placeholder="What stood out · Who to follow up with"
       maxlength="280">${escHtml(savedText)}</textarea>
     <div class="note-edit-actions">
       <div class="note-edit-count"><span id="noteCount-${escHtml(noteId)}">${savedText.length}</span> / 280</div>
@@ -2643,6 +3064,46 @@ window.planOpenNote = function(noteId) {
     });
     ta.focus();
   }
+};
+
+// Chip insertion — stamps "${emoji} ${label}: " into the textarea per
+// the rules: prepend if empty, append on a new line if not, no-op if
+// the chip's label is already present, soft-block at the 280 cap.
+// Brief mint flash on the chip confirms the action.
+window.planInsertChip = function(noteId, chipIdx, btn) {
+  const ta = document.getElementById(`noteDraft-${noteId}`);
+  if (!ta) return;
+  const list = noteId.startsWith('booth:') ? NOTE_CHIPS_BOOTH : NOTE_CHIPS_SESSION;
+  const c = list[chipIdx];
+  if (!c) return;
+  const stamp = `${c.emoji} ${c.label}: `;
+  const flash = (cls) => {
+    if (!btn) return;
+    btn.classList.add(cls);
+    setTimeout(() => btn.classList.remove(cls), 500);
+  };
+  // Already used in this note? No-op + subtle "already there" flash.
+  if (ta.value.includes(`${c.emoji} ${c.label}:`)) {
+    flash('already');
+    return;
+  }
+  const current   = ta.value;
+  const insertion = current.length === 0 ? stamp : current.endsWith('\n') ? stamp : `\n${stamp}`;
+  // Soft-block when the insertion would push past 280 chars.
+  if (current.length + insertion.length > 280) {
+    flash('full');
+    return;
+  }
+  ta.value = current + insertion;
+  flash('used');
+  // Move cursor to the end (right after the newly inserted colon-space)
+  const pos = ta.value.length;
+  ta.focus();
+  ta.setSelectionRange(pos, pos);
+  // Update counter manually since programmatic .value changes don't fire
+  // an 'input' event automatically across all browsers.
+  const counter = document.getElementById(`noteCount-${noteId}`);
+  if (counter) counter.textContent = ta.value.length;
 };
 
 window.planCancelNote = function(noteId) {
@@ -2712,12 +3173,12 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
   const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
   const scored = candidates.map(s => ({
     session: s,
-    score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
-    confidence: aiMatchConfidence(s.session_id, 'session'),
+    score:   (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+    match:   matchForSession(s),
   }));
-  // Sort by AI match confidence desc, then category-match score, then title.
+  // Sort by ranking ascending (top match first), then category overlap.
   scored.sort((a, b) =>
-    b.confidence - a.confidence ||
+    a.match.rank - b.match.rank ||
     b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
@@ -2725,18 +3186,20 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No sessions in this time window.</div>'
-    : scored.map(({ session: s, confidence }) => {
+    : scored.map(({ session: s, match: m }) => {
         const inPlan = planIds.has(s.session_id);
+        const swapTags = whyMatched(s, _plan || {}, m.bucket);
+        const tagsHtml = swapTags.length
+          ? `<div class="checklist-why-tags">${swapTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
+          : '';
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
+              ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
-            </div>
-            <div class="slot-swap-row-confidence">
-              <div class="row-confidence-num">${confidence}%</div>
-              <div class="row-confidence-label">AI Match</div>
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
@@ -2777,13 +3240,12 @@ window.planOpenSlotSwap = function(currentId, ev) {
   const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
   const scored = candidates.map(s => ({
     session: s,
-    score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
-    confidence: aiMatchConfidence(s.session_id, 'session'),
+    score:   (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+    match:   matchForSession(s),
   }));
-  // Sort by AI match confidence desc — closest swaps appear first, so the
-  // user can see how near each alternative is to their current pick.
+  // Sort by ranking ascending — closest swaps appear first.
   scored.sort((a, b) =>
-    b.confidence - a.confidence ||
+    a.match.rank - b.match.rank ||
     b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
@@ -2799,27 +3261,29 @@ window.planOpenSlotSwap = function(currentId, ev) {
         <div class="slot-swap-row-title">Make this slot free time</div>
         <div class="slot-swap-row-meta">Skip a session — visit the floor, see booth recommendations instead</div>
       </div>
-      <button class="slot-swap-row-btn outlined" onclick="planMakeSlotFreeTime('${escHtml(currentId)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Free up slot →</button>
+      <button class="slot-swap-row-btn outlined" onclick="planMakeSlotFreeTime('${escHtml(currentId)}');document.getElementById('planSlotSwapModal')?.remove()" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg> Free up slot</button>
     </div>`;
 
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other sessions at this time slot.</div>'
-    : scored.map(({ session: s, confidence }) => {
+    : scored.map(({ session: s, match: m }) => {
         const inPlan = planIds.has(s.session_id);
+        const swapTags = whyMatched(s, _plan || {}, m.bucket);
+        const tagsHtml = swapTags.length
+          ? `<div class="checklist-why-tags">${swapTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
+          : '';
         return `
           <div class="slot-swap-row${inPlan ? ' already-in-plan' : ''}">
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
+              ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
-            </div>
-            <div class="slot-swap-row-confidence">
-              <div class="row-confidence-num">${confidence}%</div>
-              <div class="row-confidence-label">AI Match</div>
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
-              : `<button class="slot-swap-row-btn outlined" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Swap →</button>`
+              : `<button class="slot-swap-row-btn outlined" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap</button>`
             }
           </div>`;
       }).join('');
@@ -2836,7 +3300,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
       </button>
       <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(current.start_time || '')}–${escHtml(current.end_time || '')}</div>
       <h2 class="login-modal-title">Edit this <em>slot.</em></h2>
-      <p class="login-modal-sub">Currently: <strong>${escHtml(current.title || '')}</strong>. Swap for another session, or free the slot for booth visits.</p>
+      <p class="login-modal-sub">Currently: <strong style="color:var(--text);">${escHtml(current.title || '')}</strong>. Swap for another session, or free the slot for booth visits.</p>
       <div class="slot-swap-list">${freeTimeRow}${candidatesHtml}</div>
     </div>`;
   document.body.appendChild(modal);
@@ -2906,6 +3370,310 @@ window.planSendInvite = async function() {
   setTimeout(() => { if (status) status.textContent = ''; }, 5000);
 };
 
+// ── Demo mode (no auth, no DB) ────────────────────────────────────────────────
+async function initDemoMode() {
+  const log = (step, detail) => console.log(`[plan/demo] ${step}` + (detail ? ` — ${detail}` : ''));
+  try {
+    log('start');
+    showLoading(true);
+    const [allSessions, allExhibitors] = await Promise.all([
+      fetch('/data/programme.json').then(r => r.json()).catch(e => { log('programme.json fetch failed', e.message); return []; }),
+      fetch('/data/exhibitors.json').then(r => r.json()).catch(e => { log('exhibitors.json fetch failed', e.message); return []; }),
+    ]);
+    log('fetched', `sessions=${allSessions.length} booths=${allExhibitors.length}`);
+
+    // Pick the first 11 sessions across both days (chronological), and the
+    // first 8 booths. Matches the dummy ranking arrays so the bucket badges
+    // line up with the SESSION_PLAN_DUMMY / BOOTH_PLAN_DUMMY positions.
+    const sessions = [...(allSessions || [])]
+      .filter(s => s.title && s.day && s.start_time)
+      .sort((a, b) => {
+        const da = a.day === 'Day 1' ? 1 : 2;
+        const db = b.day === 'Day 1' ? 1 : 2;
+        return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+      })
+      .slice(0, 11)
+      .map((s, i) => ({ ...s, rank: i + 1 }));
+    const booths = [...(allExhibitors || [])]
+      .filter(e => e.company_name)
+      .slice(0, 8)
+      .map((b, i) => ({ ...b, rank: i + 1 }));
+
+    _authUser    = { id: 'demo-user', email: 'demo@autoevent.io', is_anonymous: false };
+    _userProfile = { first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' };
+    _allSessions = allSessions || [];
+    _allExhibitors = allExhibitors || [];
+    _plan = {
+      id: 'demo-plan',
+      user_id: 'demo-user',
+      team_id: 'demo-team',
+      attend_mode: 'team-lead',
+      problem: 'AI — where to even start, Margin squeeze, MTD volume problem',
+      categories: ['practice-mgmt', 'tax-mtd', 'ai-automation'],
+      role: 'founder',
+      sessions,
+      booths,
+      ai_themes: [],
+      notes: [],
+    };
+
+    // Stub team with the demo user + 2 fake teammates so the Team tab
+    // shows its full populated state (AI synthesis, who's-going-and-why,
+    // etc.). Real users get a team auto-created on first sign-in; demo
+    // skips auth, so we fake one here.
+    //
+    // Critical for the Checklist team-rated-row to show: each teammate's
+    // plan must contain sessions/booths whose IDs MATCH items in the
+    // user's plan (renderTeamRatedRow keys by session_id / stand_number).
+    // Both Sarah's and James's plans now overlap with the user's plan.
+    const planSess = sessions;
+    const planBooths = booths;
+    const planSessIds = planSess.map(s => s.session_id);
+    const planBoothNums = planBooths.map(b => String(b.stand_number));
+    const teamPlanFor = (uid, problem, categories, role, sessIds, boothNums, sessRatings = {}, boothRatings = {}) => ({
+      id: `demo-plan-${uid}`,
+      user_id: uid,
+      problem,
+      categories,
+      role,
+      sessions: (allSessions || [])
+        .filter(s => sessIds.includes(s.session_id))
+        .map(s => ({ ...s, rating: sessRatings[s.session_id] || 0 })),
+      booths: (allExhibitors || [])
+        .filter(e => boothNums.includes(String(e.stand_number)))
+        .map(e => ({ ...e, rating: boothRatings[String(e.stand_number)] || 0 })),
+      ai_themes: [],
+    });
+    const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString();
+    // Sarah's session ratings — overlap with the user's plan so the
+    // team-rated row surfaces. Uses planSessIds[0..5] — i.e. her plan
+    // contains the user's first 6 sessions, with ratings on 4 of them.
+    const sarahSessIds = planSessIds.slice(0, 6);
+    const sarahSessRatings = {
+      [planSessIds[0]]: 3, // 🔥🔥🔥
+      [planSessIds[1]]: 2, // 🔥🔥
+      [planSessIds[3]]: 3,
+      [planSessIds[5]]: 1, // 🔥
+    };
+    // James — overlaps differently, rates a different mix
+    const jamesSessIds = planSessIds.slice(0, 7);
+    const jamesSessRatings = {
+      [planSessIds[0]]: 3, // also rated by Sarah → row shows BOTH
+      [planSessIds[2]]: 2,
+      [planSessIds[4]]: 3,
+      [planSessIds[6]]: 2,
+    };
+    // Booth ratings — Sarah on 3, James on 2. planBooths[0] gets rated
+    // by both so the user sees a multi-rater row on it.
+    const sarahBoothNums = planBoothNums.slice(0, 4);
+    const sarahBoothRatings = {
+      [planBoothNums[0]]: 3,
+      [planBoothNums[2]]: 2,
+      [planBoothNums[3]]: 3,
+    };
+    const jamesBoothNums = planBoothNums.slice(0, 3);
+    const jamesBoothRatings = {
+      [planBoothNums[0]]: 2,
+      [planBoothNums[1]]: 1,
+    };
+    _teamData = {
+      teamId: 'demo-team',
+      company: 'Demo Firm Ltd',
+      inviteToken: 'demo-invite-token',
+      members: [
+        { role: 'lead',   joined_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          users: { id: 'demo-user', first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' } },
+        { role: 'member', joined_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+          users: { id: 'demo-sarah', first_name: 'Sarah', last_name: 'Reid', company: 'Demo Firm Ltd' } },
+        { role: 'member', joined_at: new Date(Date.now() - 86400000 * 1).toISOString(),
+          users: { id: 'demo-james', first_name: 'James', last_name: 'O’Connor', company: 'Demo Firm Ltd' } },
+      ],
+      teamPlans: [
+        _plan,
+        teamPlanFor('demo-sarah',
+          'Slow client onboarding, AML / KYC pressure, Document chaos',
+          ['aml-onboarding', 'doc-mgmt', 'practice-mgmt'],
+          'senior',
+          sarahSessIds, sarahBoothNums,
+          sarahSessRatings, sarahBoothRatings),
+        teamPlanFor('demo-james',
+          'Margin squeeze, Charging for advice, Stuck in compliance',
+          ['proposals', 'forecasting', 'practice-mgmt'],
+          'partner',
+          jamesSessIds, jamesBoothNums,
+          jamesSessRatings, jamesBoothRatings),
+      ],
+      // Variety of team notes — chip-prefixed and free-form, on both
+      // sessions and booths. Several items deliberately carry 5+ notes
+      // so the "See all N →" overflow link is visible immediately.
+      allNotes: [
+        // ── Session 0 (6 notes from both teammates → overflow) ──────
+        planSess[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '🔥 Game-changer: speakers nailed the AML angle — exactly what we\'ve been wrestling with for our top-50 clients.',
+          created_by: 'demo-sarah', created_at: hoursAgo(28),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '📝 To do: pull the slide on workflow automation, share with the partner group on Friday.',
+          created_by: 'demo-james', created_at: hoursAgo(20),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '💡 Idea: run a 30-min internal lunch-and-learn from this — could replace our Q3 training session entirely.',
+          created_by: 'demo-sarah', created_at: hoursAgo(14),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '🧠 Made me think: we\'re probably 6 months behind where the speaker said the leading firms are.',
+          created_by: 'demo-james', created_at: hoursAgo(10),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '❤️ Loved it: speaker is on LinkedIn, dropped them a connect — would be great to bring in for our December offsite.',
+          created_by: 'demo-sarah', created_at: hoursAgo(6),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '📝 To do: cross-check their compliance framework against ours, bring deltas to next leadership meeting.',
+          created_by: 'demo-james', created_at: hoursAgo(2),
+        },
+        // ── Session 1 (1 note inline only) ─────────────────────────
+        planSess[1] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[1].session_id,
+          note_text: '🧠 Made me think: are we overcomplicating our pricing model? Worth a partner conversation.',
+          created_by: 'demo-james', created_at: hoursAgo(4),
+        },
+        // ── Session 2 (5 notes → overflow) ─────────────────────────
+        planSess[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '💡 Idea: that anecdote about the rollout failure → we should pre-empt the same pattern with our 2026 plan.',
+          created_by: 'demo-sarah', created_at: hoursAgo(22),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '🔥 Game-changer: clearest articulation of advisory pricing I\'ve seen at any conference.',
+          created_by: 'demo-james', created_at: hoursAgo(15),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: 'Liked the framing of "outcomes vs deliverables" — we\'ve been pricing the wrong thing.',
+          created_by: 'demo-sarah', created_at: hoursAgo(11),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '📝 To do: redraft our top 3 engagement letters using the framework before quarter-end.',
+          created_by: 'demo-james', created_at: hoursAgo(7),
+        },
+        planSess[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[2].session_id,
+          note_text: '👎 Skip it: their case study client felt cherry-picked. Skip if you\'re tight on time.',
+          created_by: 'demo-sarah', created_at: hoursAgo(3),
+        },
+        // ── Session 3 (free-form, single note) ─────────────────────
+        planSess[3] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[3].session_id,
+          note_text: 'Wasn\'t expecting this to land but the practical examples on data migration were spot on. Will recommend to the implementation team.',
+          created_by: 'demo-sarah', created_at: hoursAgo(2),
+        },
+        // ── Session 5 (3 notes — under cap, all visible inline) ────
+        planSess[5] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[5].session_id,
+          note_text: '🔍 Look into: their AI sandbox demo — feels relevant for our Q1 internal pilot.',
+          created_by: 'demo-james', created_at: hoursAgo(26),
+        },
+        planSess[5] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[5].session_id,
+          note_text: '💡 Idea: book a follow-up call with the speaker — they\'re open to small-firm consulting.',
+          created_by: 'demo-sarah', created_at: hoursAgo(9),
+        },
+        planSess[5] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[5].session_id,
+          note_text: '🧠 Made me think: do our junior team actually need a separate AI literacy programme?',
+          created_by: 'demo-james', created_at: hoursAgo(1),
+        },
+        // ── Booth 0 (5 notes → overflow) ───────────────────────────
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '🔥 Best in show: easily the slickest demo we saw. Their integration story with our practice mgmt stack is exactly what we need.',
+          created_by: 'demo-sarah', created_at: hoursAgo(30),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '🔍 Look into: pricing tier 3 + bulk client onboarding — they hinted at a partner programme worth exploring.',
+          created_by: 'demo-james', created_at: hoursAgo(22),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '❤️ Love it: their CEO walked us through the roadmap — Q3 release lines up with our migration window.',
+          created_by: 'demo-sarah', created_at: hoursAgo(13),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '📅 Demo booked for next Tuesday with their solution architect — Sarah, James, and ops on the call.',
+          created_by: 'demo-james', created_at: hoursAgo(8),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '🔍 Look into: ask about migration support during pilot — would be a deal-breaker if we have to fund it.',
+          created_by: 'demo-sarah', created_at: hoursAgo(3),
+        },
+        // ── Booth 1 — single skip note ─────────────────────────────
+        planBooths[1] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[1].stand_number),
+          note_text: '👎 Skip: same playbook as last year. No real differentiation from incumbents.',
+          created_by: 'demo-james', created_at: hoursAgo(5),
+        },
+        // ── Booth 2 (4 notes — exactly at cap, no overflow) ────────
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: '🤔 Maybe: tech is interesting but their UK support story isn\'t there yet. Re-evaluate next year.',
+          created_by: 'demo-sarah', created_at: hoursAgo(24),
+        },
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: '⏱ Not now: pricing is right but onboarding effort doesn\'t fit our 2026 roadmap. Keep on watchlist.',
+          created_by: 'demo-james', created_at: hoursAgo(16),
+        },
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: 'Liked the founder. Worth a coffee even if we don\'t use the product right now.',
+          created_by: 'demo-sarah', created_at: hoursAgo(11),
+        },
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: '🤔 Maybe: their analytics module is genuinely better than ours, but the rest is a downgrade.',
+          created_by: 'demo-james', created_at: hoursAgo(4),
+        },
+        // ── Booth 3 (single short note) ────────────────────────────
+        planBooths[3] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[3].stand_number),
+          note_text: '❤️ Love it: by far our favourite team to talk to. Genuine, knowledgeable, no sales pitch.',
+          created_by: 'demo-sarah', created_at: hoursAgo(2),
+        },
+      ].filter(Boolean),
+    };
+
+    // Demo ratings on the user's own plan items so the Debrief tab has
+    // hot sessions/booths to surface (rating the user gave plus team
+    // ratings inferred from teamPlans above).
+    if (planSess[0]) planSess[0].rating = 3;
+    if (planSess[2]) planSess[2].rating = 2;
+    if (planSess[5]) planSess[5].rating = 3;
+    if (planBooths[0]) planBooths[0].rating = 3;
+    if (planBooths[2]) planBooths[2].rating = 2;
+
+    log('renderApp');
+    showLoading(false);
+    renderApp();
+    log('done');
+  } catch (err) {
+    console.error('[plan/demo] error:', err);
+    showLoading(false);
+    showError(`Demo mode failed: ${err?.message || err}`);
+  }
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export async function initPlan() {
@@ -2914,6 +3682,34 @@ export async function initPlan() {
   const errCode    = hashParams.get('error_code') || qpParams.get('error_code');
   const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
   const teamToken  = qpParams.get('team') || localStorage.getItem('pendingTeamToken') || null;
+
+  // Visible step trace in the console — open DevTools to see where load
+  // hangs if something goes wrong. Each step logs as `[plan] STEP — detail`.
+  const log = (step, detail) => console.log(`[plan] ${step}` + (detail ? ` — ${detail}` : ''));
+  log('init', `pathname=${window.location.pathname} search=${window.location.search}`);
+
+  // Reset escape hatch: /plan/?reset=1 clears local state + signs out so a
+  // user can recover from a borked session. Useful when a stale anon
+  // session or pending-plan blob is messing with the auth flow.
+  if (qpParams.has('reset')) {
+    log('reset', 'clearing localStorage + signing out');
+    try { await supabase.auth.signOut(); } catch (e) { /* ignore */ }
+    localStorage.removeItem('pendingPlan');
+    localStorage.removeItem('pendingPlanId');
+    localStorage.removeItem('pendingTeamToken');
+    window.location.replace('/plan/');
+    return;
+  }
+
+  // Demo mode: /plan/?demo (any value, or no value) — bypasses auth + DB
+  // and renders the live app with a stubbed plan built from the static
+  // programme + exhibitor data. Lets devs (and Matty) eyeball UI changes
+  // without going through wizard + magic-link auth on every browser session.
+  if (qpParams.has('demo')) {
+    log('demo', 'entering initDemoMode');
+    await initDemoMode();
+    return;
+  }
 
   if (errCode) {
     const headline = errCode === 'otp_expired'
@@ -2925,31 +3721,68 @@ export async function initPlan() {
 
   showLoading(true);
 
+  // Belt-and-braces: any time the page is still empty + spinner-only after
+  // 12s, fall back to the re-auth form. Catches verifyOtp hangs, network
+  // stalls, and silent auth failures without leaving the user staring at
+  // a spinner forever. The callback itself checks whether plan-root has
+  // already rendered — if it has, this is a no-op. So we never need to
+  // explicitly clear the timer; it self-cancels on success.
+  setTimeout(() => {
+    const root = $('plan-root');
+    if (root && root.innerHTML.trim() === '') {
+      showLoading(false);
+      showReauthForm('Taking too long. Enter your email below to get a fresh link.');
+    }
+  }, 12000);
+
   const tokenHash = qpParams.get('token_hash');
   if (tokenHash) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      token_hash: tokenHash,
-      type: qpParams.get('type') || 'magiclink',
-    });
-    if (error || !data?.user) {
-      showReauthForm('Your link has expired. Enter your email below to get a new one.');
+    log('token_hash', 'calling verifyOtp');
+    let verifyResult;
+    try {
+      verifyResult = await Promise.race([
+        supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: qpParams.get('type') || 'magiclink',
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('verify_timeout')), 8000)),
+      ]);
+      log('verifyOtp', verifyResult?.error ? `error=${verifyResult.error.message}` : 'ok');
+    } catch (e) {
+      console.warn('[plan] verifyOtp failed/timeout:', e?.message);
+      verifyResult = { data: null, error: e };
+    }
+
+    let resolvedUser = verifyResult?.data?.user || null;
+    if (!resolvedUser) {
+      log('fallback', 'verifyOtp empty → checking existing session');
+      const existing = await getUser();
+      if (existing && !existing.is_anonymous) resolvedUser = existing;
+    }
+
+    if (!resolvedUser) {
+      log('reauth', 'no user resolved');
+      showReauthForm('Your link has expired or was already used. Enter your email below to get a fresh one.');
       return;
     }
-    // Remove token from URL so it doesn't sit in browser history
+
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete('token_hash');
     cleanUrl.searchParams.delete('type');
     history.replaceState(null, '', cleanUrl.toString());
     showLoading(false);
-    await handleSignIn(data.user, teamToken);
+    log('handleSignIn', `userId=${resolvedUser.id} anon=${resolvedUser.is_anonymous}`);
+    await handleSignIn(resolvedUser, teamToken);
     return;
   }
 
+  log('getUser', 'no token_hash, checking existing session');
   const user = await getUser();
+  log('getUser', user ? `id=${user.id} anon=${user.is_anonymous}` : 'no user');
 
   if (user && !user.is_anonymous) {
-    // Fully authenticated — load immediately and we're done.
     showLoading(false);
+    log('handleSignIn', 'authenticated user');
     await handleSignIn(user, teamToken);
     return;
   }
@@ -2971,11 +3804,4 @@ export async function initPlan() {
     showLoading(false);
     await handleSignIn(user, teamToken);
   }
-
-  setTimeout(() => {
-    const root = $('plan-root');
-    if (root && root.innerHTML.trim() === '') {
-      showReauthForm();
-    }
-  }, 8000);
 }

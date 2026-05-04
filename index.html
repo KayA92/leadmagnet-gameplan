@@ -128,21 +128,21 @@
     <div class="sponsors-grid">
       <div class="sponsor-card">
         <div class="sponsor-card-logo">
-          <img src="./images/XU%20Magazine.webp" alt="XU Magazine">
+          <img src="./images/workiro-logo.svg" alt="Workiro">
         </div>
-        <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-        <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-          xumagazine.com
+        <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
+        <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
+          workiro.com
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
       </div>
       <div class="sponsor-card">
         <div class="sponsor-card-logo">
-          <img src="./images/workiro-logo.svg" alt="Workiro">
+          <img src="./images/XU%20Magazine.webp" alt="XU Magazine">
         </div>
-        <p class="sponsor-card-desc">Document management trusted by 65,000+ UK accountants.</p>
-        <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-          workiro.com
+        <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
+        <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+          xumagazine.com
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
       </div>
@@ -240,10 +240,10 @@
   <div class="q-container">
     <div class="q-number"><span>01 / 05</span><div class="q-progress"><span class="q-progress-seg current"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span><span class="q-progress-seg"></span></div></div>
     <h2 class="q-title">Tap all the <em>biggest problems</em> you want solved this year.</h2>
-    <p class="q-sub">The more accurately you tap, the better your AI-plan will be. Heat-ranked from research by ICAEW, ACCA, Hays and Wolters Kluwer. When finished press 'Next.'</p>
+    <p class="q-sub">The more accurately you tap, the better your AI-plan will be. Heat-ranked from research by <strong>ICAEW, ACCA, Hays and Wolters Kluwer.</strong> When finished press 'Next.'</p>
 
     <div class="pain-band band-scorching">
-      <div class="pain-band-label"><span class="pain-band-dot"></span><span>SCORCHING</span></div>
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>INDUSTRY BUZZ: SCORCHING</span></div>
       <div class="pain-tags">
         <button class="pain-tag" data-pain="ai-start">AI — where to even start</button>
         <button class="pain-tag" data-pain="ai-data-mess">Data mess blocking AI</button>
@@ -257,7 +257,7 @@
     </div>
 
     <div class="pain-band band-hot">
-      <div class="pain-band-label"><span class="pain-band-dot"></span><span>HOT</span></div>
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>INDUSTRY BUZZ: HOT</span></div>
       <div class="pain-tags">
         <button class="pain-tag" data-pain="docs">Document chaos</button>
         <button class="pain-tag" data-pain="chasing">Chasing clients for records</button>
@@ -277,7 +277,7 @@
     </div>
 
     <div class="pain-band band-warm">
-      <div class="pain-band-label"><span class="pain-band-dot"></span><span>WARM</span></div>
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>INDUSTRY BUZZ: WARM</span></div>
       <div class="pain-tags">
         <button class="pain-tag" data-pain="ai-govern">AI governance &amp; risk</button>
         <button class="pain-tag" data-pain="ai-skills">AI skills gap</button>
@@ -292,7 +292,7 @@
     </div>
 
     <div class="pain-band band-specialist">
-      <div class="pain-band-label"><span class="pain-band-dot"></span><span>SPECIALIST</span></div>
+      <div class="pain-band-label"><span class="pain-band-dot"></span><span>INDUSTRY BUZZ: SPECIALIST</span></div>
       <div class="pain-tags">
         <button class="pain-tag" data-pain="pe">PE consolidation closing in</button>
         <button class="pain-tag" data-pain="exit">Exit / succession planning</button>
@@ -304,11 +304,16 @@
     </div>
   </div>
   <div class="cta-fixed-stack">
-    <div class="precision-bar" id="precision-bar-stage1">
+    <div class="precision-bar" id="precision-bar-stage1" data-zone="empty">
       <div class="precision-bar-row">
-        <span class="precision-bar-state">Tap 3+ to unlock AI matches</span>
+        <span class="precision-bar-state">Tap 3+ to start matching</span>
       </div>
-      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
+      <div class="precision-bar-track">
+        <div class="precision-bar-zone-glow"></div>
+        <div class="precision-bar-marker unlock" title="Matches unlock at 3"></div>
+        <div class="precision-bar-marker toomany" title="Try to stay under 16"></div>
+        <div class="precision-bar-fill"></div>
+      </div>
     </div>
     <div class="q-actions">
       <button class="btn-back" id="problem-back">← Back</button>
@@ -517,10 +522,10 @@
   <div class="confirm-fixed-cta">
     <div class="confirm-fixed-cta-inner">
       <button class="continue-btn" id="preview-save">
-        Save my plan
+        Activate my plan
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
-      <div class="confirm-fixed-cta-hint">You can change anything, anytime · nothing's locked</div>
+      <div class="confirm-fixed-cta-hint">Free · 30 seconds · Use it on the day</div>
     </div>
   </div>
   <div style="text-align:center;padding:6px 0 40px;">
@@ -554,13 +559,17 @@
         <span class="save-unlock-chip-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span>
         <span>Live session swaps</span>
       </div>
-      <div class="save-unlock-chip tint-pink">
+      <div class="save-unlock-chip tint-amber">
         <span class="save-unlock-chip-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7088 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746M22 4L12 14.01L9 11.01"/></svg></span>
         <span>CPD log</span>
       </div>
-      <div class="save-unlock-chip tint-purple">
+      <div class="save-unlock-chip tint-coral">
         <span class="save-unlock-chip-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L14.5 8.5 L21 9 L16 13.5 L17.5 20 L12 16.5 L6.5 20 L8 13.5 L3 9 L9.5 8.5 Z"/></svg></span>
         <span>AI insights</span>
+      </div>
+      <div class="save-unlock-chip tint-blue">
+        <span class="save-unlock-chip-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+        <span>PDF debrief</span>
       </div>
     </div>
 
@@ -596,7 +605,7 @@
             </span>
             Send me the next free AI tool like this — plus event prep, AI, and advisory frameworks for UK accountants.
           </span>
-          <span class="opt-in-sub">Only high-value. Free, occasional, no spam. <strong>Unsubscribe any time.</strong></span>
+          <span class="opt-in-sub">Only high-value. Free, occasional. <strong>Unsubscribe any time.</strong></span>
         </span>
       </label>
       <div class="save-actions">

@@ -388,6 +388,7 @@ body::before {
   font-style: normal;
 }
 .q-sub { font-size: 16px; color: var(--text-muted); max-width: 540px; }
+.q-sub strong { color: var(--text); font-weight: 700; }
 
 /* Stage 3 — software categories grouped into 3 sections.
    Group label treatment matches Stage 4 role-group: plain mono caps,
@@ -827,13 +828,12 @@ body::before {
   box-shadow: 0 0 6px rgba(106,169,255,0.6);
 }
 .band-specialist .pain-tag {
-  border-color: rgba(255,255,255,0.08);
-  color: var(--text-muted);
+  border-color: rgba(106,169,255,0.30);
+  color: var(--text);
 }
 .band-specialist .pain-tag:hover {
   border-color: var(--cool-blue);
-  background: rgba(106,169,255,0.08);
-  color: var(--text);
+  background: rgba(106,169,255,0.10);
 }
 .band-specialist .pain-tag.selected {
   border-color: var(--cool-blue);
@@ -887,20 +887,36 @@ body::before {
   padding-bottom: 200px;
 }
 
-/* ═══ PRECISION BAR ═══
-   Shared component used on Stages 1, 4, 5b. Lives inside .cta-fixed-stack so
-   it floats above the next button. Always-on green glow, mint gradient fill. */
+/* ═══ PRECISION BAR — pain coaching bar ═══
+   Stage-1 only. Layered track with:
+   - sharp-zone glow band (38-75% of the track, mint wash)
+   - "unlock at 3" marker at 18.75%
+   - "too many at 16" marker at 100%
+   - mint fill that grows with each pain tap, shifts amber past 16
+   Crossing animations fire one-time when the user moves into a zone:
+     unlock flash on the marker, sharp pulse on the bar, too-many warn. */
 .precision-bar {
   padding: 12px 16px;
   background: rgba(34,230,168,0.06);
   border: 1px solid rgba(34,230,168,0.30);
   border-radius: 12px;
   box-shadow: 0 0 22px rgba(34,230,168,0.18), inset 0 0 0 1px rgba(34,230,168,0.05);
-  transition: box-shadow 0.4s, border-color 0.3s;
+  transition: box-shadow 0.4s, border-color 0.3s, background 0.3s;
 }
 .precision-bar.active {
   border-color: rgba(34,230,168,0.55);
   box-shadow: 0 0 28px rgba(34,230,168,0.28), 0 0 8px rgba(34,230,168,0.15) inset;
+}
+/* Sharp-zone state: bar gets a stronger persistent glow */
+.precision-bar[data-zone="sharp"] {
+  border-color: rgba(34,230,168,0.70);
+  box-shadow: 0 0 36px rgba(34,230,168,0.40), 0 0 14px rgba(34,230,168,0.25) inset;
+}
+/* Too-many state: bar shifts to amber */
+.precision-bar[data-zone="too-many"] {
+  background: rgba(251,191,36,0.06);
+  border-color: rgba(251,191,36,0.55);
+  box-shadow: 0 0 26px rgba(251,191,36,0.24), 0 0 10px rgba(251,191,36,0.15) inset;
 }
 .precision-bar-row {
   display: flex;
@@ -924,23 +940,98 @@ body::before {
   font-weight: 600;
   color: var(--mint);
   letter-spacing: 0.04em;
-  transition: color 0.3s;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.precision-bar[data-zone="sharp"] .precision-bar-state {
+  text-shadow: 0 0 10px rgba(34,230,168,0.55);
+}
+.precision-bar[data-zone="too-many"] .precision-bar-state {
+  color: var(--amber);
 }
 .precision-bar-track {
-  height: 6px;
-  background: rgba(34,230,168,0.10);
-  border-radius: 3px;
-  overflow: hidden;
+  height: 8px;
+  background: rgba(34,230,168,0.08);
+  border-radius: 4px;
   position: relative;
+  overflow: visible; /* markers extend slightly beyond the track */
+}
+/* Sharp-zone glow band — a soft mint highlight on the bar between
+   6 and 12 pains (37.5% → 75%). Subtle pre-unlock, more visible once
+   matches are unlocked, brightest while inside the zone. */
+.precision-bar-zone-glow {
+  position: absolute;
+  top: 0;
+  left: 37.5%;
+  width: 37.5%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(34,230,168,0.10) 0%,
+    rgba(34,230,168,0.22) 50%,
+    rgba(34,230,168,0.10) 100%);
+  border-radius: 4px;
+  opacity: 0.35;
+  transition: opacity 0.4s, box-shadow 0.4s;
+  pointer-events: none;
+}
+.precision-bar[data-zone="unlocked"] .precision-bar-zone-glow,
+.precision-bar[data-zone="sharp"] .precision-bar-zone-glow,
+.precision-bar[data-zone="post-sharp"] .precision-bar-zone-glow {
+  opacity: 0.85;
+}
+.precision-bar[data-zone="sharp"] .precision-bar-zone-glow {
+  box-shadow: 0 0 12px rgba(34,230,168,0.45);
+}
+.precision-bar[data-zone="too-many"] .precision-bar-zone-glow {
+  opacity: 0.25;
+}
+/* Vertical markers at 3 (unlock) and 16 (too-many) — visible from
+   the start, faint until the user gets close. */
+.precision-bar-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 14px;
+  border-radius: 1px;
+  pointer-events: none;
+  transition: opacity 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.precision-bar-marker.unlock {
+  left: calc(18.75% - 1px);
+  background: rgba(34,230,168,0.65);
+  opacity: 0.55;
+}
+.precision-bar-marker.toomany {
+  left: calc(100% - 2px);
+  background: rgba(251,191,36,0.65);
+  opacity: 0.55;
+}
+/* Once the user has unlocked, the unlock marker stays a bit dimmer (it's
+   in their past). Once they're in too-many, the toomany marker glows. */
+.precision-bar[data-zone="empty"] .precision-bar-marker.unlock,
+.precision-bar[data-zone="pre-unlock"] .precision-bar-marker.unlock {
+  opacity: 0.85;
+  box-shadow: 0 0 6px rgba(34,230,168,0.4);
+}
+.precision-bar[data-zone="too-many"] .precision-bar-marker.toomany {
+  opacity: 1;
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(251,191,36,0.7);
 }
 .precision-bar-fill {
   height: 100%;
   width: 0%;
   background: var(--grad-mint);
-  border-radius: 3px;
-  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 4px;
+  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.4s ease;
   position: relative;
   box-shadow: 0 0 12px rgba(34,230,168,0.7);
+  z-index: 1;
+}
+/* Too-many: fill flips to amber gradient */
+.precision-bar[data-zone="too-many"] .precision-bar-fill {
+  background: linear-gradient(90deg, rgba(251,191,36,1) 0%, rgba(255,138,92,1) 100%);
+  box-shadow: 0 0 14px rgba(251,191,36,0.7);
 }
 .precision-bar.active .precision-bar-fill::after {
   content: '';
@@ -950,6 +1041,42 @@ body::before {
   background-size: 220% 100%;
   background-position: 220% 0;
   animation: q-progress-shimmer 2.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ═══ ONE-TIME CROSSING ANIMATIONS ═══ */
+/* Crossing 3: unlock marker flares, bar gives a brief mint flash. */
+@keyframes precisionUnlockFlash {
+  0%   { opacity: 1; transform: scaleY(1);   box-shadow: 0 0 14px rgba(34,230,168,0.9); }
+  50%  { opacity: 1; transform: scaleY(1.6); box-shadow: 0 0 22px rgba(34,230,168,1); }
+  100% { opacity: 0.55; transform: scaleY(1); box-shadow: 0 0 6px rgba(34,230,168,0.4); }
+}
+@keyframes precisionBarFlash {
+  0%   { box-shadow: 0 0 22px rgba(34,230,168,0.18), inset 0 0 0 1px rgba(34,230,168,0.05); }
+  40%  { box-shadow: 0 0 38px rgba(34,230,168,0.55), inset 0 0 0 1px rgba(34,230,168,0.25); }
+  100% { box-shadow: 0 0 28px rgba(34,230,168,0.28), 0 0 8px rgba(34,230,168,0.15) inset; }
+}
+.precision-bar.flash-unlock { animation: precisionBarFlash 0.5s ease-out; }
+.precision-bar.flash-unlock .precision-bar-marker.unlock {
+  animation: precisionUnlockFlash 0.5s ease-out;
+}
+
+/* Crossing 6: full-bar pulse — bar glows brightly then settles. */
+@keyframes precisionSharpPulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 28px rgba(34,230,168,0.28), 0 0 8px rgba(34,230,168,0.15) inset; }
+  35%  { transform: scale(1.012); box-shadow: 0 0 56px rgba(34,230,168,0.7),  0 0 18px rgba(34,230,168,0.4) inset; }
+  100% { transform: scale(1);    box-shadow: 0 0 36px rgba(34,230,168,0.40), 0 0 14px rgba(34,230,168,0.25) inset; }
+}
+.precision-bar.flash-sharp { animation: precisionSharpPulse 0.7s cubic-bezier(0.22,1,0.36,1); }
+
+/* Crossing 16: amber warning shake on the marker. */
+@keyframes precisionTooManyWarn {
+  0%   { background: var(--amber);  box-shadow: 0 0 10px rgba(251,191,36,0.7); transform: scaleY(1); }
+  30%  { background: var(--amber);  box-shadow: 0 0 18px rgba(251,191,36,1);   transform: scaleY(1.6); }
+  100% { background: var(--amber);  box-shadow: 0 0 10px rgba(251,191,36,0.7); transform: scaleY(1); }
+}
+.precision-bar.flash-toomany .precision-bar-marker.toomany {
+  animation: precisionTooManyWarn 0.5s ease-out;
 }
 
 
@@ -1388,35 +1515,87 @@ body::before {
 /* Hidden alternatives — amber-tinted teaser card sitting between
    sessions and booths in the preview list. Mystery-as-value: count
    and score range only, no titles until plan is saved. */
+/* Pink "more waiting in your active plan" tease. Pure brand pink — no coral,
+   no orange. Solid pink border, soft pulsing pink glow, sharp 4-point sparkle.
+   Reads as match magic waiting — not gated content. Body stays white;
+   pink lives only on eyebrow + icon + inline CTA so the prose doesn't drown. */
 .hidden-alternatives {
-  margin: 6px 0;
-  padding: 14px 16px;
-  background: rgba(251,191,36,0.05);
-  border: 1px dashed rgba(251,191,36,0.40);
-  border-radius: 10px;
+  margin: 14px 0;
+  padding: 22px 26px;
+  background: linear-gradient(135deg, rgba(255,94,132,0.08) 0%, rgba(255,94,132,0.14) 100%);
+  border: 1px solid rgba(255,94,132,0.55);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 32px rgba(255,94,132,0.20), inset 0 0 60px rgba(255,94,132,0.05);
+  animation: hiddenAltGlow 4s ease-in-out infinite;
 }
+@keyframes hiddenAltGlow {
+  0%, 100% { box-shadow: 0 0 32px rgba(255,94,132,0.20), inset 0 0 60px rgba(255,94,132,0.05); }
+  50%      { box-shadow: 0 0 48px rgba(255,94,132,0.32), inset 0 0 80px rgba(255,94,132,0.10); }
+}
+.hidden-alternatives::before {
+  content: '';
+  position: absolute;
+  top: -40%; right: -10%;
+  width: 50%; height: 180%;
+  background: radial-gradient(circle, rgba(255,94,132,0.22) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hidden-alternatives > * { position: relative; z-index: 1; }
 .hidden-alt-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 11.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--pink);
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 12px;
+  line-height: 1.4;
 }
 .hidden-alt-eyebrow svg {
-  width: 13px; height: 13px;
-  color: var(--amber);
+  width: 18px; height: 18px;
+  color: var(--pink);
   flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(255,94,132,0.65));
 }
 .hidden-alt-body {
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.6;
+  margin: 0 0 14px;
+  max-width: 640px;
 }
+.hidden-alt-body:last-child { margin-bottom: 0; }
+.hidden-alt-body strong { color: var(--text); font-weight: 700; }
+/* Inline CTA — coral pill, mirrors the main "Activate my plan" verb so
+   the user can convert from inside this section without scrolling. */
+.hidden-alt-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ff89a4 0%, var(--pink) 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(255,94,132,0.32);
+  margin-top: 4px;
+}
+.hidden-alt-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(255,94,132,0.45);
+}
+.hidden-alt-cta svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 /* Refined preview banner — same vibe as before but extracted from
    inline styles so the new copy reads cleanly. */
@@ -1543,6 +1722,56 @@ body::before {
   margin: 0 auto;
 }
 
+/* "Install as app" promo strip — sits above the tab bar on mobile only.
+   Dismissible (one-time, persisted in localStorage). Hidden when already
+   running standalone, hidden on desktop where install isn't a thing. */
+.install-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  background: rgba(34,230,168,0.06);
+  border-bottom: 1px solid rgba(34,230,168,0.22);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.install-strip-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(34,230,168,0.14);
+  color: var(--mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.install-strip-body {
+  flex: 1;
+  min-width: 0;
+}
+.install-strip-body strong { color: var(--text); font-weight: 600; }
+.install-strip-dismiss {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.install-strip-dismiss:hover { background: var(--ink-3); color: var(--text); }
+@media (max-width: 640px) {
+  .install-strip { padding: 10px 14px; font-size: 12px; gap: 10px; }
+  .install-strip-icon { width: 28px; height: 28px; }
+}
+
 /* Tab bar — two-row layout: brand row, then tabs row */
 .app-tabs {
   position: sticky;
@@ -1582,7 +1811,7 @@ body::before {
 .app-tabs-credits {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-shrink: 0;
 }
 .app-tabs-credits-label {
@@ -1602,13 +1831,13 @@ body::before {
 }
 .app-tabs-credits a:hover { opacity: 1; }
 .app-tabs-credits img {
-  height: 26px;
+  height: 32px;
   width: auto;
   display: block;
 }
 @media (max-width: 640px) {
-  .app-tabs-credits { gap: 8px; }
-  .app-tabs-credits img { height: 18px; }
+  .app-tabs-credits { gap: 11px; }
+  .app-tabs-credits img { height: 22px; }
   .app-tabs-credits-label { font-size: 8.5px; letter-spacing: 0.12em; }
 }
 .app-tabs-brand {
@@ -1727,7 +1956,7 @@ body::before {
 
 /* App header inside each tab */
 .app-header {
-  margin-bottom: 24px;
+  margin-bottom: 40px;
 }
 .app-header-top {
   display: flex;
@@ -1739,7 +1968,7 @@ body::before {
 }
 .app-title {
   font-family: 'Fraunces', serif;
-  font-size: clamp(32px, 4.5vw, 44px);
+  font-size: clamp(34px, 5.2vw, 54px);
   font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 1.05;
@@ -1848,7 +2077,7 @@ button.app-pill.purple.clickable:hover {
 
 /* Section within a tab */
 .app-section {
-  margin-bottom: 36px;
+  margin-bottom: 56px;
 }
 .app-section-header {
   display: flex;
@@ -2740,6 +2969,93 @@ button.app-pill.purple.clickable:hover {
   border-color: var(--mint);
 }
 
+/* ── Booth-mode editor: purple theme override ──────────────────────────
+   When the editor opens with mode="booths", swap mint utility accents
+   for purple (matches booth colour identity throughout the app). Sessions
+   editor stays mint. */
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.out {
+  border-color: rgba(168,85,247,0.50);
+  color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.out:hover {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.in {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.50);
+  color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.in:hover {
+  background: rgba(168,85,247,0.22);
+  border-color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row.in-plan {
+  background: rgba(168,85,247,0.06);
+  border-color: rgba(168,85,247,0.30);
+  box-shadow: 0 0 16px rgba(168,85,247,0.10);
+}
+.plan-editor-overlay[data-mode="booths"] .search-input:focus {
+  border-color: rgba(168,85,247,0.55);
+  box-shadow: 0 0 0 4px rgba(168,85,247,0.10);
+}
+
+/* ── Floating bottom bar — appears once user scrolls past 480px inside
+   the editor modal. Lives as a sibling of <body>, NOT inside the
+   overlay — the overlay's backdrop-filter creates a new containing
+   block which would break position: fixed for descendants.
+   Subtle white pills, smooth slide-in, no coloured fills. */
+.plan-editor-floating-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(24px);
+  z-index: 320;
+  display: flex;
+  gap: 8px;
+  padding: 7px;
+  background: rgba(20,20,28,0.85);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  box-shadow: 0 14px 38px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.30);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.plan-editor-floating-bar.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.plan-editor-floating-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.85);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.plan-editor-floating-btn:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.30);
+  color: #fff;
+}
+.plan-editor-floating-btn svg { flex-shrink: 0; opacity: 0.85; }
+@media (max-width: 640px) {
+  .plan-editor-floating-bar { bottom: 14px; padding: 6px; gap: 6px; }
+  .plan-editor-floating-btn { padding: 8px 12px; font-size: 12px; }
+}
+
 @media (max-width: 640px) {
   .editor-row {
     grid-template-columns: 1fr auto;
@@ -3225,8 +3541,8 @@ button.app-pill.purple.clickable:hover {
 
 /* AI synthesis block — one paragraph summary above the cards */
 .team-synthesis {
-  padding: 28px 30px 26px;
-  margin-bottom: 32px;
+  padding: 32px 32px 30px;
+  margin: 0 0 56px;
   background: linear-gradient(135deg, rgba(168,85,247,0.06) 0%, rgba(0,212,214,0.04) 100%);
   border: 1px solid rgba(168,85,247,0.2);
   border-radius: 16px;
@@ -3528,27 +3844,16 @@ button.app-pill.purple.clickable:hover {
   margin-top: 2px;
 }
 
-/* Mission: the full problem quote */
-.teammate-mission {
-  background: rgba(0,0,0,0.22);
-  border-radius: 10px;
-  padding: 12px 14px;
-  border-left: 3px solid var(--pink);
+/* Identity row under name: role · firm size · firm name */
+.teammate-identity {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.45;
 }
-.teammate-mission-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--pink);
-  margin-bottom: 6px;
-  font-weight: 600;
-}
-.teammate-mission-text {
-  font-size: 13px;
-  color: var(--text);
-  line-height: 1.55;
-  font-style: italic;
+.teammate-identity-sep {
+  color: rgba(255,255,255,0.25);
+  margin: 0 2px;
 }
 
 /* Evaluating / quirks blocks */
@@ -3563,20 +3868,29 @@ button.app-pill.purple.clickable:hover {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
+  font-weight: 600;
 }
+.teammate-meta-label.tone-pink   { color: rgba(255,94,132,0.85); }
+.teammate-meta-label.tone-purple { color: rgba(168,85,247,0.85); }
 .teammate-meta-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
 .teammate-meta-pill {
-  font-size: 11px;
-  padding: 4px 9px;
+  font-size: 11.5px;
+  padding: 4px 10px;
   border-radius: 100px;
   background: rgba(255,255,255,0.03);
-  border: 1px solid var(--ink-3);
+  border: 1px solid rgba(255,255,255,0.10);
   color: var(--text);
   white-space: nowrap;
+  line-height: 1.5;
+}
+.teammate-meta-pill.pain {
+  background: rgba(255,94,132,0.05);
+  border-color: rgba(255,94,132,0.22);
+  color: var(--text-muted);
 }
 .teammate-meta-pill.cat {
   background: rgba(168,85,247,0.08);
@@ -3694,6 +4008,15 @@ button.app-pill.purple.clickable:hover {
   overflow: hidden;
 }
 .checklist-row:hover { border-color: var(--ink-4); }
+/* Session cards get a slightly lighter stroke than the base — just
+   enough definition that one card visibly ends and the next begins
+   without competing with the booth purple identity below. */
+.checklist-row.is-session {
+  border-color: rgba(255,255,255,0.10);
+}
+.checklist-row.is-session:hover {
+  border-color: rgba(255,255,255,0.18);
+}
 .checklist-row.attended {
   background: rgba(34,230,168,0.04);
   border-color: rgba(34,230,168,0.22);
@@ -3816,10 +4139,76 @@ button.app-pill.purple.clickable:hover {
   margin: 4px 0 12px;
 }
 
+/* Subtle divider + 1-line blurb pattern used on every Checklist card.
+   The divider sits above the blurb, fading in from the bucket badge so
+   the eye reads "match → context line" as one unit. Booth variant gets
+   a purple-tinted divider to match the card's identity. */
+.checklist-blurb-divider {
+  height: 1px;
+  margin: 14px 0 10px;
+  background: linear-gradient(to right,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0) 100%);
+}
+.checklist-blurb-divider.tone-purple {
+  background: linear-gradient(to right,
+    rgba(168,85,247,0) 0%,
+    rgba(168,85,247,0.30) 50%,
+    rgba(168,85,247,0) 100%);
+}
+.checklist-blurb {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
+/* Booth cards get a much stronger purple identity so they stand apart
+   from session cards as the user scrolls past the day's sessions into
+   the booths block — purple = booths everywhere in the app. */
+.checklist-row.is-booth {
+  position: relative;
+  background: linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(168,85,247,0.05) 100%);
+  border-color: rgba(168,85,247,0.42);
+  box-shadow: 0 0 22px rgba(168,85,247,0.10);
+}
+.checklist-row.is-booth:hover {
+  border-color: rgba(168,85,247,0.65);
+  box-shadow: 0 0 28px rgba(168,85,247,0.18);
+}
+/* Attended state keeps the booth purple identity but layers a mint glow
+   on the border so it's still readable as "ticked". */
+.checklist-row.is-booth.attended {
+  background: linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(34,230,168,0.06) 100%);
+  border-color: rgba(34,230,168,0.45);
+}
+/* Booth Swap chip under the checkbox — purple variant of .checklist-time-swap */
+.checklist-time-swap.variant-booth {
+  color: var(--purple);
+  margin-top: 8px;
+}
+/* Clearer × in the booth top-right — visible always (was hover-only) */
+.checklist-row.is-booth .booth-quiet-remove {
+  width: 30px;
+  height: 30px;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(168,85,247,0.30);
+  color: rgba(255,255,255,0.55);
+  opacity: 1;
+  top: 10px;
+  right: 10px;
+}
+.checklist-row.is-booth .booth-quiet-remove:hover {
+  color: var(--pink);
+  background: rgba(255,94,132,0.15);
+  border-color: rgba(255,94,132,0.50);
+}
+
 /* Booth quiet remove — small × in the top-right corner of the card,
    only visible on hover. Sits above the host strip if there is one.
    Tapping fires planConfirmRemoveBooth (native confirm dialog). */
-.checklist-row.is-booth { position: relative; }
 .booth-quiet-remove {
   position: absolute;
   top: 8px;
@@ -3889,12 +4278,13 @@ button.app-pill.purple.clickable:hover {
 .checklist-section-title {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
   font-family: 'Fraunces', serif;
-  font-size: 22px;
+  font-size: clamp(26px, 3.4vw, 30px);
   font-weight: 500;
   letter-spacing: -0.015em;
+  line-height: 1.15;
   color: var(--text);
 }
 .checklist-section-title svg {
@@ -4321,6 +4711,99 @@ button.app-pill.purple.clickable:hover {
   letter-spacing: -0.01em;
   margin-top: 8px;
 }
+
+/* ── Match badge: 4-tier bucket label + ranking line ────────────────────
+   Replaces raw % displays everywhere. Tier palette mirrors Stage 1 heat
+   bands (SCORCHING/HOT/WARM/SPECIALIST) so users decode it instantly:
+     top     → pink     (sparkle + glow, the only celebrated tier)
+     high    → coral
+     medium  → amber
+     neutral → cool-blue (browse contexts only — Edit modals, swap alts)
+*/
+.match-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 8px;
+}
+.match-bucket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 100px;
+  border: 1px solid;
+  background: transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.match-bucket-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(255,94,132,0.5));
+}
+.match-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-left: 2px;
+}
+/* TOP — pink + sparkle + soft glow on the pill background */
+.match-badge.tier-top .match-bucket {
+  border-color: rgba(255,94,132,0.45);
+  background: rgba(255,94,132,0.10);
+  color: var(--pink);
+  box-shadow: 0 0 14px rgba(255,94,132,0.20);
+}
+/* HIGH — coral, no icon, no glow */
+.match-badge.tier-high .match-bucket {
+  border-color: rgba(255,138,92,0.40);
+  background: rgba(255,138,92,0.06);
+  color: var(--coral);
+}
+/* MEDIUM — amber, no icon, no glow */
+.match-badge.tier-medium .match-bucket {
+  border-color: rgba(251,191,36,0.36);
+  background: rgba(251,191,36,0.05);
+  color: var(--amber);
+}
+/* NEUTRAL — cool blue, no icon, no glow (browse-only) */
+.match-badge.tier-neutral .match-bucket {
+  border-color: rgba(106,169,255,0.38);
+  background: rgba(106,169,255,0.05);
+  color: var(--cool-blue);
+}
+/* Compact: tighter pills + smaller rank line for swap/alt rows */
+.match-badge.compact { gap: 3px; }
+.match-badge.compact .match-bucket {
+  padding: 3px 9px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.match-badge.compact .match-rank {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.checklist-row.attended .match-badge { opacity: 0.4; }
+
+/* Plan reveal mini-item: badge sits in the right column, right-aligned */
+.mini-item .match-badge { align-items: flex-end; padding-left: 8px; }
+.mini-item .match-rank { padding-left: 0; }
+
+/* Editor row + slot-swap row: small left-aligned badge under the title */
+.editor-row .match-badge,
+.slot-swap-row .match-badge { margin-top: 6px; }
+.checklist-alternative-card .match-badge { margin-top: 4px; margin-bottom: 4px; }
 /* Tags row — quiet outline pills, muted grey. No fill, no "+" prefix,
    no yellow; tags are descriptive labels, not interactive controls. */
 .checklist-why-tags {
@@ -4334,8 +4817,8 @@ button.app-pill.purple.clickable:hover {
   align-items: center;
   padding: 3px 10px;
   border-radius: 100px;
-  border: 1px solid var(--ink-3);
-  background: transparent;
+  border: 1px solid rgba(255,94,132,0.22);
+  background: rgba(255,94,132,0.03);
   color: var(--text-muted);
   font-family: inherit;
   font-size: 11px;
@@ -4355,6 +4838,48 @@ button.app-pill.purple.clickable:hover {
 .checklist-alternatives {
   margin-top: 8px;
 }
+/* Single-line teaser that replaces the old <details>/expand pattern.
+   Renders as a quiet button — grey base, bucket-tier accent on the
+   match name, mint icon on hover. Click opens the slot-swap modal. */
+.checklist-alternatives-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 10px 6px 8px;
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.10);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.checklist-alternatives-link svg {
+  color: var(--text-faint);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.checklist-alternatives-link strong {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+/* Bucket-tier accent on the match label — matches the bucket pill colour
+   on the parent card so the user reads "this slot has more of THIS tier". */
+.checklist-alternatives-link.tier-top    strong { color: var(--pink); }
+.checklist-alternatives-link.tier-high   strong { color: var(--coral); }
+.checklist-alternatives-link.tier-medium strong { color: var(--amber); }
+.checklist-alternatives-link.tier-neutral strong { color: var(--cool-blue); }
+.checklist-alternatives-link:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(34,230,168,0.30);
+}
+.checklist-alternatives-link:hover svg { color: var(--mint); }
 .checklist-alternatives-summary {
   display: inline-flex;
   align-items: center;
@@ -4542,25 +5067,39 @@ button.app-pill.purple.clickable:hover {
   justify-content: center;
   transition: all 0.15s;
   line-height: 1;
-  color: rgba(255,94,132,0.32);
+  color: rgba(255,108,144,0.92);
 }
 .row-fire-btn .flame-icon {
   transition: all 0.2s cubic-bezier(.4,0,.2,1);
   width: 16px;
   height: 16px;
+  filter: drop-shadow(0 0 5px rgba(255,94,132,0.45));
+}
+.row-fire-btn .flame-icon path {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 2.4;
 }
 .row-fire-btn:hover {
-  color: rgba(255,94,132,0.65);
+  color: var(--pink);
 }
 .row-fire-btn:hover .flame-icon {
   transform: scale(1.1);
+  filter: drop-shadow(0 0 5px rgba(255,94,132,0.4));
+}
+.row-fire-btn:hover .flame-icon path {
+  fill: rgba(255,94,132,0.18);
 }
 .row-fire-btn.lit {
   color: var(--pink);
 }
 .row-fire-btn.lit .flame-icon {
-  filter: drop-shadow(0 0 6px rgba(255,94,132,0.5));
+  filter: drop-shadow(0 0 6px rgba(255,94,132,0.55));
   transform: scale(1.08);
+}
+.row-fire-btn.lit .flame-icon path {
+  fill: currentColor;
+  stroke: currentColor;
 }
 .row-fire-btn.lit:hover .flame-icon {
   transform: scale(1.15);
@@ -4673,11 +5212,8 @@ button.app-pill.purple.clickable:hover {
 /* ═══ TURN B — Note panel: three states (idle / editing / saved) ═══ */
 
 .checklist-note-panel {
-  padding: 10px 16px 12px 92px; /* aligns with title after stacked tick+time leftcol */
+  padding: 12px 16px;
   border-top: 1px dashed var(--ink-3);
-}
-@media (max-width: 780px) {
-  .checklist-note-panel { padding-left: 16px; }
 }
 
 /* --- IDLE state: quiet "Add a note" prompt, always visible --- */
@@ -4769,6 +5305,57 @@ button.app-pill.purple.clickable:hover {
   border-color: var(--mint);
   color: var(--mint);
   background: rgba(34,230,168,0.05);
+}
+
+/* Chip row above the textarea — emoji + label pills. Tap stamps the
+   chip's "${emoji} ${label}: " into the textarea. Visual is mint outline,
+   matching the rest of the utility palette. Three flash states:
+   .used (mint flood, ~500ms confirmation), .already (faint mint flicker
+   when the chip is already present), .full (pink flicker when the 280
+   cap would be exceeded). */
+.note-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.note-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid rgba(34,230,168,0.40);
+  color: var(--mint);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+.note-chip:hover {
+  background: rgba(34,230,168,0.08);
+  border-color: var(--mint);
+}
+.note-chip:active { transform: scale(0.96); }
+.note-chip-emoji { font-size: 13px; line-height: 1; }
+.note-chip-label { line-height: 1; }
+.note-chip.used {
+  background: rgba(34,230,168,0.20);
+  border-color: var(--mint);
+  color: #fff;
+}
+.note-chip.already {
+  background: rgba(34,230,168,0.06);
+  border-color: rgba(34,230,168,0.28);
+}
+.note-chip.full {
+  background: rgba(255,94,132,0.10);
+  border-color: rgba(255,94,132,0.50);
+  color: var(--pink);
 }
 
 .rate-panel-note {
@@ -5002,6 +5589,36 @@ button.app-pill.purple.clickable:hover {
   flex-shrink: 0;
 }
 .mini-av:first-child { margin-left: 0; }
+/* Invite pip — soft dashed circle with a user-plus icon, sits at the
+   end of the avatar row as a quiet conversion affordance into the
+   Team tab. Visible always, lifts to solid mint on hover. */
+.invite-pip {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed rgba(34,230,168,0.50);
+  background: transparent;
+  color: var(--mint);
+  margin-left: 4px;
+  padding: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.invite-pip:hover {
+  border-style: solid;
+  border-color: var(--mint);
+  background: rgba(34,230,168,0.10);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(34,230,168,0.25);
+}
+.invite-pip svg {
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.invite-pip:hover svg { opacity: 1; }
 .mini-av.t1 { background: linear-gradient(135deg, rgba(255,94,132,0.5), rgba(168,85,247,0.5)); color: var(--pink); }
 .mini-av.t2 { background: linear-gradient(135deg, rgba(168,85,247,0.5), rgba(0,212,214,0.5)); color: var(--purple); }
 .mini-av.t3 { background: linear-gradient(135deg, rgba(0,212,214,0.5), rgba(34,230,168,0.5)); color: var(--teal); }
@@ -6066,7 +6683,7 @@ button.app-pill.purple.clickable:hover {
 .team-section-eyebrow.tone-mint   { color: var(--mint); }
 .team-section-title {
   font-family: 'Fraunces', serif;
-  font-size: clamp(26px, 3.6vw, 34px);
+  font-size: clamp(28px, 4vw, 40px);
   font-weight: 500;
   letter-spacing: -0.015em;
   line-height: 1.2;
@@ -6085,6 +6702,145 @@ button.app-pill.purple.clickable:hover {
   max-width: 640px;
 }
 .team-section-lede strong { color: var(--text); font-weight: 600; }
+
+/* Team capacity row + pill (sits to right of "Workspace invite" eyebrow) */
+.team-capacity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.team-capacity-row .team-section-eyebrow {
+  margin-bottom: 0;
+}
+.team-capacity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  background: rgba(34, 230, 168, 0.08);
+  border: 1px solid rgba(34, 230, 168, 0.32);
+  color: var(--mint);
+  white-space: nowrap;
+}
+.team-capacity-pill strong {
+  color: var(--mint);
+  font-weight: 700;
+}
+.team-capacity-pill svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+.team-capacity-pill.full {
+  background: rgba(255, 94, 132, 0.08);
+  border-color: rgba(255, 94, 132, 0.32);
+  color: var(--pink);
+}
+.team-capacity-pill.full strong { color: var(--pink); }
+
+/* Count row that sits between section lede and the teammate grid */
+.team-section-count-row {
+  margin: -6px 0 14px;
+}
+.team-section-count-label {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Placeholder teammate card — invites the user to email a colleague */
+.teammate.teammate-placeholder {
+  background: rgba(34, 230, 168, 0.04);
+  border: 1.5px dashed rgba(34, 230, 168, 0.4);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+.teammate.teammate-placeholder:hover {
+  background: rgba(34, 230, 168, 0.08);
+  border-color: rgba(34, 230, 168, 0.6);
+  transform: translateY(-1px);
+}
+.teammate-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 20px 16px;
+}
+.teammate-placeholder-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 230, 168, 0.12);
+  color: var(--mint);
+  border: 1.5px solid rgba(34, 230, 168, 0.4);
+}
+.teammate-placeholder-icon svg { width: 22px; height: 22px; }
+.teammate-placeholder-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.teammate-placeholder-text strong {
+  color: var(--mint);
+  font-weight: 600;
+}
+
+/* Locked AI insights block (solo state) */
+.team-synthesis.ai-insights-locked {
+  opacity: 0.85;
+  position: relative;
+}
+.team-synthesis.ai-insights-locked::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+.ai-insights-locked-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  font-size: 13.5px;
+  margin-top: 6px;
+}
+.ai-insights-locked-note strong { color: var(--text); font-weight: 600; }
+.ai-insights-locked-note svg {
+  width: 16px;
+  height: 16px;
+  color: var(--mint);
+  flex-shrink: 0;
+}
 
 /* Email drafter */
 .email-draft {
@@ -6850,9 +7606,12 @@ button.app-pill.purple.clickable:hover {
   height: 22px;
   border-radius: 50%;
 }
-.save-unlock-chip.tint-pink .save-unlock-chip-icon { color: var(--pink); background: rgba(255,94,132,0.14); }
-.save-unlock-chip.tint-purple .save-unlock-chip-icon { color: var(--purple); background: rgba(168,85,247,0.14); }
-.save-unlock-chip.tint-mint .save-unlock-chip-icon { color: var(--mint); background: rgba(34,230,168,0.14); }
+.save-unlock-chip.tint-pink   .save-unlock-chip-icon { color: var(--pink);      background: rgba(255,94,132,0.14); }
+.save-unlock-chip.tint-purple .save-unlock-chip-icon { color: var(--purple);    background: rgba(168,85,247,0.14); }
+.save-unlock-chip.tint-mint   .save-unlock-chip-icon { color: var(--mint);      background: rgba(34,230,168,0.14); }
+.save-unlock-chip.tint-amber  .save-unlock-chip-icon { color: var(--amber);     background: rgba(251,191,36,0.14); }
+.save-unlock-chip.tint-coral  .save-unlock-chip-icon { color: var(--coral);     background: rgba(255,138,92,0.14); }
+.save-unlock-chip.tint-blue   .save-unlock-chip-icon { color: var(--cool-blue); background: rgba(106,169,255,0.14); }
 
 /* Legacy unlock card CSS kept as no-op for backwards compat (will be removed) */
 .save-unlock-cards { display: none; }
@@ -6913,7 +7672,7 @@ button.app-pill.purple.clickable:hover {
 .save-input {
   width: 100%;
   background: var(--ink-2);
-  border: 1px solid var(--ink-3);
+  border: 1px solid rgba(255,255,255,0.14);
   border-radius: 12px;
   padding: 15px 18px;
   color: var(--text);
@@ -6989,7 +7748,7 @@ button.app-pill.purple.clickable:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1px;
+  margin-top: -2px;
   transition: all 0.2s;
 }
 .opt-in-check-visual svg {
@@ -7030,26 +7789,30 @@ button.app-pill.purple.clickable:hover {
 }
 .opt-in-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.005em;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 .opt-in-icon {
   flex-shrink: 0;
   display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
   width: 18px;
   height: 18px;
   color: var(--mint);
+  margin-top: 3px;
 }
-.opt-in-icon svg { width: 18px; height: 18px; }
+.opt-in-icon svg { width: 18px; height: 18px; display: block; }
 .opt-in-sub {
   font-size: 13.5px;
   line-height: 1.55;
   color: var(--text-muted);
+  padding-left: 26px;
 }
 .opt-in-sub strong { color: var(--text); font-weight: 600; }
 
@@ -7209,15 +7972,17 @@ button.app-pill.purple.clickable:hover {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--grad);
-  color: white;
+  background: rgba(34,230,168,0.14);
+  border: 1.5px solid var(--mint);
+  color: var(--mint);
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 12px rgba(255,94,132,0.3);
+  box-shadow: 0 0 14px rgba(34,230,168,0.40), inset 0 0 8px rgba(34,230,168,0.15);
+  text-shadow: 0 0 8px rgba(34,230,168,0.6);
 }
 .magic-action-step-body { flex: 1; min-width: 0; padding-top: 3px; }
 .magic-action-step-head {
@@ -7573,6 +8338,98 @@ button.app-pill.purple.clickable:hover {
 }
 
 /* Log-back-in modal */
+/* In-app confirm modal — replaces native window.confirm() so destructive
+   actions feel like part of the app, not the browser. Reusable via
+   planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }). */
+.plan-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 350;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: modal-fade-in 0.18s ease-out;
+}
+.plan-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,18,0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.plan-confirm-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 26px 28px 22px;
+  background: linear-gradient(135deg, rgba(20,20,28,0.98) 0%, rgba(28,22,40,0.98) 100%);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 40px rgba(255,94,132,0.08);
+  animation: modal-pop-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes modal-pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.plan-confirm-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+.plan-confirm-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 22px;
+}
+.plan-confirm-body strong { color: var(--text); font-weight: 600; }
+.plan-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.plan-confirm-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.plan-confirm-btn:active { transform: scale(0.98); }
+.plan-confirm-btn.cancel {
+  background: transparent;
+  border-color: rgba(255,255,255,0.18);
+  color: var(--text-muted);
+}
+.plan-confirm-btn.cancel:hover {
+  border-color: rgba(255,255,255,0.32);
+  color: var(--text);
+}
+.plan-confirm-btn.confirm.tone-mint {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #0a1a12;
+}
+.plan-confirm-btn.confirm.tone-danger {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,94,132,0.30);
+}
+.plan-confirm-btn.confirm.tone-danger:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(255,94,132,0.42);
+}
+
 .login-modal {
   position: fixed;
   inset: 0;
@@ -7655,6 +8512,10 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 10px;
   font-variation-settings: 'SOFT' 50;
 }
+.slot-swap-modal .login-modal-title {
+  font-size: clamp(28px, 3.6vw, 36px);
+  line-height: 1.1;
+}
 .login-modal-title em {
   font-style: italic;
   background: var(--grad);
@@ -7694,8 +8555,8 @@ button.app-pill.purple.clickable:hover {
 
 /* Team invite block (prominent within Team tab) */
 .team-invite-hero {
-  padding: 24px 28px;
-  margin: 0 0 28px;
+  padding: 28px 32px 30px;
+  margin: 0 0 56px;
   background: linear-gradient(135deg, rgba(255,94,132,0.06) 0%, rgba(168,85,247,0.08) 100%);
   border: 1px solid rgba(168,85,247,0.25);
   border-radius: 18px;
@@ -7722,7 +8583,7 @@ button.app-pill.purple.clickable:hover {
 }
 .team-invite-hero-title {
   font-family: 'Fraunces', serif;
-  font-size: 22px;
+  font-size: clamp(22px, 2.8vw, 28px);
   font-weight: 500;
   letter-spacing: -0.01em;
   margin-bottom: 6px;
@@ -7742,8 +8603,8 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 14px;
   max-width: 600px;
 }
-/* Email invite form */
-.team-invite-form { margin-top: 18px; }
+/* Email invite form — input is the hero, button sits inline-right on desktop */
+.team-invite-form { margin-top: 22px; }
 .team-invite-input-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -7751,26 +8612,35 @@ button.app-pill.purple.clickable:hover {
   align-items: stretch;
 }
 .team-invite-email-input {
-  background: rgba(0,0,0,0.35);
-  border: 1px solid var(--ink-3);
-  border-radius: 10px;
-  padding: 12px 14px;
+  background: rgba(0,0,0,0.45);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 18px 20px;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13.5px;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text);
   width: 100%;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.team-invite-email-input::placeholder { color: var(--text-faint); }
-.team-invite-email-input:focus { outline: none; border-color: var(--pink); }
+.team-invite-email-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.team-invite-email-input:focus {
+  outline: none;
+  border-color: var(--pink);
+  background: rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
+}
 .team-invite-send-btn {
-  padding: 12px 18px;
+  padding: 0 20px;
   background: var(--grad);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -8528,7 +9398,11 @@ button.app-pill.purple.clickable:hover {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
+.slot-swap-row-btn svg { flex-shrink: 0; }
 .slot-swap-row-btn:hover { opacity: 0.88; }
 .slot-swap-row-btn.disabled { background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: default; }
 /* Outlined variant — used on swap rows so the % match number can be
@@ -8583,12 +9457,12 @@ button.app-pill.purple.clickable:hover {
 .sponsors-footer-heading {
   font-family: 'Fraunces', serif;
   font-weight: 400;
-  font-size: clamp(30px, 4vw, 42px);
-  line-height: 1.1;
+  font-size: clamp(36px, 5vw, 54px);
+  line-height: 1.08;
   letter-spacing: -0.02em;
   font-variation-settings: 'SOFT' 40;
   color: var(--text);
-  margin: 0 0 32px;
+  margin: 0 0 36px;
   text-wrap: balance;
 }
 .sponsors-footer-heading em {
@@ -8711,7 +9585,7 @@ button.app-pill.purple.clickable:hover {
 .sponsor-card-link:hover { opacity: 0.8; }
 @media (max-width: 600px) {
   .sponsors-footer { padding: 48px 20px 48px; margin-top: 60px; }
-  .sponsors-footer-heading { font-size: 28px; margin-bottom: 24px; }
+  .sponsors-footer-heading { font-size: 34px; margin-bottom: 28px; }
   .sponsors-grid { grid-template-columns: 1fr; }
   .sponsor-card { padding: 32px 24px 26px; gap: 18px; }
   .sponsor-card-logo { min-height: 80px; }
@@ -9022,4 +9896,202 @@ button.app-pill.purple.clickable:hover {
   .login-page-sub { font-size: 16px; }
   .login-page-input { font-size: 16px; padding: 16px 18px 16px 50px; }
   .login-page-divider { margin: 36px auto 24px; }
+}
+
+/* ── Team notes inline block on Checklist cards ───────────────────────
+   Caps at 4 visible rows; "+N more" link opens planShowTeamNotes
+   modal. Tone follows the card's identity colour: mint on session
+   cards (matches the utility/team-data palette), purple on booth
+   cards (matches booth identity). */
+.team-notes-block {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+.team-notes-block.tone-mint {
+  background: rgba(34,230,168,0.06);
+  border-color: rgba(34,230,168,0.26);
+}
+.team-notes-block.tone-purple {
+  background: rgba(168,85,247,0.07);
+  border-color: rgba(168,85,247,0.22);
+}
+.team-note-row {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0 0 5px;
+  line-height: 1.5;
+}
+.team-note-row:last-child { margin-bottom: 0; }
+.team-note-name {
+  font-weight: 700;
+  margin-right: 4px;
+}
+.team-notes-block.tone-mint   .team-note-name { color: var(--mint); }
+.team-notes-block.tone-purple .team-note-name { color: var(--purple); }
+.team-notes-more {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 1px dashed;
+  transition: color 0.15s, border-color 0.15s;
+}
+.team-notes-block.tone-mint   .team-notes-more {
+  color: var(--mint);
+  border-bottom-color: rgba(34,230,168,0.40);
+}
+.team-notes-block.tone-purple .team-notes-more {
+  color: var(--purple);
+  border-bottom-color: rgba(168,85,247,0.40);
+}
+.team-notes-more:hover {
+  color: #fff;
+  border-bottom-color: currentColor;
+}
+
+/* ── Team-rated row — small inline pills showing teammate ratings ─────
+   "Sarah 🔥🔥🔥 · James 🔥🔥". Sits below the user's own rate panel.
+   Mint-tinted on sessions, purple-tinted on booths. Flame stays pink
+   so the rating semantics read consistently. */
+.team-rated-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed;
+}
+.team-rated-row.tone-mint   { border-top-color: rgba(34,230,168,0.18); }
+.team-rated-row.tone-purple { border-top-color: rgba(168,85,247,0.20); }
+.team-rated-caption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-right: 2px;
+}
+.team-rated-row.tone-mint   .team-rated-caption { color: var(--mint); }
+.team-rated-row.tone-purple .team-rated-caption { color: var(--purple); }
+.team-rated-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 100px;
+  border: 1px solid;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.02);
+}
+.team-rated-row.tone-mint   .team-rated-pill {
+  border-color: rgba(34,230,168,0.30);
+  color: var(--text);
+}
+.team-rated-row.tone-purple .team-rated-pill {
+  border-color: rgba(168,85,247,0.32);
+  color: var(--text);
+}
+.team-rated-flames {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: rgba(255,108,144,0.95);
+  filter: drop-shadow(0 0 3px rgba(255,94,132,0.45));
+}
+.team-rated-flame-icon { display: block; }
+
+/* Team-notes modal — variant of the confirm modal panel, scrollable
+   list inside, no destructive accent. */
+.team-notes-panel { max-width: 520px; }
+.team-notes-modal-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+.team-notes-modal-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin: 14px 0 18px;
+  padding-right: 4px;
+}
+.team-notes-modal-row {
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.team-notes-modal-row:last-child { margin-bottom: 0; }
+.team-notes-modal-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.team-notes-modal-name {
+  color: var(--purple);
+  font-weight: 700;
+  font-size: 13px;
+}
+.team-notes-modal-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint, rgba(255,255,255,0.40));
+}
+.team-notes-modal-text {
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.team-notes-modal-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* ── Mobile overrides for the recent Checklist additions ────────────── */
+@media (max-width: 640px) {
+  /* Blurb sits a touch tighter on mobile, divider a hair thinner */
+  .checklist-blurb { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+  .checklist-blurb-divider { margin: 12px 0 8px; }
+  /* Alts teaser line keeps its dashed-pill look but slightly more compact */
+  .checklist-alternatives-link {
+    font-size: 11.5px;
+    padding: 6px 10px 6px 8px;
+  }
+  /* Note chips — bigger tap targets, slightly tighter row gap */
+  .note-chip-row { gap: 5px; margin-bottom: 8px; }
+  .note-chip { padding: 7px 11px; font-size: 12px; }
+  .note-chip-emoji { font-size: 14px; }
+  /* Confirm modal — full-width with breathing padding on phones */
+  .plan-confirm-modal { padding: 18px; }
+  .plan-confirm-panel {
+    max-width: none;
+    padding: 22px 22px 18px;
+    border-radius: 14px;
+  }
+  .plan-confirm-title { font-size: 20px; }
+  .plan-confirm-body { font-size: 13.5px; margin-bottom: 18px; }
+  .plan-confirm-btn { padding: 11px 16px; font-size: 13px; flex: 1; }
 }

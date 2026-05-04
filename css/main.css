@@ -6716,6 +6716,26 @@ button.app-pill.purple.clickable:hover {
   max-width: 640px;
 }
 .team-section-lede strong { color: var(--text); font-weight: 600; }
+/* Benefit line — sits between the descriptive subtitle and the count
+   row. Slightly brighter than the subtitle so it reads as the value
+   moment without becoming an H2 in disguise. The italic clause picks
+   up the brand pink/purple gradient. */
+.team-section-benefit {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 8px 0 18px;
+  max-width: 640px;
+  font-weight: 500;
+}
+.team-section-benefit em {
+  font-style: italic;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
 /* Hormozi-scale value heading variant — used on Pre-show team intel.
    Larger than the standard team-section-title so the section reads
    as the central value moment of the page, not a sibling block. */

@@ -1428,11 +1428,10 @@ function renderTeamTab() {
     ${renderTeamPreview()}
 
     <div class="app-section team-pre-show">
-      <div class="team-section-eyebrow tone-purple">✦ Pre-show team intel</div>
-      <h3 class="team-section-title team-section-title-xl">Your team's deepest pains and tech-stack wants. <em>All in one place.</em></h3>
-      <p class="team-section-lede team-section-lede-xl">
-        Side-by-side onboarding answers from every teammate. Their biggest problems. The tools they want gone. The systems they're evaluating. Walk in with the kind of intel most firms only get <em>after</em> the show — before it even starts.
-      </p>
+      <div class="team-section-eyebrow tone-purple">Team intel</div>
+      <h3 class="team-section-title team-section-title-xl">Your team's onboarding answers.</h3>
+      <p class="team-section-lede">What each teammate said about their pains and software.</p>
+      <p class="team-section-benefit">Most firms learn this in the cab home. <em>You'll have it before you arrive.</em></p>
       <div class="team-section-count-row">
         <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>
       </div>

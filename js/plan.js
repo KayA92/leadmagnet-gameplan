@@ -1219,6 +1219,105 @@ function renderPendingInvitesBlock() {
   `;
 }
 
+// "Show, don't tell" team-mode preview — surfaces what a real session
+// card looks like once teammates have rated, taken notes, and joined.
+// Shown only in the solo state since teammates with their own active
+// view see the real thing on the Checklist already. Pure markup demo,
+// not interactive — uses real card classes so styling stays in sync.
+function renderTeamPreview() {
+  return `
+    <section class="team-preview">
+      <div class="team-preview-eyebrow">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+        With your team in
+      </div>
+      <h3 class="team-preview-headline">Your Planner is <em>10× more useful</em> with the team in.</h3>
+      <p class="team-preview-sub">Live notes, ratings, and team intel flowing in side-by-side. Every session — every booth — through your whole team's eyes. Here's what one card looks like when team mode is on:</p>
+
+      <!-- Mockup session card — uses real class names so it inherits
+           every styling change made elsewhere on the Checklist. -->
+      <div class="team-preview-card-wrap">
+        <span class="team-preview-card-tag">Preview</span>
+        <div class="checklist-row is-session" style="animation: none;">
+          <div class="checklist-row-main">
+            <div class="checklist-row-leftcol">
+              <button class="checklist-box" type="button" aria-hidden="true" tabindex="-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <div class="checklist-time-block">
+                <div class="checklist-time-main">10:30</div>
+                <div class="checklist-time-sub">11:15</div>
+              </div>
+            </div>
+            <div class="checklist-main">
+              <div class="checklist-main-title">AI for accountants: practical use cases that actually drive results</div>
+              <div class="checklist-main-meta">Main Stage · <span class="type-pill session">Session</span></div>
+              <div class="match-badge tier-top">
+                <span class="match-bucket">
+                  <svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+                  <span class="match-bucket-text">Top match</span>
+                </span>
+                <span class="match-rank">AI ranked #3 of 240</span>
+              </div>
+              <div class="checklist-blurb-divider"></div>
+              <p class="checklist-blurb">Speakers walk through three live AI rollouts at top-50 firms, including the workflow framework most firms get wrong.</p>
+
+              <div class="checklist-row-actions">
+                <div class="row-rate-wrap">
+                  <div class="row-rate-caption">You rated</div>
+                  <div class="row-rate-inline">
+                    <button class="row-fire-btn flame-btn lit" tabindex="-1"><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+                    <button class="row-fire-btn flame-btn lit" tabindex="-1"><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+                    <button class="row-fire-btn flame-btn lit" tabindex="-1"><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+                  </div>
+                </div>
+                <div class="row-team-wrap">
+                  <div class="row-rate-caption">Going</div>
+                  <div class="checklist-avatars">
+                    <div class="mini-av t3" title="You">Y</div>
+                    <div class="mini-av t1" title="Sarah">S</div>
+                    <div class="mini-av t2" title="James">J</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="team-rated-row tone-mint">
+                <span class="team-rated-caption">Team rated</span>
+                <span class="team-rated-pill">
+                  <span class="team-rated-name">Sarah</span>
+                  <span class="team-rated-flames">
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                  </span>
+                </span>
+                <span class="team-rated-pill">
+                  <span class="team-rated-name">James</span>
+                  <span class="team-rated-flames">
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                  </span>
+                </span>
+              </div>
+
+              <div class="team-notes-block tone-mint">
+                <p class="team-note-row"><span class="team-note-name">Sarah:</span> 🔥 Game-changer: speakers nailed the AML angle — exactly what we've been wrestling with for our top-50 clients.</p>
+                <p class="team-note-row"><span class="team-note-name">James:</span> 📝 To do: pull the workflow automation slide, share with the partner group on Friday.</p>
+                <p class="team-note-row"><span class="team-note-name">Sarah:</span> 💡 Idea: run a 30-min internal lunch-and-learn from this — could replace our Q3 training.</p>
+                <p class="team-note-row"><span class="team-note-name">James:</span> 🧠 Made me think: we're probably 6 months behind where the speaker said the leading firms are.</p>
+                <span class="team-notes-more" style="cursor: default;">See all 8 →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="team-preview-foot">Multiply this across every session and every booth in your plan. <strong>That's team mode.</strong></p>
+    </section>
+  `;
+}
+
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
@@ -1326,11 +1425,13 @@ function renderTeamTab() {
 
     ${inviteHero}
 
-    <div class="app-section">
-      <div class="team-section-eyebrow tone-purple">Pre-show intel</div>
-      <h3 class="team-section-title">Who's going &amp; <em>why.</em></h3>
-      <p class="team-section-lede">
-        Each teammate's onboarding answers, side by side. What they think are your firm's top problems and software to evaluate — invaluable intel to align before, during and after Accountex.
+    ${isSolo ? renderTeamPreview() : ''}
+
+    <div class="app-section team-pre-show">
+      <div class="team-section-eyebrow tone-purple">✦ Pre-show team intel</div>
+      <h3 class="team-section-title team-section-title-xl">Your team's deepest pains and tech-stack wants. <em>All in one place.</em></h3>
+      <p class="team-section-lede team-section-lede-xl">
+        Side-by-side onboarding answers from every teammate. Their biggest problems. The tools they want gone. The systems they're evaluating. Walk in with the kind of intel most firms only get <em>after</em> the show — before it even starts.
       </p>
       <div class="team-section-count-row">
         <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>

@@ -395,26 +395,23 @@ function bestAlternativeScore(item) {
   return best;
 }
 
-function findStrongAlternatives(item) {
-  if (!item.day || !item.start_time) return [];
-  if (_resolvedSlots.has(`${item.day}-${item.start_time}`)) return [];
-  const cats = _plan?.categories || [];
-  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
-  if (!wantedCanonicals.size) return [];
+// Count of alternatives at the same time slot that fall in the SAME
+// bucket as the user's current pick (e.g. show "4 other HIGH MATCH
+// alternatives" only when there really are 4 same-bucket alts).
+// Excludes the current session and anything else already in the user's
+// plan. Click on the count line opens the same swap modal as the SWAP
+// button — the user picks for themselves from the full list.
+function sameBucketAlternativeCount(item, bucket) {
+  if (!item.day || !item.start_time || !bucket) return 0;
   const planKeys = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
-  const candidates = (_allSessions || []).filter(s =>
-    !(s.session_id === item.session_id && s.day === item.day && s.start_time === item.start_time) &&
-    s.day === item.day &&
-    s.start_time === item.start_time &&
-    !planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`) &&
-    !_dismissedAlternatives.has(`${item.session_id}|${s.session_id}`) &&
-    (s.canonical_categories || []).some(c => wantedCanonicals.has(c)),
-  );
-  candidates.sort((a, b) =>
-    (b.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length -
-    (a.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
-  );
-  return candidates.slice(0, 1);
+  let count = 0;
+  for (const s of (_allSessions || [])) {
+    if (s.day !== item.day || s.start_time !== item.start_time) continue;
+    if (s.session_id === item.session_id) continue;
+    if (planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)) continue;
+    if (matchForSession(s).bucket === bucket) count++;
+  }
+  return count;
 }
 
 // ── Render helpers ────────────────────────────────────────────────────────────
@@ -614,7 +611,7 @@ function renderChecklistTab() {
     const planRankIdx  = (item.rank && Number.isFinite(item.rank)) ? item.rank : (i + 1);
     const match        = matchForSession(item, planRankIdx);
     const whyTags      = whyMatched(item, plan, match.bucket);
-    const alts         = findStrongAlternatives(item);
+    const altCount     = sameBucketAlternativeCount(item, match.bucket);
     const teamNotes    = teamNotesByItem[noteKey] || [];
 
     // Universal SWAP badge — shown under the time block on EVERY session.
@@ -633,47 +630,16 @@ function renderChecklistTab() {
         ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
 
-    // Collapsed-by-default alternatives. Summary leads with the top
-    // alt's bucket label (e.g. "HIGH MATCH alternative also available").
-    // Click to expand full cards, each showing its own bucket + rank.
-    const sortedAlts = [...alts]
-      .map(alt => ({ alt, m: matchForSession(alt) }))
-      .sort((a, b) => a.m.rank - b.m.rank);
-    const altCount = sortedAlts.length;
-    const topAltBucket = sortedAlts[0]?.m?.bucket;
-    const altsHtml = altCount ? `
-      <details class="checklist-alternatives">
-        <summary class="checklist-alternatives-summary">
-          ${SWAP_SVG}
-          <span><strong>${escHtml(bucketLabel(topAltBucket).toUpperCase())}</strong> alternative also available</span>
-          <span class="checklist-alternatives-toggle"><span class="show">show</span><span class="hide">hide</span></span>
-        </summary>
-        ${sortedAlts.map(({ alt, m }) => {
-          const altTags = whyMatched(alt, plan, m.bucket);
-          const altTagsHtml = altTags.length
-            ? `<div class="checklist-why-tags">${altTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
-            : '';
-          return `
-          <div class="checklist-alternative-card">
-            <div class="checklist-alternative-body">
-              <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
-              <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
-              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
-              ${altTagsHtml}
-            </div>
-            <div class="checklist-alternative-actions">
-              <button class="checklist-alternative-btn swap" onclick="planSwapSession('${escHtml(item.session_id)}','${escHtml(alt.session_id)}')" type="button">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                Swap
-              </button>
-              <button class="checklist-alternative-btn dismiss" onclick="planDismissAlternative('${escHtml(item.session_id)}','${escHtml(alt.session_id)}',event)" type="button">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                Not for me
-              </button>
-            </div>
-          </div>`;
-        }).join('')}
-      </details>` : '';
+    // Single-line alts teaser: "↔ 4 other HIGH MATCH alternatives at this
+    // time". Only shown if same-bucket alternatives exist for this slot.
+    // Click opens the same swap modal as the inline SWAP button so the
+    // user sees ALL options in that slot and picks for themselves.
+    const altsHtml = altCount > 0 ? `
+      <button class="checklist-alternatives-link tier-${match.bucket}" type="button"
+        onclick="planOpenSlotSwap('${escHtml(item.session_id)}', event)">
+        ${SWAP_SVG}
+        <span>${altCount} other <strong>${escHtml(bucketLabel(match.bucket).toUpperCase())}</strong> alternative${altCount === 1 ? '' : 's'} at this time</span>
+      </button>` : '';
 
     const teamNotesHtml = teamNotes.length ? `
       <div style="margin-top:8px;padding:8px 10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px;">

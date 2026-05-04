@@ -4675,6 +4675,48 @@ button.app-pill.purple.clickable:hover {
 .checklist-alternatives {
   margin-top: 8px;
 }
+/* Single-line teaser that replaces the old <details>/expand pattern.
+   Renders as a quiet button — grey base, bucket-tier accent on the
+   match name, mint icon on hover. Click opens the slot-swap modal. */
+.checklist-alternatives-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 10px 6px 8px;
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.10);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.checklist-alternatives-link svg {
+  color: var(--text-faint);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.checklist-alternatives-link strong {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+/* Bucket-tier accent on the match label — matches the bucket pill colour
+   on the parent card so the user reads "this slot has more of THIS tier". */
+.checklist-alternatives-link.tier-top    strong { color: var(--pink); }
+.checklist-alternatives-link.tier-high   strong { color: var(--coral); }
+.checklist-alternatives-link.tier-medium strong { color: var(--amber); }
+.checklist-alternatives-link.tier-neutral strong { color: var(--cool-blue); }
+.checklist-alternatives-link:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(34,230,168,0.30);
+}
+.checklist-alternatives-link:hover svg { color: var(--mint); }
 .checklist-alternatives-summary {
   display: inline-flex;
   align-items: center;

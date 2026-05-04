@@ -899,7 +899,7 @@ function decorateAndRankByCategory() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 export async function initWizard() {
   // Clear any stale hash from a previous session so we always start at stage 0
-  if (window.location.hash) history.replaceState(null, '', location.pathname);
+  if (window.location.hash) history.replaceState(null, '', location.pathname + location.search);
 
   // If arriving via a team invite link, store the token for later use on save
   const _urlParams = new URLSearchParams(window.location.search);
@@ -908,7 +908,11 @@ export async function initWizard() {
 
   // Pre-populate save-form email when the invite link includes ?email=ENCODED
   const _emailParam = _urlParams.get('email');
-  if (_emailParam) state.user.email = decodeURIComponent(_emailParam);
+  if (_emailParam) {
+    state.user.email = decodeURIComponent(_emailParam);
+    const _emailInput = document.getElementById('inp-email');
+    if (_emailInput) _emailInput.value = state.user.email;
+  }
 
   // Load data files
   try {

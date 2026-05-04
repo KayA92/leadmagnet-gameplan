@@ -39,7 +39,7 @@ let _inviteNudgeDismissed = false;
 try { _inviteNudgeDismissed = localStorage.getItem('inviteNudgeDismissed') === '1'; } catch (_) {}
 
 const INVITE_NUDGE_COPY = {
-  checklist: 'Going with colleagues? <strong>Invite them to your team</strong> — see their sessions, ratings, notes, and get an AI team summary.',
+  checklist: 'Going with colleagues? <strong>Add your team</strong> — see their pains, share live notes and ratings, get an AI debrief PDF at the end.',
   cpd:       'Bringing colleagues? <strong>Their CPD logs roll up here too</strong> — one report, whole team.',
   debrief:   'Going alone, this writes from your notes only. <strong>Add a teammate</strong> and the debrief synthesises everyone\'s.',
 };

@@ -2510,7 +2510,6 @@ async function handleSignIn(authUser, teamToken) {
     }
 
     log('loadPlan', 'fetching plan + programme + exhibitors');
-    setLoadingStep('Fetching your plan…');
     const [full, allSessions, allExhibitors] = await Promise.all([
       loadLatestPlan(authUser.id),
       fetch('/data/programme.json').then(r => r.json()).catch(() => []),
@@ -2572,7 +2571,6 @@ async function handleSignIn(authUser, teamToken) {
     let teamData = null;
     if (full.team_id) {
       log('loadTeamData', `team=${full.team_id}`);
-      setLoadingStep('Loading team…');
       teamData = await loadTeamData(full.team_id);
       log('loadTeamData', `members=${teamData?.members?.length ?? 0}`);
     }
@@ -2606,7 +2604,6 @@ async function handleSignIn(authUser, teamToken) {
     }
 
     log('renderApp', 'all data ready');
-    setLoadingStep('Almost ready…');
     showLoading(false);
     renderApp();
     log('done');
@@ -2673,14 +2670,6 @@ function showReauthForm(headlineMsg = '') {
 function showLoading(show) {
   const el = $('plan-loading');
   if (el) el.style.display = show ? 'flex' : 'none';
-}
-
-// Update the small step label under the spinner — e.g. "Verifying link…",
-// "Fetching your plan…". Visible to the user so they can see what's going
-// on without needing DevTools.
-function setLoadingStep(text) {
-  const el = $('loading-step');
-  if (el) el.textContent = text || '';
 }
 
 // ── Debrief PDF helper ────────────────────────────────────────────────────────
@@ -3146,7 +3135,6 @@ async function initDemoMode() {
   try {
     log('start');
     showLoading(true);
-    setLoadingStep('Demo mode · loading data…');
     const [allSessions, allExhibitors] = await Promise.all([
       fetch('/data/programme.json').then(r => r.json()).catch(e => { log('programme.json fetch failed', e.message); return []; }),
       fetch('/data/exhibitors.json').then(r => r.json()).catch(e => { log('exhibitors.json fetch failed', e.message); return []; }),
@@ -3213,10 +3201,6 @@ export async function initPlan() {
   // hangs if something goes wrong. Each step logs as `[plan] STEP — detail`.
   const log = (step, detail) => console.log(`[plan] ${step}` + (detail ? ` — ${detail}` : ''));
   log('init', `pathname=${window.location.pathname} search=${window.location.search}`);
-  // Confirms the JS module loaded + initPlan() actually ran. If you see
-  // this on the loader, the script is alive — any subsequent hang is in
-  // a downstream Supabase call.
-  setLoadingStep('initPlan running…');
 
   // Reset escape hatch: /plan/?reset=1 clears local state + signs out so a
   // user can recover from a borked session. Useful when a stale anon
@@ -3268,7 +3252,6 @@ export async function initPlan() {
   const tokenHash = qpParams.get('token_hash');
   if (tokenHash) {
     log('token_hash', 'calling verifyOtp');
-    setLoadingStep('Verifying your link…');
     let verifyResult;
     try {
       verifyResult = await Promise.race([
@@ -3308,7 +3291,6 @@ export async function initPlan() {
   }
 
   log('getUser', 'no token_hash, checking existing session');
-  setLoadingStep('Checking session…');
   const user = await getUser();
   log('getUser', user ? `id=${user.id} anon=${user.is_anonymous}` : 'no user');
 

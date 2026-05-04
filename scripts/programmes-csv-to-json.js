@@ -224,8 +224,6 @@ THEATRE CONTEXT — use this to identify which pain tag families are plausible f
 
 Theatre tells you the broad domain — use it to narrow which pain tag families are plausible.
 The description and title are the primary evidence for the precise score within that domain.
-A session in an AI theatre about AI usage policies should score high on ai-govern but low
-on ai-start — theatre does not grant blanket scores across all tags in a family.
 Do not let theatre override what the description actually says.
 
 THE 37 PAIN TAGS:
@@ -375,7 +373,10 @@ async function runScoring(programmes, { tagFilter, programmeFilter }) {
   }
 
   const targets = programmeFilter
-    ? programmes.filter(p => p.title.toLowerCase().includes(programmeFilter.toLowerCase()))
+    ? programmes.filter(p =>
+        p.title.toLowerCase().includes(programmeFilter.toLowerCase()) ||
+        p.session_id === programmeFilter
+      )
     : programmes;
 
   if (!targets.length) {

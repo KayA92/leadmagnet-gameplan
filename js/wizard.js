@@ -564,7 +564,7 @@ async function handleSaveSubmit(e) {
     );
     if (userErr) throw userErr;
 
-    const { data: savedPlan, error: planErr } = await supabase.from('plans').insert({
+    const legacyPayload = {
       user_id:     userId,
       attend_mode: state.answers.attendMode,
       problem:     state.answers.problem,
@@ -574,8 +574,28 @@ async function handleSaveSubmit(e) {
       sessions:    enrichedSessions,
       booths:      enrichedBooths,
       ai_themes:   state.plan?.themes || [],
-    }).select('id').single();
-    if (planErr) throw planErr;
+    };
+    // Migration 20260504000000 adds firm_size/firm_mode/pains. If it's not
+    // applied yet we fall back to legacyPayload so the wizard never breaks.
+    const fullPayload = {
+      ...legacyPayload,
+      firm_size: state.answers.firmSize || null,
+      firm_mode: state.answers.mode     || null,
+      pains:     state.answers.pains    || [],
+    };
+    let savedPlan;
+    {
+      const r = await supabase.from('plans').insert(fullPayload).select('id').single();
+      if (r.error && /column.*does not exist/i.test(r.error.message || '')) {
+        const fallback = await supabase.from('plans').insert(legacyPayload).select('id').single();
+        if (fallback.error) throw fallback.error;
+        savedPlan = fallback.data;
+      } else if (r.error) {
+        throw r.error;
+      } else {
+        savedPlan = r.data;
+      }
+    }
     localStorage.setItem('pendingPlanId', savedPlan.id);
     // Team creation happens on the plan page after the user authenticates via magic link,
     // because the teams table requires an authenticated (non-anonymous) session.

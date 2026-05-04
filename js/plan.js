@@ -93,14 +93,26 @@ async function loadLatestPlan(userId) {
 }
 
 async function loadTeamData(teamId) {
-  const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
+  // Try the full select first; if migration 20260504000000 hasn't been
+  // applied yet, fall back to the legacy column set so the page still loads.
+  const FULL_PLAN_SELECT   = 'id, user_id, attend_mode, problem, categories, role, firm_size, firm_mode, pains, sessions, booths, ai_themes';
+  const LEGACY_PLAN_SELECT = 'id, user_id, attend_mode, problem, categories, role, sessions, booths, ai_themes';
+
+  let teamPlans;
+  {
+    const r = await supabase.from('plans').select(FULL_PLAN_SELECT).eq('team_id', teamId);
+    if (r.error && /column.*does not exist/i.test(r.error.message || '')) {
+      const fallback = await supabase.from('plans').select(LEGACY_PLAN_SELECT).eq('team_id', teamId);
+      teamPlans = fallback.data || [];
+    } else {
+      teamPlans = r.data || [];
+    }
+  }
+
+  const [{ data: members }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
       .select('role, joined_at, users(id, first_name, last_name, company)')
-      .eq('team_id', teamId),
-    supabase
-      .from('plans')
-      .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
       .eq('team_id', teamId),
     supabase
       .from('teams')
@@ -123,6 +135,57 @@ async function loadTeamData(teamId) {
     teamId,
   };
 }
+
+// ── Onboarding label maps (mirror wizard.js / index.html) ─────────────────────
+// PAIN_LABELS isn't strictly needed because plan.problem is already saved as a
+// humanised comma-joined string of pain labels — we split that for the pills.
+// These cover role + firm size + firm mode + categories (incl. legacy slugs).
+
+const ROLE_LABELS = {
+  founder: 'Founder', partner: 'Partner', director: 'Director',
+  senior: 'Senior accountant / manager', accountant: 'Accountant',
+  'ops-admin': 'Practice manager / ops', bookkeeper: 'Bookkeeper',
+  advisor: 'Tax advisor', industry: 'CFO / Finance Director',
+  'finance-manager': 'Finance manager', controller: 'Controller',
+  other: 'Something else',
+};
+
+const FIRM_SIZE_LABELS = {
+  'solo':     'Solo',
+  '2-10':     '2–10 firm',
+  '11-50':    '11–50 firm',
+  '50+':      '50+ firm',
+  'industry': 'In-house team',
+};
+
+const FIRM_MODE_LABELS = {
+  grow: 'Growing fast', optimise: 'Optimising', niche: 'Niching',
+  exit: 'Exit / succession', explore: 'Exploring',
+};
+
+const CATEGORY_LABELS = {
+  // Current Stage-2 slugs (index.html)
+  'cloud-accounting':   'Cloud accounting',
+  'practice-mgmt':      'Practice management',
+  'tax-mtd':            'Tax & MTD software',
+  'audit':              'Audit & assurance',
+  'bookkeeping':        'Bookkeeping & data capture',
+  'payroll':            'Payroll',
+  'doc-mgmt':           'Document management',
+  'portals-esign':      'Client portals & e-signatures',
+  'aml-onboarding':     'AML / KYC & onboarding',
+  'forecasting':        'Forecasting & advisory',
+  'reporting':          'Reporting & analytics',
+  'proposals':          'Proposals & engagement',
+  'payments':           'Payments & fee collection',
+  'lending':            'Lending & client finance',
+  'outsourcing':        'Outsourcing & offshore',
+  'cyber':              'Cyber security & IT',
+  // Legacy slugs (kept so old plans still resolve)
+  'practice-management':'Practice management',
+  'ai-automation':      'AI & automation',
+  'doc-management':     'Document management',
+};
 
 // ── AI match helpers ──────────────────────────────────────────────────────────
 
@@ -987,15 +1050,28 @@ function renderTeammateCard(m, index) {
   const u         = m.users;
   const isMe      = u.id === _authUser?.id;
   const initials  = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase();
-  const avatarClass = `t${(index % 4) + 1}`;
-  const memberPlan  = _teamData.teamPlans.find(p => p.user_id === u.id);
+  const avatarClass  = `t${(index % 4) + 1}`;
+  const memberPlan   = _teamData.teamPlans.find(p => p.user_id === u.id);
   const sessionCount = (memberPlan?.sessions || []).length;
-  const noteCount = _teamData.allNotes.filter(n => n.plan_id === memberPlan?.id).length;
-  const cats = (memberPlan?.categories || []).map(c => ({
-    'practice-management': 'Practice mgmt', 'ai-automation': 'AI & automation',
-    'bookkeeping': 'Bookkeeping', 'tax-mtd': 'Tax / MTD',
-    'doc-management': 'Docs / portals', 'payroll': 'Payroll',
-  }[c] || c));
+  const noteCount    = _teamData.allNotes.filter(n => n.plan_id === memberPlan?.id).length;
+
+  const roleLabel     = memberPlan?.role ? (ROLE_LABELS[memberPlan.role] || memberPlan.role) : '';
+  const firmSizeLabel = memberPlan?.firm_size ? (FIRM_SIZE_LABELS[memberPlan.firm_size] || memberPlan.firm_size) : '';
+  const rawFirm  = (u.company || '').trim();
+  const firmName = (!rawFirm || /^company$/i.test(rawFirm) || /^your[-\s]?firm$/i.test(rawFirm)) ? '' : rawFirm;
+  const identityParts = [roleLabel, firmSizeLabel, firmName].filter(Boolean).map(escHtml);
+
+  let painLabels = [];
+  if (Array.isArray(memberPlan?.pains) && memberPlan.pains.length) {
+    painLabels = memberPlan.pains.map(s => s);
+  } else if (memberPlan?.problem) {
+    painLabels = String(memberPlan.problem).split(/,\s*/).map(s => s.trim()).filter(Boolean);
+  }
+
+  const stackGapLabels = (memberPlan?.categories || [])
+    .map(c => CATEGORY_LABELS[c] || c)
+    .filter(Boolean);
+
   const joinedDate = new Date(m.joined_at);
   const joinedStr = isNaN(joinedDate) ? '' : `Joined · ${joinedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
 
@@ -1008,20 +1084,22 @@ function renderTeammateCard(m, index) {
             <span class="teammate-name">${escHtml(u.first_name)} ${escHtml(u.last_name)}</span>
             ${isMe ? '<span class="teammate-you-tag">You</span>' : ''}
           </div>
-          <div class="teammate-role">${escHtml(u.company || '')}</div>
+          ${identityParts.length ? `<div class="teammate-identity">${identityParts.join(' <span class="teammate-identity-sep">·</span> ')}</div>` : ''}
         </div>
       </div>
-      ${memberPlan?.problem ? `
-        <div class="teammate-mission">
-          <div class="teammate-mission-label">Their mission</div>
-          <div class="teammate-mission-text">"${escHtml(memberPlan.problem)}"</div>
+      ${painLabels.length ? `
+        <div class="teammate-meta-block">
+          <div class="teammate-meta-label tone-pink">Their pains</div>
+          <div class="teammate-meta-pills">
+            ${painLabels.map(p => `<span class="teammate-meta-pill pain">${escHtml(p)}</span>`).join('')}
+          </div>
         </div>
       ` : ''}
-      ${cats.length ? `
+      ${stackGapLabels.length ? `
         <div class="teammate-meta-block">
-          <div class="teammate-meta-label">Evaluating</div>
+          <div class="teammate-meta-label tone-purple">Stack gaps</div>
           <div class="teammate-meta-pills">
-            ${cats.map(c => `<span class="teammate-meta-pill cat">${escHtml(c)}</span>`).join('')}
+            ${stackGapLabels.map(c => `<span class="teammate-meta-pill cat">${escHtml(c)}</span>`).join('')}
           </div>
         </div>
       ` : ''}
@@ -1167,7 +1245,7 @@ function renderTeamTab() {
         Each teammate's onboarding answers, side by side. Top problem, role, software they're evaluating.
       </p>
       <div class="team-section-count-row">
-        <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} so far</span>
+        <span class="team-section-count-label">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</span>
       </div>
       <div class="teammate-grid">
         ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}

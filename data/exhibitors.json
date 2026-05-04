@@ -5580,154 +5580,154 @@
     "pain_scores": {
       "ai-start": {
         "score": 0,
-        "reason": "No AI training or adoption framework offered"
+        "reason": "No AI training or beginner AI frameworks offered"
       },
       "ai-data-mess": {
         "score": 0,
-        "reason": "Not addressing data management or AI readiness"
+        "reason": "Not a data management or AI implementation platform"
       },
       "mtd-volume": {
         "score": 0,
-        "reason": "No MTD processing or operational capacity solution"
+        "reason": "No MTD compliance software or process automation"
       },
       "mtd-clients": {
-        "score": 0,
-        "reason": "Not focused on client digital readiness training"
+        "score": 0.3,
+        "reason": "Qualifications may support client digital readiness indirectly"
       },
       "margin": {
         "score": 0,
-        "reason": "No pricing strategy or advisory monetisation content"
+        "reason": "No pricing, advisory, or fee-model frameworks offered"
       },
       "hiring": {
         "score": 0.3,
-        "reason": "Supports talent pipeline through apprenticeships and qualifications"
+        "reason": "Accreditation body; attracts talent pipeline but doesn't source staff"
       },
       "retention": {
         "score": 0.6,
-        "reason": "Career-path clarity and professional development framework via qualifications"
+        "reason": "Career development via qualifications supports staff retention pathway"
       },
       "burnout": {
         "score": 0,
-        "reason": "Not addressing workload management or wellbeing directly"
+        "reason": "Not addressing workload automation or wellbeing directly"
       },
       "docs": {
         "score": 0,
-        "reason": "No document management platform or systems"
+        "reason": "No document management or filing system"
       },
       "chasing": {
         "score": 0,
-        "reason": "Not providing client engagement or workflow tools"
+        "reason": "No client engagement or workflow automation tools"
       },
       "defensible-files": {
         "score": 0,
-        "reason": "No audit-trail or file-governance product"
+        "reason": "Not a file management or audit-trail platform"
       },
       "aml": {
         "score": 0,
-        "reason": "Not offering AML policy templates or compliance frameworks"
+        "reason": "No AML compliance or KYC software"
       },
       "disconnected": {
         "score": 0,
-        "reason": "No tech integration or stack consolidation services"
+        "reason": "Not a tech stack integration or consolidation platform"
       },
       "ai-roi": {
         "score": 0,
-        "reason": "Not providing AI ROI measurement or case studies"
+        "reason": "No AI ROI measurement or business case tools"
       },
       "advisory": {
         "score": 0,
-        "reason": "Not positioning advisory services or compliance-to-advisory transition"
+        "reason": "Does not offer advisory positioning or service transition frameworks"
       },
       "advisory-charge": {
         "score": 0,
-        "reason": "Not teaching value pricing or advisory monetisation"
+        "reason": "No value-pricing or advisory monetisation training"
       },
       "winning": {
         "score": 0,
-        "reason": "Not offering client acquisition or marketing strategies"
+        "reason": "Not a lead generation or marketing platform"
       },
       "ai-team": {
         "score": 0,
-        "reason": "No AI adoption or change-management training"
+        "reason": "No AI adoption or change management frameworks"
       },
       "cyber": {
         "score": 0,
-        "reason": "Not addressing cyber security or threat awareness"
+        "reason": "No cybersecurity, MFA, or incident-response content"
       },
       "penalties": {
         "score": 0,
-        "reason": "No MTD penalty regime guidance or process automation"
+        "reason": "No MTD penalty regime or compliance process content"
       },
       "frs102": {
         "score": 0,
-        "reason": "Not providing FRS 102 technical updates or transition guidance"
+        "reason": "No technical accounting standards update sessions"
       },
       "portal": {
         "score": 0,
-        "reason": "Not solving client portal adoption or engagement"
+        "reason": "Not a client portal or engagement platform"
       },
       "ai-govern": {
         "score": 0,
-        "reason": "No AI governance frameworks or risk-management protocols"
+        "reason": "No AI governance or policy frameworks"
       },
       "ai-skills": {
         "score": 0.8,
-        "reason": "Directly addresses AI skills gap through regulated qualifications and training pathways"
+        "reason": "Accredits and trains finance professionals; core mission matches skills gap"
       },
       "onboarding": {
         "score": 0,
-        "reason": "Not automating client onboarding workflows"
+        "reason": "Not a client onboarding or workflow automation platform"
       },
       "month-end": {
         "score": 0,
-        "reason": "Not providing close automation or FD tooling"
+        "reason": "No close automation or financial reporting tools"
       },
       "bankfeeds": {
         "score": 0,
-        "reason": "Not solving feed reliability or reconciliation issues"
+        "reason": "No bank data or reconciliation technology"
       },
       "cpd": {
         "score": 1,
-        "reason": "Core offering — Ofqual-regulated qualifications and CPD-accredited training",
+        "reason": "Ofqual-regulated qualifications and CPD accreditation is core offering",
         "matched_signals": [
           "AAT"
         ]
       },
       "career": {
         "score": 0.8,
-        "reason": "Provides career pathways and professional development through structured qualifications"
+        "reason": "Provides career pathway clarity through accredited qualification progression"
       },
       "leadership": {
         "score": 0.3,
-        "reason": "Qualifications cover management competencies but not primary focus"
+        "reason": "Qualifications may touch soft skills but not primary focus"
       },
       "cashflow": {
         "score": 0,
-        "reason": "Not addressing late payments or payment automation"
+        "reason": "No payment automation or credit-control tools"
       },
       "pe": {
         "score": 0,
-        "reason": "Not providing PE valuations or consolidation insights"
+        "reason": "No private-equity or valuation content"
       },
       "exit": {
         "score": 0,
-        "reason": "Not offering exit planning or succession frameworks"
+        "reason": "No exit planning or succession frameworks"
       },
       "outsource": {
         "score": 0,
-        "reason": "Not facilitating outsourcing or offshore integration"
+        "reason": "Not an outsourcing platform or provider"
       },
       "niche": {
         "score": 0,
-        "reason": "Not guiding specialisation or niche strategy"
+        "reason": "No niching frameworks or specialist service positioning"
       },
       "cross-border": {
         "score": 0,
-        "reason": "Not addressing international tax or expat compliance"
+        "reason": "No international tax or cross-border compliance training"
       },
       "rd": {
         "score": 0,
-        "reason": "Not covering specialist tax claims or R&D frameworks"
+        "reason": "No R&D, capital allowances, or specialist tax training"
       }
     }
   },
@@ -5753,157 +5753,157 @@
     "pain_scores": {
       "ai-start": {
         "score": 0.3,
-        "reason": "ACCA offers CPD content that may include AI fundamentals, but not positioned as beginner AI adoption framework"
+        "reason": "ACCA offers CPD pathways including AI literacy; not a core AI-tool vendor"
       },
       "ai-data-mess": {
         "score": 0,
-        "reason": "No data management or document organization offering"
+        "reason": "No document management or data-structure solutions offered"
       },
       "mtd-volume": {
         "score": 0,
-        "reason": "No MTD processing, compliance automation, or operational capacity tool"
+        "reason": "Professional body does not provide MTD processing or automation tools"
       },
       "mtd-clients": {
         "score": 0,
-        "reason": "Does not address client digital readiness or record-keeping adoption"
+        "reason": "No client digital-readiness training or change-management offerings"
       },
       "margin": {
         "score": 0,
-        "reason": "No pricing strategy, value-based positioning, or fee-model frameworks offered"
+        "reason": "Does not provide pricing frameworks or advisory-revenue design tools"
       },
       "hiring": {
-        "score": 0.2,
-        "reason": "Global accountancy body may tangentially support recruitment, but not core offering"
+        "score": 0.3,
+        "reason": "ACCA qualifications support talent pipeline; not direct recruitment solution"
       },
       "retention": {
-        "score": 0.3,
-        "reason": "Career pathways and professional development support retention indirectly"
+        "score": 0.4,
+        "reason": "Career pathways and professional identity strengthen retention signals indirectly"
       },
       "burnout": {
         "score": 0,
-        "reason": "No wellbeing, workload management, or burnout-mitigation programs featured"
+        "reason": "Does not address workload automation or wellbeing interventions directly"
       },
       "docs": {
         "score": 0,
-        "reason": "Not a document management platform or filing solution"
+        "reason": "No document management or filing platform offered"
       },
       "chasing": {
         "score": 0,
-        "reason": "No client portal, workflow automation, or records-capture tool"
+        "reason": "Does not provide client-portal or workflow-automation tools"
       },
       "defensible-files": {
         "score": 0,
-        "reason": "Does not provide audit trails, file control, or compliance documentation systems"
+        "reason": "No audit-trail or file-management infrastructure provided"
       },
       "aml": {
-        "score": 0.2,
-        "reason": "ACCA may offer AML compliance guidance as part of professional standards, tangential"
+        "score": 0,
+        "reason": "No AML compliance tools, templates, or KYC frameworks offered"
       },
       "disconnected": {
         "score": 0,
-        "reason": "Not a tech integration, automation, or consolidation platform"
+        "reason": "Professional body does not integrate or consolidate tech stacks"
       },
       "ai-roi": {
-        "score": 0.2,
-        "reason": "May include AI ROI case studies in CPD, but not primary educational focus"
+        "score": 0,
+        "reason": "Does not provide AI ROI case studies or measurement frameworks"
       },
       "advisory": {
         "score": 0.3,
-        "reason": "Professional body may encourage advisory transition through CPD, but not core positioning"
+        "reason": "ACCA qualifications prepare advisors; does not guide advisory transition strategy"
       },
       "advisory-charge": {
-        "score": 0.2,
-        "reason": "Value-based practice positioning may appear in advisory CPD modules, peripheral"
+        "score": 0,
+        "reason": "No value-pricing or advisory-monetisation training provided"
       },
       "winning": {
         "score": 0,
-        "reason": "No client acquisition, marketing, or business development tools provided"
+        "reason": "Does not offer lead-generation, marketing, or niching strategies"
       },
       "ai-team": {
         "score": 0.3,
-        "reason": "ACCA training programs support AI capability building across teams"
+        "reason": "CPD training supports adoption; no rollout playbooks or change-management frameworks"
       },
       "cyber": {
-        "score": 0.2,
-        "reason": "May offer security awareness in professional standards, not dedicated cybersecurity focus"
+        "score": 0,
+        "reason": "No cybersecurity, MFA, or threat-response guidance offered"
       },
       "penalties": {
-        "score": 0.4,
-        "reason": "ACCA provides MTD penalty regime briefings and compliance updates as professional body"
+        "score": 0.3,
+        "reason": "ACCA provides technical updates; not specialized MTD penalty-regime guidance"
       },
       "frs102": {
-        "score": 0.5,
-        "reason": "ACCA delivers technical update sessions and guidance on accounting standard changes"
+        "score": 0.4,
+        "reason": "ACCA offers technical update sessions on standards; core to professional body function"
       },
       "portal": {
         "score": 0,
-        "reason": "Does not build or advise on client portal implementations"
+        "reason": "Does not build or optimize client portals"
       },
       "ai-govern": {
-        "score": 0.3,
-        "reason": "Professional body may include AI governance in ethics/standards content, not primary"
+        "score": 0,
+        "reason": "No AI governance frameworks or audit-grade deployment guidance"
       },
       "ai-skills": {
-        "score": 0.7,
-        "reason": "ACCA directly addresses AI skills gaps through qualification pathways and CPD training programs"
+        "score": 0.6,
+        "reason": "ACCA training programs directly address finance AI-skills-gap through certification routes"
       },
       "onboarding": {
         "score": 0,
-        "reason": "Not an onboarding workflow or AML integration platform"
+        "reason": "Does not provide onboarding automation or workflow tools"
       },
       "month-end": {
         "score": 0,
-        "reason": "Does not provide close automation or accounting system tools"
+        "reason": "No close automation or real-time reporting solutions offered"
       },
       "bankfeeds": {
         "score": 0,
-        "reason": "Not a data aggregation or reconciliation software provider"
+        "reason": "Does not provide bank-feed or reconciliation tools"
       },
       "cpd": {
         "score": 1,
-        "reason": "Core offering: CPD-accredited professional development and qualification pathways",
+        "reason": "Core offering — ACCA is the global professional body delivering CPD-accredited development",
         "matched_signals": [
           "ACCA"
         ]
       },
       "career": {
-        "score": 1,
-        "reason": "Core offering: career pathway clarity, mentorship, progression routes for accountants",
+        "score": 0.9,
+        "reason": "Named purpose — ACCA defines global accountancy career paths and progression frameworks",
         "matched_signals": [
           "ACCA"
         ]
       },
       "leadership": {
-        "score": 0.6,
-        "reason": "ACCA offers leadership and soft-skills development as part of professional education"
+        "score": 0.5,
+        "reason": "ACCA qualifications include leadership content; not dedicated soft-skills training vendor"
       },
       "cashflow": {
         "score": 0,
-        "reason": "Does not provide payment automation or credit-control tools"
+        "reason": "Does not offer payment automation or debtor-management tools"
       },
       "pe": {
         "score": 0,
-        "reason": "No PE consolidation strategy or buyer-readiness content offered"
+        "reason": "Does not provide PE consolidation or valuation guidance"
       },
       "exit": {
         "score": 0,
-        "reason": "Does not provide succession planning, valuation, or exit-route frameworks"
+        "reason": "Does not offer exit planning or succession frameworks"
       },
       "outsource": {
         "score": 0,
-        "reason": "Not an outsourcing provider or integration platform"
+        "reason": "No outsourcing or offshore integration guidance provided"
       },
       "niche": {
-        "score": 0.2,
-        "reason": "ACCA may offer specialist pathways, but does not position niche strategy frameworks"
+        "score": 0,
+        "reason": "Does not provide niching strategies or business positioning frameworks"
       },
       "cross-border": {
-        "score": 0.4,
-        "reason": "Global body serves international members; offers some cross-border tax CPD"
+        "score": 0.3,
+        "reason": "ACCA's global membership supports cross-border capability; not specialist solution"
       },
       "rd": {
-        "score": 0.2,
-        "reason": "May include R&D tax content in CPD modules, not specialist focus"
+        "score": 0,
+        "reason": "Does not offer specialist tax or R&D claims training"
       }
     }
   },
@@ -17049,151 +17049,151 @@
     "pain_scores": {
       "ai-start": {
         "score": 0,
-        "reason": "No AI capabilities or onboarding framework offered"
+        "reason": "No AI features or onboarding content offered"
       },
       "ai-data-mess": {
         "score": 0,
-        "reason": "Product focuses on MTD compliance, not data structuring or AI-readiness"
+        "reason": "Not focused on data organisation or AI-assisted tagging"
       },
       "mtd-volume": {
-        "score": 1,
-        "reason": "HMRC-recognised MTD for Income Tax software, directly addresses quarterly submission volume"
+        "score": 0.8,
+        "reason": "HMRC-recognised MTD for Income Tax software designed for quarterly volume at scale"
       },
       "mtd-clients": {
-        "score": 0.8,
-        "reason": "Enables landlords to digitise rental records, reducing paper-to-digital transition friction"
+        "score": 0.6,
+        "reason": "Provides landlord-facing digital records platform enabling client readiness for MTD"
       },
       "margin": {
-        "score": 0.3,
-        "reason": "Streamlines MTD submission process, marginal efficiency gain only"
+        "score": 0,
+        "reason": "No pricing framework or fee-model consultation services"
       },
       "hiring": {
         "score": 0,
-        "reason": "No talent acquisition, recruitment, or staffing solution"
+        "reason": "Does not address talent acquisition or recruitment challenges"
       },
       "retention": {
         "score": 0,
         "reason": "No employee retention or culture-building features"
       },
       "burnout": {
-        "score": 0.6,
-        "reason": "Automates landlord record-keeping and MTD filing, reducing accountant workload burden"
+        "score": 0.3,
+        "reason": "Real-time access and automation reduce manual chasing, indirectly easing workload"
       },
       "docs": {
         "score": 0.6,
-        "reason": "Centralises rental income and expense records in single secure platform"
+        "reason": "Centralises rental records digitally with secure access for accountants and landlords"
       },
       "chasing": {
         "score": 0.8,
-        "reason": "Real-time digital access to landlord records eliminates chasing for missing documents"
+        "reason": "Real-time digital records eliminate need to chase landlords for rental income/expense data"
       },
       "defensible-files": {
-        "score": 0.7,
-        "reason": "Secure digital storage with audit trail supports file integrity for MTD compliance scrutiny"
+        "score": 0.6,
+        "reason": "Secure digital records and HMRC recognition provide audit trail for MTD filings"
       },
       "aml": {
         "score": 0,
-        "reason": "No KYC, AML verification, or compliance risk-assessment features"
+        "reason": "Not positioned as AML or KYC compliance tool"
       },
       "disconnected": {
-        "score": 0.3,
-        "reason": "Specialised MTD tool; unclear integration with broader practice-management stacks"
+        "score": 0,
+        "reason": "Specialist tax software, not integration or stack consolidation play"
       },
       "ai-roi": {
         "score": 0,
-        "reason": "No AI capabilities to measure ROI on"
+        "reason": "No AI capabilities to measure or ROI frameworks offered"
       },
       "advisory": {
         "score": 0,
-        "reason": "Pure compliance/bookkeeping tool, no advisory upsell framework"
+        "reason": "Tax and bookkeeping software, not advisory positioning or transition support"
       },
       "advisory-charge": {
         "score": 0,
-        "reason": "No advisory packaging or value-pricing mechanism"
+        "reason": "No advisory pricing or monetisation framework"
       },
       "winning": {
         "score": 0,
-        "reason": "No client-acquisition or marketing positioning framework"
+        "reason": "Not focused on client acquisition or marketing strategies"
       },
       "ai-team": {
         "score": 0,
-        "reason": "No AI tools or adoption change management"
+        "reason": "No AI adoption or change-management content"
       },
       "cyber": {
         "score": 0.3,
-        "reason": "Secure storage mentioned; no phishing training, MFA, or incident-response detail"
+        "reason": "Secure access mentioned but not core cybersecurity positioning"
       },
       "penalties": {
-        "score": 0.7,
-        "reason": "MTD-compliant software helps avoid late-filing penalties through timely submission"
+        "score": 0.6,
+        "reason": "MTD penalty regime avoidance through on-time filing capability"
       },
       "frs102": {
         "score": 0,
-        "reason": "Landlord-focused tool, not applicable to accounting standards guidance"
+        "reason": "Landlord-focused MTD software, not accounting standards guidance"
       },
       "portal": {
         "score": 0.6,
-        "reason": "Real-time digital access portal for landlords reduces need for email chasing"
+        "reason": "Portal-style access for landlords to manage records and accountant collaboration"
       },
       "ai-govern": {
         "score": 0,
-        "reason": "No AI governance framework or risk-management templates"
+        "reason": "No AI governance or risk-management framework"
       },
       "ai-skills": {
         "score": 0,
-        "reason": "No AI training or skills-development offering"
+        "reason": "Not addressing AI skills training or capability building"
       },
       "onboarding": {
         "score": 0.3,
-        "reason": "Digital record access simplifies data extraction, marginal contribution only"
+        "reason": "Landlord setup and integration with accountant workflows, but not primary focus"
       },
       "month-end": {
         "score": 0,
-        "reason": "Not applicable to landlord bookkeeping or FD close process"
+        "reason": "Landlord bookkeeping software, not in-house finance close automation"
       },
       "bankfeeds": {
-        "score": 0.3,
-        "reason": "Centralises rental income tracking; unclear if integrates with bank-feed resilience"
+        "score": 0,
+        "reason": "Not positioned as bank-feed or reconciliation tool"
       },
       "cpd": {
         "score": 0,
-        "reason": "No CPD or team-development content"
+        "reason": "No CPD or learning-development content"
       },
       "career": {
         "score": 0,
-        "reason": "No career-pathing or professional-development framework"
+        "reason": "Not relevant to individual career progression"
       },
       "leadership": {
         "score": 0,
-        "reason": "No leadership or soft-skills training"
+        "reason": "No leadership or soft-skills development"
       },
       "cashflow": {
         "score": 0,
-        "reason": "Landlord bookkeeping tool; no payment automation or debt-collection features"
+        "reason": "Not focused on payment collection or debtor management"
       },
       "pe": {
         "score": 0,
-        "reason": "No M&A, valuation, or PE-related content"
+        "reason": "No PE or consolidation strategy content"
       },
       "exit": {
         "score": 0,
-        "reason": "No succession or exit-planning framework"
+        "reason": "Not addressing succession or exit planning"
       },
       "outsource": {
         "score": 0,
-        "reason": "No outsourcing or offshore workforce integration"
+        "reason": "Not a capacity or outsourcing solution"
       },
       "niche": {
         "score": 0,
-        "reason": "No niching strategy or positioning framework"
+        "reason": "No niching framework or positioning guidance"
       },
       "cross-border": {
         "score": 0,
-        "reason": "Landlord-focused UK product; no international capability noted"
+        "reason": "UK landlord-focused, not international tax positioning"
       },
       "rd": {
         "score": 0,
-        "reason": "Not applicable to landlord or R&D specialist tax work"
+        "reason": "Landlord MTD software, not specialist tax claims or R&D focus"
       }
     }
   },

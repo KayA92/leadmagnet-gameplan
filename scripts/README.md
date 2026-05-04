@@ -10,7 +10,7 @@ served to the app frontend. No build tooling, no npm — plain Node.js.
 | File | Built by | Used by |
 |---|---|---|
 | `data/exhibitors.json` | `exhibitors-csv-to-json.js` | `js/filter.js` (booth pre-filter), `js/plan.js` (Checklist tab, booth cards) |
-| `data/programme.json` | `sessions-csv-to-json.js` | `js/filter.js` (session pre-filter), `js/plan.js` (Checklist tab, session cards) |
+| `data/programme.json` | `programmes-csv-to-json.js` | `js/filter.js` (session pre-filter), `js/plan.js` (Checklist tab, session cards) |
 
 Both files are committed to git and served statically via GitHub Pages. Rebuilding and
 committing updated versions is how you deploy data changes.
@@ -186,12 +186,12 @@ new one at console.anthropic.com and update `scripts/.env`.
 
 ---
 
-## Sessions pipeline
+## Programmes pipeline
 
 ```bash
-node scripts/sessions-csv-to-json.js
+node scripts/programmes-csv-to-json.js
 ```
 
-Converts `programme.csv` → `data/programme.json`. No AI scoring — sessions are
-pre-filtered and ranked entirely by the Edge Function at plan-generation time.
-Run this whenever session data changes in the CSV.
+Converts `programme.csv` → `data/programme.json`. Run whenever session data changes in
+the CSV. With `--score`, runs the same two-layer Haiku pain scoring pipeline as the
+exhibitor script — see the four run modes documented at the top of that script.

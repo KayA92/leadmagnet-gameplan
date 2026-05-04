@@ -902,8 +902,13 @@ export async function initWizard() {
   if (window.location.hash) history.replaceState(null, '', location.pathname);
 
   // If arriving via a team invite link, store the token for later use on save
-  const pendingTeamToken = new URLSearchParams(window.location.search).get('team');
+  const _urlParams = new URLSearchParams(window.location.search);
+  const pendingTeamToken = _urlParams.get('team');
   if (pendingTeamToken) state.teamInviteToken = pendingTeamToken;
+
+  // Pre-populate save-form email when the invite link includes ?email=ENCODED
+  const _emailParam = _urlParams.get('email');
+  if (_emailParam) state.user.email = decodeURIComponent(_emailParam);
 
   // Load data files
   try {

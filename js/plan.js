@@ -3242,6 +3242,17 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
+    // Check for a pending invite the user hasn't acted on yet (in-app path —
+    // fires when the invitee is already on the plan page and just refreshed,
+    // without clicking the invite email). Only runs if no URL-based token.
+    if (!_pendingJoinToken) {
+      const { data: incoming } = await supabase.rpc('get_incoming_invite');
+      if (incoming?.invite_token) {
+        _pendingJoinToken   = incoming.invite_token;
+        _pendingJoinCompany = incoming.company || null;
+      }
+    }
+
     log('renderApp', 'all data ready');
     showLoading(false);
     renderApp();
@@ -4159,8 +4170,14 @@ async function _sendTeamInvite(email, opts = {}) {
     btn.innerHTML = `<span class="team-invite-send-label">Sending…</span>`;
   }
 
-  const redirectTo = `${window.location.origin}/magic-link-confirm/?team=${_teamData.inviteToken}&`;
-  const { error } = await sendMagicLink(email, redirectTo);
+  const { error } = await supabase.functions.invoke('send-team-invite', {
+    body: {
+      inviteeEmail:   email,
+      inviteToken:    _teamData.inviteToken,
+      inviterName:    _userProfile?.first_name || '',
+      inviterCompany: _teamData?.company || '',
+    },
+  });
 
   if (opts.fromInputBtn && btn) {
     btn.disabled = false;

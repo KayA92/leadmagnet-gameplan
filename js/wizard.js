@@ -725,22 +725,52 @@ function togglePain(slug) {
   updatePrecisionBars();
 }
 
-// Stage-1 pain-only progress model. 3 pains = 100% (strong matches unlocked);
-// extra taps don't push the bar further, but the label evolves to reward
-// heavy tappers. Next button still gates on 1+ pain (not on this score).
+// Stage-1 pain progress model — coaching bar with zones:
+//   0    → empty       (tap your problems · 3+ to unlock)
+//   1-2  → pre-unlock  (tap N more to unlock)
+//   3    → unlock crossing — markers flash
+//   3-5  → unlocked    (matches unlocked · tap more for sharper picks)
+//   6    → sharp crossing — full bar pulse + sparkle
+//   6-12 → sharp zone  (✦ Sharp zone · the AI's read is at its best)
+//  13-15 → post-sharp  (Strong list · the AI's still focused)
+//  16    → too-many crossing — bar shifts amber
+//  16+   → too-many    (Picking a lot — try focusing on real top problems)
+//
+// Bar scale runs 0-16 pains = 0-100%. Past 16 the fill caps so it doesn't
+// keep growing and never feel punishing.
+const PAIN_BAR_MAX  = 16;
+const PAIN_UNLOCK   = 3;
+const PAIN_SHARP_LO = 6;
+const PAIN_SHARP_HI = 12;
 function computePainProgress() {
   const n = state.answers.pains.length;
-  const percent = n === 0 ? 0 : n === 1 ? 33 : n === 2 ? 66 : 100;
-  let label;
-  if (n === 0)      label = 'Tap 3+ to unlock AI matches';
-  else if (n === 1) label = '1 pain · 2 more to unlock matches';
-  else if (n === 2) label = '2 pains · 1 more to unlock matches';
-  else if (n === 3) label = '✓ Matches unlocked · tap more for sharper picks';
-  else if (n <= 5)  label = `✓ ${n} pains · matches getting sharper`;
-  else if (n <= 8)  label = `✓ ${n} pains · razor-sharp matching`;
-  else              label = `✓ ${n} pains · top 1% precision`;
-  return { percent, label };
+  const percent = Math.min(100, (n / PAIN_BAR_MAX) * 100);
+  let label, zone;
+  if (n === 0) {
+    label = 'Tap your problems · 3+ to unlock matches';
+    zone  = 'empty';
+  } else if (n < PAIN_UNLOCK) {
+    label = `Tap ${PAIN_UNLOCK - n} more to unlock matches`;
+    zone  = 'pre-unlock';
+  } else if (n < PAIN_SHARP_LO) {
+    label = 'Matches unlocked · tap a few more for sharper picks';
+    zone  = 'unlocked';
+  } else if (n <= PAIN_SHARP_HI) {
+    label = '✦ Sharp zone · the AI’s read is at its best';
+    zone  = 'sharp';
+  } else if (n < PAIN_BAR_MAX) {
+    label = 'Strong list · the AI’s still focused';
+    zone  = 'post-sharp';
+  } else {
+    label = 'Picking a lot — try focusing on your real top problems';
+    zone  = 'too-many';
+  }
+  return { percent, label, zone, n };
 }
+
+// Track the previous zone across calls so we can fire one-time crossing
+// animations (unlock flash, sharp pulse, too-many warning).
+let _previousPainZone = 'empty';
 
 function prepareStage5b() {
   // Re-apply visual selection state on revisits
@@ -762,7 +792,7 @@ function prepareStage5b() {
 }
 
 function updatePrecisionBars() {
-  const { percent, label } = computePainProgress();
+  const { percent, label, zone, n } = computePainProgress();
   state.answers.precisionScore = percent;
   const bar = $('precision-bar-stage1');
   if (!bar) return;
@@ -770,7 +800,26 @@ function updatePrecisionBars() {
   const stateEl = bar.querySelector('.precision-bar-state');
   if (fill) fill.style.width = percent + '%';
   if (stateEl) stateEl.textContent = label;
-  bar.classList.toggle('active', percent > 0);
+  bar.classList.toggle('active', n > 0);
+  bar.dataset.zone = zone;
+  // One-time crossing animations — only fire when we cross INTO a zone
+  // from below (not when untapping back through it).
+  const prev = _previousPainZone;
+  const order = ['empty', 'pre-unlock', 'unlocked', 'sharp', 'post-sharp', 'too-many'];
+  const movedForward = order.indexOf(zone) > order.indexOf(prev);
+  if (movedForward) {
+    if (zone === 'unlocked') {
+      bar.classList.add('flash-unlock');
+      setTimeout(() => bar.classList.remove('flash-unlock'), 500);
+    } else if (zone === 'sharp') {
+      bar.classList.add('flash-sharp');
+      setTimeout(() => bar.classList.remove('flash-sharp'), 700);
+    } else if (zone === 'too-many') {
+      bar.classList.add('flash-toomany');
+      setTimeout(() => bar.classList.remove('flash-toomany'), 500);
+    }
+  }
+  _previousPainZone = zone;
 }
 
 // ── Popularity ranking ────────────────────────────────────────────────────────

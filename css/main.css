@@ -887,20 +887,36 @@ body::before {
   padding-bottom: 200px;
 }
 
-/* ═══ PRECISION BAR ═══
-   Shared component used on Stages 1, 4, 5b. Lives inside .cta-fixed-stack so
-   it floats above the next button. Always-on green glow, mint gradient fill. */
+/* ═══ PRECISION BAR — pain coaching bar ═══
+   Stage-1 only. Layered track with:
+   - sharp-zone glow band (38-75% of the track, mint wash)
+   - "unlock at 3" marker at 18.75%
+   - "too many at 16" marker at 100%
+   - mint fill that grows with each pain tap, shifts amber past 16
+   Crossing animations fire one-time when the user moves into a zone:
+     unlock flash on the marker, sharp pulse on the bar, too-many warn. */
 .precision-bar {
   padding: 12px 16px;
   background: rgba(34,230,168,0.06);
   border: 1px solid rgba(34,230,168,0.30);
   border-radius: 12px;
   box-shadow: 0 0 22px rgba(34,230,168,0.18), inset 0 0 0 1px rgba(34,230,168,0.05);
-  transition: box-shadow 0.4s, border-color 0.3s;
+  transition: box-shadow 0.4s, border-color 0.3s, background 0.3s;
 }
 .precision-bar.active {
   border-color: rgba(34,230,168,0.55);
   box-shadow: 0 0 28px rgba(34,230,168,0.28), 0 0 8px rgba(34,230,168,0.15) inset;
+}
+/* Sharp-zone state: bar gets a stronger persistent glow */
+.precision-bar[data-zone="sharp"] {
+  border-color: rgba(34,230,168,0.70);
+  box-shadow: 0 0 36px rgba(34,230,168,0.40), 0 0 14px rgba(34,230,168,0.25) inset;
+}
+/* Too-many state: bar shifts to amber */
+.precision-bar[data-zone="too-many"] {
+  background: rgba(251,191,36,0.06);
+  border-color: rgba(251,191,36,0.55);
+  box-shadow: 0 0 26px rgba(251,191,36,0.24), 0 0 10px rgba(251,191,36,0.15) inset;
 }
 .precision-bar-row {
   display: flex;
@@ -924,23 +940,98 @@ body::before {
   font-weight: 600;
   color: var(--mint);
   letter-spacing: 0.04em;
-  transition: color 0.3s;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.precision-bar[data-zone="sharp"] .precision-bar-state {
+  text-shadow: 0 0 10px rgba(34,230,168,0.55);
+}
+.precision-bar[data-zone="too-many"] .precision-bar-state {
+  color: var(--amber);
 }
 .precision-bar-track {
-  height: 6px;
-  background: rgba(34,230,168,0.10);
-  border-radius: 3px;
-  overflow: hidden;
+  height: 8px;
+  background: rgba(34,230,168,0.08);
+  border-radius: 4px;
   position: relative;
+  overflow: visible; /* markers extend slightly beyond the track */
+}
+/* Sharp-zone glow band — a soft mint highlight on the bar between
+   6 and 12 pains (37.5% → 75%). Subtle pre-unlock, more visible once
+   matches are unlocked, brightest while inside the zone. */
+.precision-bar-zone-glow {
+  position: absolute;
+  top: 0;
+  left: 37.5%;
+  width: 37.5%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(34,230,168,0.10) 0%,
+    rgba(34,230,168,0.22) 50%,
+    rgba(34,230,168,0.10) 100%);
+  border-radius: 4px;
+  opacity: 0.35;
+  transition: opacity 0.4s, box-shadow 0.4s;
+  pointer-events: none;
+}
+.precision-bar[data-zone="unlocked"] .precision-bar-zone-glow,
+.precision-bar[data-zone="sharp"] .precision-bar-zone-glow,
+.precision-bar[data-zone="post-sharp"] .precision-bar-zone-glow {
+  opacity: 0.85;
+}
+.precision-bar[data-zone="sharp"] .precision-bar-zone-glow {
+  box-shadow: 0 0 12px rgba(34,230,168,0.45);
+}
+.precision-bar[data-zone="too-many"] .precision-bar-zone-glow {
+  opacity: 0.25;
+}
+/* Vertical markers at 3 (unlock) and 16 (too-many) — visible from
+   the start, faint until the user gets close. */
+.precision-bar-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 14px;
+  border-radius: 1px;
+  pointer-events: none;
+  transition: opacity 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.precision-bar-marker.unlock {
+  left: calc(18.75% - 1px);
+  background: rgba(34,230,168,0.65);
+  opacity: 0.55;
+}
+.precision-bar-marker.toomany {
+  left: calc(100% - 2px);
+  background: rgba(251,191,36,0.65);
+  opacity: 0.55;
+}
+/* Once the user has unlocked, the unlock marker stays a bit dimmer (it's
+   in their past). Once they're in too-many, the toomany marker glows. */
+.precision-bar[data-zone="empty"] .precision-bar-marker.unlock,
+.precision-bar[data-zone="pre-unlock"] .precision-bar-marker.unlock {
+  opacity: 0.85;
+  box-shadow: 0 0 6px rgba(34,230,168,0.4);
+}
+.precision-bar[data-zone="too-many"] .precision-bar-marker.toomany {
+  opacity: 1;
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(251,191,36,0.7);
 }
 .precision-bar-fill {
   height: 100%;
   width: 0%;
   background: var(--grad-mint);
-  border-radius: 3px;
-  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 4px;
+  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.4s ease;
   position: relative;
   box-shadow: 0 0 12px rgba(34,230,168,0.7);
+  z-index: 1;
+}
+/* Too-many: fill flips to amber gradient */
+.precision-bar[data-zone="too-many"] .precision-bar-fill {
+  background: linear-gradient(90deg, rgba(251,191,36,1) 0%, rgba(255,138,92,1) 100%);
+  box-shadow: 0 0 14px rgba(251,191,36,0.7);
 }
 .precision-bar.active .precision-bar-fill::after {
   content: '';
@@ -950,6 +1041,42 @@ body::before {
   background-size: 220% 100%;
   background-position: 220% 0;
   animation: q-progress-shimmer 2.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ═══ ONE-TIME CROSSING ANIMATIONS ═══ */
+/* Crossing 3: unlock marker flares, bar gives a brief mint flash. */
+@keyframes precisionUnlockFlash {
+  0%   { opacity: 1; transform: scaleY(1);   box-shadow: 0 0 14px rgba(34,230,168,0.9); }
+  50%  { opacity: 1; transform: scaleY(1.6); box-shadow: 0 0 22px rgba(34,230,168,1); }
+  100% { opacity: 0.55; transform: scaleY(1); box-shadow: 0 0 6px rgba(34,230,168,0.4); }
+}
+@keyframes precisionBarFlash {
+  0%   { box-shadow: 0 0 22px rgba(34,230,168,0.18), inset 0 0 0 1px rgba(34,230,168,0.05); }
+  40%  { box-shadow: 0 0 38px rgba(34,230,168,0.55), inset 0 0 0 1px rgba(34,230,168,0.25); }
+  100% { box-shadow: 0 0 28px rgba(34,230,168,0.28), 0 0 8px rgba(34,230,168,0.15) inset; }
+}
+.precision-bar.flash-unlock { animation: precisionBarFlash 0.5s ease-out; }
+.precision-bar.flash-unlock .precision-bar-marker.unlock {
+  animation: precisionUnlockFlash 0.5s ease-out;
+}
+
+/* Crossing 6: full-bar pulse — bar glows brightly then settles. */
+@keyframes precisionSharpPulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 28px rgba(34,230,168,0.28), 0 0 8px rgba(34,230,168,0.15) inset; }
+  35%  { transform: scale(1.012); box-shadow: 0 0 56px rgba(34,230,168,0.7),  0 0 18px rgba(34,230,168,0.4) inset; }
+  100% { transform: scale(1);    box-shadow: 0 0 36px rgba(34,230,168,0.40), 0 0 14px rgba(34,230,168,0.25) inset; }
+}
+.precision-bar.flash-sharp { animation: precisionSharpPulse 0.7s cubic-bezier(0.22,1,0.36,1); }
+
+/* Crossing 16: amber warning shake on the marker. */
+@keyframes precisionTooManyWarn {
+  0%   { background: var(--amber);  box-shadow: 0 0 10px rgba(251,191,36,0.7); transform: scaleY(1); }
+  30%  { background: var(--amber);  box-shadow: 0 0 18px rgba(251,191,36,1);   transform: scaleY(1.6); }
+  100% { background: var(--amber);  box-shadow: 0 0 10px rgba(251,191,36,0.7); transform: scaleY(1); }
+}
+.precision-bar.flash-toomany .precision-bar-marker.toomany {
+  animation: precisionTooManyWarn 0.5s ease-out;
 }
 
 

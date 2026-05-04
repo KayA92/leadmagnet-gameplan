@@ -304,11 +304,16 @@
     </div>
   </div>
   <div class="cta-fixed-stack">
-    <div class="precision-bar" id="precision-bar-stage1">
+    <div class="precision-bar" id="precision-bar-stage1" data-zone="empty">
       <div class="precision-bar-row">
-        <span class="precision-bar-state">Tap 3+ to unlock AI matches</span>
+        <span class="precision-bar-state">Tap your problems · 3+ to unlock matches</span>
       </div>
-      <div class="precision-bar-track"><div class="precision-bar-fill"></div></div>
+      <div class="precision-bar-track">
+        <div class="precision-bar-zone-glow"></div>
+        <div class="precision-bar-marker unlock" title="Matches unlock at 3"></div>
+        <div class="precision-bar-marker toomany" title="Try to stay under 16"></div>
+        <div class="precision-bar-fill"></div>
+      </div>
     </div>
     <div class="q-actions">
       <button class="btn-back" id="problem-back">← Back</button>

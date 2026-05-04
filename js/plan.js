@@ -1044,7 +1044,7 @@ function renderTeammateCard(m, index) {
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const MAX_TEAM_MEMBERS = 5;
+  const MAX_TEAM_MEMBERS = 8;
   const memberCount = _teamData.members.length;
   const isSolo      = memberCount < 2;
   const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
@@ -2426,7 +2426,7 @@ async function handleSignIn(authUser, teamToken) {
             lead_user_id: authUser.id,
             company:      userRow?.company || null,
             invite_token: crypto.randomUUID(),
-            max_members:  5,
+            max_members:  8,
           })
           .select('id, invite_token')
           .single();

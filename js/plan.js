@@ -3837,23 +3837,6 @@ window.planConfirmRemoveBooth = function(standNumber, companyName) {
   });
 };
 
-// Toggle a booth's visited state from the in-card Visited button. Mirrors
-// the existing checkbox in the row's leftcol — same data path, just a
-// more discoverable affordance now sitting in the action row.
-window.planToggleBoothVisited = function(standNumber) {
-  if (!_plan) return;
-  const updated = (_plan.booths || []).map(b =>
-    String(b.stand_number) === String(standNumber)
-      ? { ...b, attended: !b.attended }
-      : b,
-  );
-  _plan.booths = updated;
-  supabase.from('plans').update({ booths: updated }).eq('id', _plan.id);
-  renderApp();
-};
-
-
-
 window.planCopyDebrief = function(btn) {
   const ta = document.getElementById('debrief-textarea');
   if (!ta) return;

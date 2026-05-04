@@ -83,27 +83,24 @@ const WIZARD_CHIP_TO_CANONICAL = {
 
 // ── Session category matching ─────────────────────────────────────────────────
 
+// Theatre name fragments matched via .includes() on the lowercased theatre string.
+// Single-digit theatre numbers MUST have a trailing space ('theatre 3 ') to avoid
+// 'theatre 3' matching 'Theatre 3x' — e.g. 'theatre 1' would hit Theatre 10/11/12/13.
 const ROLE_THEATRE = {
-  founder:     ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
-  partner:     ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
-  director:    ['leadership', 'practice excellence', 'theatre 3', 'theatre 7'],
-  senior:      ['practice excellence', 'theatre 3', 'acca', 'theatre 4'],
-  accountant:  ['practice excellence', 'theatre 3', 'acca', 'theatre 4'],
-  bookkeeper:  ['bookkeeper', 'theatre 6'],
-  industry:    ['fd show', 'theatre 1', 'theatre 2'],
-  advisor:     ['fd show', 'theatre 1', 'theatre 2'],
-  'ops-admin': ['practice excellence', 'theatre 6'],
-  junior:      ['talent', 'theatre 12', 'masterclass'],
-  student:     ['talent', 'theatre 12', 'masterclass'],
+  founder:     ['theatre 3 ', 'theatre 7 ', 'theatre 8 ', 'theatre 10 ', 'theatre 11 ', 'leadership', 'practice excellence'],
+  partner:     ['theatre 3 ', 'theatre 7 ', 'theatre 8 ', 'theatre 10 ', 'theatre 11 ', 'leadership', 'practice excellence'],
+  director:    ['theatre 3 ', 'theatre 7 ', 'theatre 8 ', 'theatre 10 ', 'theatre 11 ', 'leadership', 'practice excellence'],
+  senior:      ['theatre 3 ', 'theatre 4 ', 'theatre 11 ', 'practice excellence', 'acca'],
+  accountant:  ['theatre 3 ', 'theatre 4 ', 'theatre 11 ', 'practice excellence', 'acca'],
+  bookkeeper:  ['theatre 6 ', 'bookkeepers'],
+  industry:    ['theatre 1 ', 'theatre 2 ', 'fd show'],
+  advisor:     ['theatre 1 ', 'theatre 2 ', 'theatre 10 ', 'fd show'],
+  'ops-admin': ['theatre 3 ', 'theatre 6 ', 'practice excellence'],
+  junior:      ['theatre 12 ', 'talent', 'masterclass'],
+  student:     ['theatre 12 ', 'talent', 'masterclass'],
   vendor:      [],
   other:       [],
 };
-
-const PROBLEM_KEYWORDS = [
-  'mtd', 'ai', 'portal', 'onboarding', 'workflow', 'automation',
-  'pricing', 'capacity', 'compliance', 'payroll', 'bookkeeping',
-  'tax', 'document', 'audit', 'client', 'advisory', 'efficiency',
-];
 
 const TIME_FILTERS = {
   'wed-am':   { days: ['Day 1'], startBefore: '13:00', startFrom: null },
@@ -114,24 +111,6 @@ const TIME_FILTERS = {
   'thu-full': { days: ['Day 2'], startBefore: null,    startFrom: null },
 };
 
-const PINNED_SESSIONS = [
-  {
-    sessionId: '36304',
-    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
-  },
-  {
-    sessionId: '36370',
-    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
-  },
-  {
-    titleMatch: 'MTD Therapy',
-    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
-  },
-  {
-    sessionId: '36375',
-    detect: (a) => /margin|pricing|\bprofit\b|commercial/i.test(a.problem),
-  },
-];
 
 // ── Booth scoring ─────────────────────────────────────────────────────────────
 // Scores a single exhibitor against the user's answers.
@@ -183,20 +162,30 @@ function scoreExhibitor(exhibitor, answers) {
 }
 
 // ── Stable sort comparators ───────────────────────────────────────────────────
-// Tiebreak by company name A→Z so rank and bucket assignments are deterministic.
+// Primary: score. Secondary: display name A→Z (company_name for exhibitors,
+// title for sessions). This makes ties deterministic for both entity types.
+const entityName = e => e.company_name || e.title || '';
 const cmpDesc = (a, b) =>
-  ((b._score || 0) - (a._score || 0)) || (a.company_name || '').localeCompare(b.company_name || '');
+  ((b._score || 0) - (a._score || 0)) || entityName(a).localeCompare(entityName(b));
 const cmpAsc = (a, b) =>
-  ((a._score || 0) - (b._score || 0)) || (b.company_name || '').localeCompare(a.company_name || '');
+  ((a._score || 0) - (b._score || 0)) || entityName(b).localeCompare(entityName(a));
 
 // ── Bucket assignment ─────────────────────────────────────────────────────────
-// Assigns _bucket ('top'|'high'|'medium'|'neutral') to every exhibitor based on
-// score thresholds, then promotes the highest-scoring exhibitors to meet minimum
-// counts so the displayed plan always has a meaningful distribution of labels.
-function assignBuckets(ranked) {
-  const THRESHOLDS = { top: 0.75, high: 0.625, medium: 0.50 };
-  const MAXIMUMS   = { top: 5,    high: 20,    medium: 20   };
-  const MINIMUMS   = { top: 3,    high: 4,     medium: 4    };
+// Assigns _bucket ('top'|'high'|'medium'|'neutral') to every entity based on
+// score thresholds, then enforces min/max counts per bucket.
+// Accepts optional overrides so exhibitors and sessions can use different bands.
+const EXHIBITOR_BUCKETS = {
+  thresholds: { top: 0.75,  high: 0.625, medium: 0.50  },
+  maximums:   { top: 5,     high: 20,    medium: 20    },
+  minimums:   { top: 3,     high: 4,     medium: 4     },
+};
+const SESSION_BUCKETS = {
+  thresholds: { top: 0.70,  high: 0.575, medium: 0.45  },
+  maximums:   { top: 5,     high: 20,    medium: 20    },
+  minimums:   { top: 3,     high: 7,     medium: 7     },
+};
+function assignBuckets(ranked, config = EXHIBITOR_BUCKETS) {
+  const { thresholds: THRESHOLDS, maximums: MAXIMUMS, minimums: MINIMUMS } = config;
 
   // Initial assignment by score
   for (const e of ranked) {
@@ -208,16 +197,22 @@ function assignBuckets(ranked) {
               : 'neutral';
   }
 
+  // Sort by score then _rank — _rank is the tiebreaker so that when scores are
+  // equal, promotion/demotion always respects the pre-assigned rank order rather
+  // than an alphabetical label (which would skip higher-ranked tied sessions).
+  const byRankDesc = (a, b) => ((b._score || 0) - (a._score || 0)) || ((a._rank || 0) - (b._rank || 0));
+  const byRankAsc  = (a, b) => ((a._score || 0) - (b._score || 0)) || ((b._rank || 0) - (a._rank || 0));
+
   const scorable = ranked
     .filter(e => e._rank !== 'host')
-    .sort(cmpDesc);
+    .sort(byRankDesc);
 
   // Cap maximums: demote lowest-scoring excess entries to the next bucket down.
   // Run top→high→medium so cascaded demotions are handled in one pass.
   const demoteExcess = (fromBucket, toBucket, max) => {
     const inBucket = scorable.filter(e => e._bucket === fromBucket);
     if (inBucket.length <= max) return;
-    inBucket.sort(cmpAsc);
+    inBucket.sort(byRankAsc);
     inBucket.slice(0, inBucket.length - max).forEach(e => { e._bucket = toBucket; });
   };
 
@@ -329,12 +324,45 @@ export function selectBooths(answers, allExhibitors) {
   return ranked;
 }
 
-// ── Session pre-filter ────────────────────────────────────────────────────────
-// Narrows ~384 sessions to ~45 high-relevance candidates for the AI ranker.
-// Filters by time window first, then scores by category match, role-theatre
-// affinity, and problem keyword overlap.
+// ── Programme scoring ─────────────────────────────────────────────────────────
+// Formula: (0.75 × problem_norm) + (0.05 × role_theatre_match) + (0.20 × manual_boost)
+// problem_norm = (0.60 × best_single_pain_score) + (0.40 × weighted_average)
+// role_theatre_match = 1 if session theatre matches user's role, else 0
+function scoreProgramme(session, answers) {
+  const { pains = [], role } = answers;
+  const painScores = session.pain_scores || {};
+
+  let raw = 0, max = 0, bestScore = 0;
+  for (const tagId of pains) {
+    const band = PAIN_TAG_BANDS[tagId];
+    if (!band) continue;
+    const weight = BAND_WEIGHTS[band];
+    max += weight;
+    const tagScore = painScores[tagId]?.score || 0;
+    raw += tagScore * weight;
+    if (tagScore > bestScore) bestScore = tagScore;
+  }
+  const problemNorm = max > 0 ? (0.60 * bestScore) + (0.40 * (raw / max)) : 0;
+
+  const theatreLower = (session.theatre || '').toLowerCase();
+  const roleTheatreMatch = (ROLE_THEATRE[role] || []).some(t => theatreLower.includes(t)) ? 1 : 0;
+
+  const manualBoost = session.manual_boost || 0;
+
+  return {
+    score: (0.75 * problemNorm) + (0.05 * roleTheatreMatch) + (0.20 * manualBoost),
+    problemNorm,
+    roleTheatreMatch,
+    manualBoost,
+  };
+}
+
+// ── Session selection ─────────────────────────────────────────────────────────
+// Scores all time-eligible sessions and returns them fully ranked and bucketed.
+// Hard filter: time/day (user can only attend sessions they're there for).
+// state.filteredSessions holds the full list for console inspection.
 export function selectSessions(answers, allSessions) {
-  const { categories = [], time, role, problem = '' } = answers;
+  const { time } = answers;
 
   const times = Array.isArray(time) ? time : (time ? [time] : []);
   const filters = times.map(t => TIME_FILTERS[t]).filter(Boolean);
@@ -349,69 +377,21 @@ export function selectSessions(answers, allSessions) {
     });
   }
 
-  const problemLower = problem.toLowerCase();
-  const boostedTheatres = ROLE_THEATRE[role] || [];
-
-  const wantedCanonicals = new Set();
-  for (const chip of categories) {
-    for (const canonical of (WIZARD_CHIP_TO_CANONICAL[chip] || [])) {
-      wantedCanonicals.add(canonical);
-    }
-  }
-
-  const scored = [];
   const seenIds = new Set();
+  const scored = [];
 
   for (const session of allSessions) {
     if (seenIds.has(session.session_id)) continue;
     seenIds.add(session.session_id);
-
     if (!matchesAnySlot(session)) continue;
 
-    let score = 0;
-
-    for (const canonical of (session.canonical_categories || [])) {
-      if (wantedCanonicals.has(canonical)) { score += 2; break; }
-    }
-
-    const theatreLower = (session.theatre || '').toLowerCase();
-    if (boostedTheatres.some(t => theatreLower.includes(t))) score += 1;
-
-    const sessionText = `${session.title} ${session.description}`.toLowerCase();
-    if (PROBLEM_KEYWORDS.some(kw => problemLower.includes(kw) && sessionText.includes(kw))) {
-      score += 1;
-    }
-
-    scored.push({ ...session, stage1_score: score });
+    const { score, problemNorm, roleTheatreMatch, manualBoost } = scoreProgramme(session, answers);
+    scored.push({ ...session, _score: score, _problemNorm: problemNorm, _roleTheatreMatch: roleTheatreMatch, _manualBoost: manualBoost });
   }
 
-  scored.sort((a, b) => b.stage1_score - a.stage1_score);
-  const result = scored.slice(0, 45);
+  scored.sort((a, b) => ((b._score || 0) - (a._score || 0)) || (a.session_id || '').localeCompare(b.session_id || ''));
 
-  for (const pin of PINNED_SESSIONS) {
-    if (!pin.detect(answers)) continue;
-    const base = pin.sessionId
-      ? allSessions.find(s => s.session_id === pin.sessionId)
-      : allSessions.find(s => s.title && s.title.includes(pin.titleMatch));
-    if (!base) continue;
-    const alreadyIn = pin.sessionId
-      ? result.some(s => s.session_id === pin.sessionId)
-      : result.some(s => s.title && s.title.includes(pin.titleMatch));
-    if (!alreadyIn) result.unshift({ ...base, stage1_score: 99, _pinned: true });
-  }
-
-  // Back-fill to ensure ≥5 sessions per available day
-  const resultIds = new Set(result.map(s => s.session_id));
-  const allDays = [...new Set(filters.flatMap(tf => tf.days))];
-  for (const day of allDays) {
-    const dayCount = result.filter(s => s.day === day).length;
-    if (dayCount < 5) {
-      const extras = scored
-        .filter(s => s.day === day && !resultIds.has(s.session_id))
-        .slice(0, 5 - dayCount);
-      for (const e of extras) { result.push(e); resultIds.add(e.session_id); }
-    }
-  }
-
-  return result;
+  const ranked = scored.map((s, i) => ({ ...s, _rank: i + 1 }));
+  assignBuckets(ranked, SESSION_BUCKETS);
+  return ranked;
 }

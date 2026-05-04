@@ -4800,6 +4800,18 @@ button.app-pill.purple.clickable:hover {
 .mini-item .match-badge { align-items: flex-end; padding-left: 8px; }
 .mini-item .match-rank { padding-left: 0; }
 
+@media (max-width: 640px) {
+  .mini-item { align-items: start; }
+  .mini-tick { margin-top: 2px; }
+  .mini-title {
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+
 /* Editor row + slot-swap row: small left-aligned badge under the title */
 .editor-row .match-badge,
 .slot-swap-row .match-badge { margin-top: 6px; }

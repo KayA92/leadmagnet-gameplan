@@ -454,7 +454,14 @@ const H = {
   cats:     idx('Categories'),
   desc:     idx('Description'),
   url:      idx('Session URL'),
+  manual:   idx('Manual Ranking Bump'),
 };
+
+function parseManualBoost(v) {
+  if (v === 'TRUE') return 1;
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : Math.min(1, Math.max(0, n));
+}
 
 const SPEAKERS = 5;
 
@@ -522,6 +529,7 @@ const programmes = rows.slice(1)
       description:          get(H.desc),
       speakers,
       session_url:          get(H.url),
+      manual_boost:         parseManualBoost(get(H.manual)),
       ...(preservedScores[session_id] ? { pain_scores: preservedScores[session_id] } : {}),
     };
   });

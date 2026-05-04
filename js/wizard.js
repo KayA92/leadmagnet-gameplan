@@ -240,19 +240,30 @@ function sessionMatchesTime(session, times) {
   });
 }
 
-function injectPinnedSessions(rankedItems, allSessions, answers) {
-  const result = [...rankedItems];
-  for (const pin of PINNED_SESSIONS) {
-    if (!pin.detect(answers)) continue;
-    const session = pin.sessionId
-      ? allSessions.find(s => s.session_id === pin.sessionId)
-      : allSessions.find(s => s.title && s.title.includes(pin.titleMatch));
-    if (!session) continue;
-    if (!sessionMatchesTime(session, answers.time)) continue;
-    const alreadyIn = result.some(r => r.session_id === session.session_id);
-    if (!alreadyIn) result.unshift({ session_id: session.session_id, rank: 0, reason: pin.reason });
-  }
-  return result;
+// Builds the 11-session preview array:
+//   • Ranks 1–3 always shown (top matches)
+//   • 4 randomly chosen from high-bucket sessions (full pool)
+//   • 4 randomly chosen from medium-bucket sessions (full pool, excluding high picks)
+//   • Sorted by AI rank, then deconflicted by wizard caller
+function buildPreviewSessions(allRanked) {
+  const ranked = allRanked
+    .filter(s => typeof s._rank === 'number')
+    .sort((a, b) => a._rank - b._rank);
+
+  // Explicitly draw from each bucket so the preview always shows 3+4+4
+  const topPicks    = ranked.filter(s => s._bucket === 'top').slice(0, 3);
+  const usedIds     = new Set(topPicks.map(s => s.session_id));
+
+  const highPool    = shuffleArray(ranked.filter(s => s._bucket === 'high' && !usedIds.has(s.session_id)));
+  const highPicks   = highPool.slice(0, 4);
+  highPicks.forEach(s => usedIds.add(s.session_id));
+
+  const mediumPool  = shuffleArray(ranked.filter(s => s._bucket === 'medium' && !usedIds.has(s.session_id)));
+  const mediumPicks = mediumPool.slice(0, 4);
+
+  return [...topPicks, ...highPicks, ...mediumPicks]
+    .sort((a, b) => a._rank - b._rank)
+    .map((s, i) => ({ ...s, rank: i + 1, match: { bucket: s._bucket || 'neutral', rank: s._rank } }));
 }
 
 function deconflictSessions(rankedItems, allSessions) {
@@ -298,58 +309,31 @@ function buildPreviewBooths(allRanked) {
 }
 
 function buildFallbackPlan() {
-  const candidates = state.filteredSessions.slice(0, 20).map((s, i) => ({
-    session_id: s.session_id,
-    rank: i + 1,
-    reason: 'Matched to your event priorities.',
-  }));
-  const withPinned = injectPinnedSessions(candidates, state.allSessions, state.answers);
   return {
     fallback: true,
-    sessions: deconflictSessions(withPinned, state.allSessions).slice(0, 12),
+    sessions: buildPreviewSessions(state.filteredSessions),
     booths: buildPreviewBooths(state.filteredExhibitors),
     themes: [],
   };
 }
 
 async function startReveal() {
-  state.filteredSessions = selectSessions(state.answers, state.allSessions);
+  state.filteredSessions   = selectSessions(state.answers, state.allSessions);
   state.filteredExhibitors = selectBooths(state.answers, state.allExhibitors);
 
   startTicker();
   startProgress();
   startStatusCycle();
 
-  const apiResult = await matchSessions(
-    {
-      attend_mode: state.answers.attendMode,
-      problem: state.answers.problem,
-      categories: state.answers.categories,
-      time_window: state.answers.time,
-      role: state.answers.role,
-      first_name: '', // not collected yet at this point
-    },
-    state.filteredSessions,
-    state.filteredExhibitors,
-  );
-
   stopProgress();
   stopStatusCycle();
   stopTicker();
 
-  if (!apiResult || apiResult.fallback || !Array.isArray(apiResult.sessions)) {
-    state.plan = buildFallbackPlan();
-  } else {
-    const withPinned = injectPinnedSessions(apiResult.sessions, state.allSessions, state.answers);
-    const deconflicted = deconflictSessions(withPinned, state.allSessions);
-    // Booths come from our formula-based selection (selectBooths), not the AI.
-    // buildPreviewBooths slices the display set: top 3 + 4 random high + 4 random
-    // medium (AI rank order) + Workiro as pill 12.
-    const booths = buildPreviewBooths(state.filteredExhibitors);
-    state.plan = { ...apiResult, sessions: deconflicted, booths };
-  }
+  const sessions = buildPreviewSessions(state.filteredSessions);
+  const booths   = buildPreviewBooths(state.filteredExhibitors);
+  state.plan = { sessions, booths, themes: [] };
 
-  await wait(300); // brief pause for bar to reach 100%
+  await wait(300);
   goToStage(7);
 }
 
@@ -453,7 +437,7 @@ function renderPlanPreview() {
   const sessionItems = [];
   rankedSessions.forEach(item => {
     const s = state.allSessions.find(x => x.session_id === item.session_id);
-    if (s) sessionItems.push(s);
+    if (s) sessionItems.push({ ...s, ...item });
   });
   const boothItems = [];
   rankedBooths.forEach(item => {
@@ -467,7 +451,9 @@ function renderPlanPreview() {
   const renderSession = (s, i) => {
     const dayNum = s.day === 'Day 1' ? 1 : 2;
     const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
-    const m = dummyMatchByPlanRank(i + 1, 'session');
+    const bucket = s._bucket || (s.match && s.match.bucket) || 'neutral';
+    const rank   = typeof s._rank === 'number' ? s._rank : (i + 1);
+    const m = { bucket, rank };
     return `<div class="mini-item" style="animation-delay:${i * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">

@@ -4621,8 +4621,13 @@ export async function initPlan() {
     }
 
     if (!resolvedUser) {
-      log('reauth', 'no user resolved');
-      showReauthForm('Your link has expired or was already used. Enter your email below to get a fresh one.');
+      const verifyErrMsg = verifyResult?.error?.message || '';
+      const isNetworkErr = verifyErrMsg === 'verify_timeout' || /fetch|network|failed/i.test(verifyErrMsg);
+      const reauthHeadline = isNetworkErr
+        ? `Could not reach the authentication server (${verifyErrMsg}). Check your internet connection — if you're on a corporate network or VPN it may be blocking the request. Try opening the link again.`
+        : 'Your link has expired or was already used.';
+      log('reauth', `no user resolved — err="${verifyErrMsg}" isNetwork=${isNetworkErr}`);
+      showReauthForm(reauthHeadline);
       return;
     }
 

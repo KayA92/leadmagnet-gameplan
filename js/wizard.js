@@ -729,7 +729,7 @@ function togglePain(slug) {
   });
   // Synthesise problem string for backwards-compatible matcher input
   state.answers.problem = state.answers.pains.map(p => PAIN_LABELS[p] || p).join(', ');
-  $('problem-next') && ($('problem-next').disabled = state.answers.pains.length === 0);
+  $('problem-next') && ($('problem-next').disabled = state.answers.pains.length < PAIN_UNLOCK);
   updatePrecisionBars();
 }
 
@@ -941,7 +941,7 @@ export async function initWizard() {
   });
   $('problem-back')?.addEventListener('click', () => history.back());
   $('problem-next')?.addEventListener('click', () => {
-    if (state.answers.pains.length > 0) goToStage(3);
+    if (state.answers.pains.length >= PAIN_UNLOCK) goToStage(3);
   });
   updatePrecisionBars();
 

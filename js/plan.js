@@ -1234,7 +1234,7 @@ function renderTeamTab() {
     ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
     : (isSolo
         ? `Send each colleague an email invite. They get their own AI-matched plan in this workspace — with their notes, ratings, and CPD hours flowing into a shared debrief.`
-        : `Each colleague who joins unlocks <strong>their sessions on your map</strong>, <strong>their notes attributed in real time</strong>, <strong>their booth ratings</strong>, and a <strong>shared debrief</strong>.`);
+        : `Each colleague who joins unlocks <strong>their sessions on your plan</strong>, <strong>their notes attributed in real time</strong>, <strong>their booth ratings</strong>, and a <strong>shared debrief</strong>.`);
 
   const eyebrowLabel = isFull ? 'Workspace at capacity' : 'Workspace invite';
 
@@ -1260,28 +1260,11 @@ function renderTeamTab() {
     ? ``
     : `Who's covering what, whose notes are flowing in live, and what the team has actually decided.`;
 
-  const aiBlock = isSolo ? `
-    <div class="team-synthesis ai-insights-locked">
-      <div class="team-section-eyebrow tone-mint">AI insights · waiting</div>
-      <h3 class="team-section-title">Patterns across <em>your team.</em></h3>
-      <p class="team-section-lede">
-        Where you're scouting in common, where you'd duplicate, what nobody's covering. Surfaces once a second teammate joins.
-      </p>
-      <div class="ai-insights-locked-note">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>Needs at least <strong>2 teammates</strong> to generate insights.</span>
-      </div>
-    </div>
-  ` : `
-    <div class="team-synthesis">
-      <div class="team-section-eyebrow tone-mint">AI synthesis</div>
-      <h3 class="team-section-title">What the AI sees <em>across the team.</em></h3>
-      <p class="team-section-lede">Patterns nobody flagged on their own. Disagreements worth a 5-minute call. Blind spots in your collective coverage. Attributed by name — never averaged.</p>
-      <div class="intel-grid">
-        ${buildIntelBlocks()}
-      </div>
-    </div>
-  `;
+  // AI synthesis section + TaxReady promo deliberately cut from the
+  // Team tab. AI synthesis on pre-event onboarding answers is theatre
+  // (the data is already visible on the cards above); TaxReady is
+  // off-topic here and lands better in Debrief. Three sections only:
+  // header, workspace invite, who's-going-and-why.
 
   return `
     <div class="app-header">
@@ -1309,102 +1292,6 @@ function renderTeamTab() {
         ${placeholderCard}
       </div>
     </div>
-
-    ${aiBlock}
-
-    ${isSolo ? '' : `<div class="taxready-cta-v2">
-      <div class="taxready-cta-v2-eyebrow">
-        <span class="taxready-cta-v2-dot"></span>
-        Bonus · Stand 1144
-      </div>
-      <h2 class="taxready-cta-v2-headline">
-        Outrank every accountant in your postcode. <em>Free.</em>
-      </h2>
-      <p class="taxready-cta-v2-body">
-        TaxReady is the UK's AI-matched accountant directory. <strong>2,690+ firms already on it.</strong> The one rated highest in each city wins the inbound leads. We'll list you in 3 minutes at our booth — or claim it yourself below.
-      </p>
-
-      <div class="taxready-cta-v2-visual-row">
-        <div class="taxready-cta-v2-map">
-          <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-            <path d="M110 30 L130 28 L135 42 L150 50 L155 65 L148 80 L160 90 L165 105 L175 118 L170 135 L180 148 L175 165 L185 180 L180 195 L190 215 L175 235 L155 245 L135 255 L115 250 L95 240 L80 220 L75 195 L65 180 L70 160 L65 140 L75 125 L70 105 L80 88 L75 70 L90 55 L100 42 Z"
-                  fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-            <path d="M40 155 L55 150 L60 165 L55 185 L45 195 L35 185 L32 170 Z"
-                  fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <circle cx="122" cy="138" r="30" fill="none" stroke="rgba(255,94,132,0.3)" stroke-width="1" stroke-dasharray="3 3">
-              <animate attributeName="r" values="20;60;20" dur="3s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.6;0;0.6" dur="3s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="120" cy="95" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="135" cy="115" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="95" cy="130" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="150" cy="145" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="115" cy="155" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="140" cy="175" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="105" cy="190" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="155" cy="200" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="125" cy="215" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="110" cy="110" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="130" cy="170" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="150" cy="105" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="122" cy="138" r="12" fill="rgba(34,230,168,0.22)">
-              <animate attributeName="r" values="9;16;9" dur="2.2s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.6;0.15;0.6" dur="2.2s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="122" cy="138" r="7" fill="#22e6a8" stroke="#fff" stroke-width="2.5"/>
-            <g transform="translate(140, 50)">
-              <rect x="0" y="0" width="150" height="92" rx="10" fill="#0a0a12" stroke="rgba(34,230,168,0.55)" stroke-width="1.5"/>
-              <circle cx="12" cy="15" r="3.5" fill="#22e6a8">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
-              </circle>
-              <text x="22" y="19" fill="#22e6a8" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" letter-spacing="0.1em">AI TOP MATCH</text>
-              <text x="12" y="43" fill="#fff" font-family="Fraunces,serif" font-size="15" font-weight="500">Your Firm Ltd</text>
-              <text x="12" y="60" fill="#22e6a8" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="600">★★★★★ · 47 reviews</text>
-              <text x="12" y="77" fill="rgba(255,255,255,0.55)" font-family="IBM Plex Sans,sans-serif" font-size="9">M1 · Small business specialists</text>
-              <line x1="0" y1="92" x2="-18" y2="96" stroke="rgba(34,230,168,0.55)" stroke-width="1.5" stroke-linecap="round"/>
-            </g>
-            <g transform="translate(15, 255)">
-              <rect x="0" y="0" width="130" height="18" rx="9" fill="rgba(255,94,132,0.08)" stroke="rgba(255,94,132,0.25)" stroke-width="1"/>
-              <circle cx="10" cy="9" r="2.5" fill="#ff5e84">
-                <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite"/>
-              </circle>
-              <text x="19" y="12" fill="rgba(255,255,255,0.65)" font-family="JetBrains Mono,monospace" font-size="7" letter-spacing="0.1em">AI SCANNING 12 RIVALS</text>
-            </g>
-          </svg>
-        </div>
-
-        <div class="taxready-cta-v2-booth">
-          <div class="taxready-cta-v2-booth-top">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>STAND 1144</span>
-          </div>
-          <div class="taxready-cta-v2-booth-bignum">3 mins</div>
-          <div class="taxready-cta-v2-booth-desc">Fill in a quick form at our booth. We'll handle the rest.</div>
-          <div class="taxready-cta-v2-booth-tick-list">
-            <div class="taxready-cta-v2-booth-tick">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Free to claim
-            </div>
-            <div class="taxready-cta-v2-booth-tick">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              10+ reviews to qualify
-            </div>
-            <div class="taxready-cta-v2-booth-tick">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              No setup fee, ever
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <a class="taxready-cta-v2-btn" href="https://taxready.me/accountants.html" target="_blank" rel="noopener">
-        Claim your free profile
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <div class="taxready-cta-v2-foot">
-        Or drop by <strong>stand 1144</strong> for a hand · <a href="https://xumagazine.com" target="_blank" rel="noopener">As featured in XU Magazine</a>
-      </div>
-    </div>`}
   `;
 }
 

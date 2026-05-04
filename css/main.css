@@ -8773,12 +8773,22 @@ button.app-pill.purple.clickable:hover {
   color: transparent;
 }
 .team-invite-hero-sub {
-  font-size: 13.5px;
-  color: var(--text-muted);
-  line-height: 1.55;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  font-weight: 500;
   margin-bottom: 14px;
   max-width: 600px;
 }
+.team-invite-hero-sub em {
+  font-style: italic;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+.team-invite-hero-sub strong { color: var(--text); font-weight: 700; }
 /* Email invite form — input is the hero, button is attached inside the
    right edge on desktop, stacks below on mobile. The "shell" wrapper
    gives the input + button a single visually-unified pill while keeping

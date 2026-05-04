@@ -1383,9 +1383,7 @@ function renderTeamTab() {
 
   const heroSub = isFull
     ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
-    : (isSolo
-        ? `Send each colleague an email invite. They get their own AI-matched plan in this workspace — with their notes, ratings, and CPD hours flowing into a shared debrief.`
-        : `Each colleague who joins unlocks <strong>their sessions on your plan</strong>, <strong>their notes attributed in real time</strong>, <strong>their booth ratings</strong>, and a <strong>shared debrief</strong>.`);
+    : `More eyes on the floor. Aligned <em>before you arrive.</em>`;
 
   const eyebrowLabel = isFull ? 'Workspace at capacity' : 'Workspace invite';
 

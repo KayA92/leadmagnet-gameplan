@@ -1,4 +1,4 @@
-import { preFilterSessions, preFilterExhibitors } from './filter.js';
+import { selectSessions, selectBooths } from './selection.js';
 import { matchSessions } from './api.js';
 import { signInAnon, getUser, sendMagicLink } from './auth.js';
 import { supabase } from './supabase.js';
@@ -26,6 +26,7 @@ const state = {
   allSessions: [],
   allExhibitors: [],
 };
+window._state = state;
 
 const FLOW_STAGES = new Set(['0', '2', '5b', '7']);
 const Q_STAGES    = ['1', '2', '3', '4', '5', '5b']; // for progress dots
@@ -269,6 +270,33 @@ function deconflictSessions(rankedItems, allSessions) {
   return placed;
 }
 
+// Builds the 12-pill preview booth array:
+//   • Ranks 1–3 always shown (top matches)
+//   • 4 randomly chosen from high-bucket exhibitors in ranks 4–11
+//   • 4 randomly chosen from medium-bucket exhibitors in ranks 4–11
+//   • All sorted back into AI rank order, Workiro appended last as pill 12
+function buildPreviewBooths(allRanked) {
+  const ranked = allRanked
+    .filter(e => typeof e._rank === 'number')
+    .sort((a, b) => a._rank - b._rank);
+  const host = allRanked.find(e => e._rank === 'host');
+
+  const top3 = ranked.slice(0, 3);
+  const top3Names = new Set(top3.map(e => e.company_name));
+
+  // Draw high and medium from the full pool — top-ranked exhibitors often cluster
+  // in 'high', so restricting to ranks 4–11 leaves no medium candidates.
+  const pool = shuffleArray(ranked.filter(e => !top3Names.has(e.company_name)));
+
+  const highPicks   = pool.filter(e => e._bucket === 'high').slice(0, 4);
+  const usedNames   = new Set([...top3Names, ...highPicks.map(e => e.company_name)]);
+  const mediumPicks = pool.filter(e => e._bucket === 'medium' && !usedNames.has(e.company_name)).slice(0, 4);
+
+  const display = [...top3, ...highPicks, ...mediumPicks].sort((a, b) => a._rank - b._rank);
+  if (host) display.push(host);
+  return display.map((e, i) => ({ ...e, rank: i + 1, match: { bucket: e._bucket || 'neutral', rank: i + 1 } }));
+}
+
 function buildFallbackPlan() {
   const candidates = state.filteredSessions.slice(0, 20).map((s, i) => ({
     session_id: s.session_id,
@@ -279,19 +307,14 @@ function buildFallbackPlan() {
   return {
     fallback: true,
     sessions: deconflictSessions(withPinned, state.allSessions).slice(0, 12),
-    booths: state.filteredExhibitors.slice(0, 8).map((e, i) => ({
-      company_name: e.company_name,
-      stand_number: e.stand_number,
-      rank: i + 1,
-      reason: 'Aligned with your selected categories.',
-    })),
+    booths: buildPreviewBooths(state.filteredExhibitors),
     themes: [],
   };
 }
 
 async function startReveal() {
-  state.filteredSessions = preFilterSessions(state.answers, state.allSessions);
-  state.filteredExhibitors = preFilterExhibitors(state.answers, state.allExhibitors);
+  state.filteredSessions = selectSessions(state.answers, state.allSessions);
+  state.filteredExhibitors = selectBooths(state.answers, state.allExhibitors);
 
   startTicker();
   startProgress();
@@ -319,16 +342,10 @@ async function startReveal() {
   } else {
     const withPinned = injectPinnedSessions(apiResult.sessions, state.allSessions, state.answers);
     const deconflicted = deconflictSessions(withPinned, state.allSessions);
-    const booths = apiResult.booths || [];
-    const workiroEx = state.allExhibitors.find(e => e.company_name === 'Workiro');
-    if (workiroEx && !booths.some(b => b.company_name === 'Workiro')) {
-      booths.push({
-        company_name: 'Workiro',
-        stand_number: workiroEx.stand_number || '1144',
-        rank: booths.length + 1,
-        reason: 'The team behind this game plan — visit Stand 1144 to see how Workiro supports your practice.',
-      });
-    }
+    // Booths come from our formula-based selection (selectBooths), not the AI.
+    // buildPreviewBooths slices the display set: top 3 + 4 random high + 4 random
+    // medium (AI rank order) + Workiro as pill 12.
+    const booths = buildPreviewBooths(state.filteredExhibitors);
     state.plan = { ...apiResult, sessions: deconflicted, booths };
   }
 
@@ -397,14 +414,18 @@ function matchTotal(type) {
   return (state.allSessions?.length) || FALLBACK_MATCH_TOTAL.session;
 }
 
-function renderMatchBadge({ bucket, rank, type, compact = false }) {
+function renderMatchBadge({ bucket, rank, type, compact = false, hostStar = false }) {
   const total   = matchTotal(type);
   const sparkle = bucket === 'top'
     ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>'
     : '';
+  const labelText = hostStar ? 'Host Platform' : bucketLabel(bucket);
+  const rankLine  = hostStar
+    ? `<span class="match-rank">AI Ranked ★ of ${total}</span>`
+    : `<span class="match-rank">AI ranked #${rank} of ${total}</span>`;
   return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
-    <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
-    <span class="match-rank">AI ranked #${rank} of ${total}</span>
+    <span class="match-bucket">${sparkle}<span class="match-bucket-text">${labelText}</span></span>
+    ${rankLine}
   </div>`;
 }
 
@@ -439,7 +460,8 @@ function renderPlanPreview() {
     const b = state.allExhibitors.find(
       x => x.stand_number === item.stand_number || x.company_name === item.company_name,
     );
-    if (b) boothItems.push(b);
+    // Merge ranked data (rank, _rank, _score, _problemNorm etc.) onto the full exhibitor object
+    if (b) boothItems.push({ ...b, ...item });
   });
 
   const renderSession = (s, i) => {
@@ -457,16 +479,16 @@ function renderPlanPreview() {
   };
 
   const renderBooth = (b, i, animIndex) => {
-    const desc = (b.normalised_products || []).slice(0, 2).join(', ');
-    const hostMark = b.is_host ? ` · <span style="color:var(--purple);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Host partner</span>` : '';
-    const m = dummyMatchByPlanRank(i + 1, 'booth');
+    const displayRank = typeof b._rank === 'number' ? b._rank : (i + 1);
+    const bucket = b._bucket || 'neutral';
+    const standNum = (b.stand_number || '').toString().replace(/\.$/, '').trim();
     return `<div class="mini-item" style="animation-delay:${animIndex * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
-        <div class="mini-title">${escHtml(b.company_name)}${hostMark}</div>
-        <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(b.stand_number || '')} · ${escHtml(desc)}</div>
+        <div class="mini-title">${escHtml(b.company_name)}</div>
+        <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(standNum)}</div>
       </div>
-      ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth' })}
+      ${renderMatchBadge({ bucket, rank: displayRank, type: 'booth', hostStar: !!b.is_host })}
     </div>`;
   };
 

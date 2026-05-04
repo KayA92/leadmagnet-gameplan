@@ -1675,31 +1675,47 @@ window.planDownloadCpd = function() {
   }).join('');
 
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
-    <title>CPD log — Accountex 2026</title>
+    <title>CPD log — Accountex 2026 · ${esc(meta)}</title>
     <style>
-      body { font-family: Georgia, serif; font-size: 11.5pt; color: #111; margin: 2cm 2.5cm; }
-      h1 { font-size: 22pt; margin: 0 0 4px; }
-      .meta-line { font-size: 10pt; color: #666; margin-bottom: 28px; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
+      ${_printSharedStyles()}
+      .cpd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0 26px; page-break-inside: avoid; }
+      .cpd-stat { border: 1px solid #e0e0e8; border-radius: 8px; padding: 14px 14px 12px; background: #f8f8fb; }
+      .cpd-stat-num { font-family: Georgia, serif; font-style: italic; font-weight: 600; font-size: 22pt; line-height: 1; color: #0fb88a; letter-spacing: -0.02em; margin-bottom: 4px; }
+      .cpd-stat:nth-child(2) .cpd-stat-num { color: #6f3fd1; }
+      .cpd-stat:nth-child(3) .cpd-stat-num { color: #1a1a2e; }
+      .cpd-stat-label { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #6b6b80; }
       table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
-      th { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.08em; color: #666; font-weight: 600; }
-      td .title { font-weight: 600; }
-      td .sub { font-size: 9.8pt; color: #555; margin-top: 4px; line-height: 1.45; }
-      td .sub .speaker { font-weight: 600; color: #333; }
-      td.meta { color: #666; font-size: 9.8pt; white-space: nowrap; width: 150px; }
-      td.hrs, th.hrs { text-align: right; width: 70px; font-variant-numeric: tabular-nums; }
-      tr.total td { border-top: 2px solid #111; border-bottom: none; padding-top: 14px; font-size: 14pt; font-weight: 700; }
-      .disclaimer { margin-top: 28px; font-size: 9.5pt; color: #666; font-style: italic; line-height: 1.5; border-top: 1px solid #eee; padding-top: 14px; }
-      @media print { body { margin: 1.5cm 2cm; } }
+      th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #ececf3; vertical-align: top; }
+      th { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.12em; color: #6b6b80; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid #1a1a2e; }
+      td .title { font-family: Georgia, serif; font-weight: 700; font-size: 11pt; color: #0a0a12; line-height: 1.35; }
+      td .sub { font-size: 9pt; color: #6b6b80; margin-top: 4px; line-height: 1.45; }
+      td .sub .speaker { font-weight: 700; color: #0fb88a; }
+      td.meta { color: #6b6b80; font-size: 9pt; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; width: 160px; }
+      td.hrs, th.hrs { text-align: right; width: 70px; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; }
+      td.hrs { color: #0fb88a; font-weight: 700; }
+      tr.total td { border-top: 2px solid #1a1a2e; border-bottom: none; padding-top: 14px; font-size: 13pt; font-weight: 700; font-family: Georgia, serif; }
+      tr.total td.hrs { color: #0fb88a; font-style: italic; font-size: 18pt; }
+      .disclaimer { margin-top: 22px; font-size: 9pt; color: #6b6b80; font-style: italic; line-height: 1.55; border-top: 1px solid #ececf3; padding-top: 14px; }
     </style>
     </head><body>
-    <h1>CPD log — Accountex 2026</h1>
-    <div class="meta-line">Generated for ${esc(meta)}</div>
+    <div class="doc-eyebrow">Accountex 2026 · CPD Log</div>
+    <h1 class="doc-title">Your CPD log.</h1>
+    <p class="doc-meta">Generated for <strong>${esc(meta)}</strong></p>
+
+    <div class="cpd-stats">
+      <div class="cpd-stat"><div class="cpd-stat-num">${total}</div><div class="cpd-stat-label">CPD hours</div></div>
+      <div class="cpd-stat"><div class="cpd-stat-num">${sessions.length}</div><div class="cpd-stat-label">Sessions logged</div></div>
+      <div class="cpd-stat"><div class="cpd-stat-num">${HOURS_PER_SESSION.toFixed(2)}</div><div class="cpd-stat-label">Hours / session</div></div>
+    </div>
+
     <table>
       <thead><tr><th>Session</th><th>When</th><th class="hrs">CPD hrs</th></tr></thead>
       <tbody>${rows}<tr class="total"><td colspan="2">Total</td><td class="hrs">${total}</td></tr></tbody>
     </table>
     <p class="disclaimer">This log reflects sessions in your plan. Check with your professional body (ICAEW, ACCA, AAT, CTA) for how to count event attendance toward your annual CPD requirement.</p>
+
+    ${_workiroPdfFooterHtml()}
+
     <script>window.onload = function() { window.print(); };</script>
     </body></html>`;
   const blob = new Blob([html], { type: 'text/html' });
@@ -1903,7 +1919,75 @@ function buildSummaryText() {
     lines.push('');
   }
 
+  // Workiro CTA footer — appended to the textarea so the email/copy
+  // flow always carries the credit + booth + URL the host requested.
+  lines.push('————————————————————————————');
+  lines.push('');
+  lines.push('This debrief was built with AutoEvent — a free Accountex 2026 planner from Workiro.');
+  lines.push('');
+  lines.push('Workiro: cloud document management for UK accountants — trusted by 65,000+ professionals.');
+  lines.push('Come visit us at booth 1144.');
+  lines.push('');
+  lines.push('→ https://workiro.com');
+
   return lines.join('\n');
+}
+
+// Inline Workiro wordmark — required because PDFs open from a blob:
+// URL where /images/* won't resolve. Light-bg variant (white glyphs
+// recoloured to ink) so it sits cleanly on a printed page.
+const _WORKIRO_LOGO_INLINE = `<svg viewBox="0 0 435 147" xmlns="http://www.w3.org/2000/svg" style="width:128px;height:auto;display:block;">
+  <path d="M31.903 104.701L21.2533 129.305H15.6297L5.01522 104.701H11.166L18.6524 122.275L26.2443 104.701H31.903ZM37.7801 110.395H43.2631V129.305H37.7801V110.395ZM40.5216 107.759C39.514 107.759 38.6939 107.466 38.0612 106.881C37.4286 106.295 37.1123 105.568 37.1123 104.701C37.1123 103.834 37.4286 103.108 38.0612 102.522C38.6939 101.937 39.514 101.644 40.5216 101.644C41.5291 101.644 42.3492 101.925 42.9819 102.487C43.6145 103.05 43.9309 103.752 43.9309 104.596C43.9309 105.51 43.6145 106.271 42.9819 106.881C42.3492 107.466 41.5291 107.759 40.5216 107.759ZM57.455 112.891C58.111 111.977 58.9897 111.286 60.091 110.817C61.2157 110.348 62.5045 110.114 63.9572 110.114V115.175C63.348 115.129 62.938 115.105 62.7271 115.105C61.1572 115.105 59.927 115.55 59.0366 116.441C58.1462 117.308 57.701 118.62 57.701 120.377V129.305H52.218V110.395H57.455V112.891ZM83.932 128.391C83.393 128.789 82.7252 129.094 81.9286 129.305C81.1553 129.492 80.3352 129.586 79.4682 129.586C77.2188 129.586 75.4732 129.012 74.2313 127.864C73.0128 126.715 72.4036 125.028 72.4036 122.802V115.035H69.4864V110.817H72.4036V106.213H77.8866V110.817H82.5964V115.035H77.8866V122.732C77.8866 123.529 78.0858 124.15 78.4841 124.595C78.9059 125.017 79.4917 125.228 80.2415 125.228C81.1085 125.228 81.8466 124.993 82.4558 124.525L83.932 128.391ZM109.926 110.395V129.305H104.724V127.055C103.998 127.875 103.131 128.508 102.123 128.953C101.116 129.375 100.026 129.586 98.8545 129.586C96.3708 129.586 94.4025 128.871 92.9498 127.442C91.497 126.013 90.7706 123.892 90.7706 121.08V110.395H96.2536V120.272C96.2536 123.318 97.5307 124.841 100.085 124.841C101.397 124.841 102.451 124.419 103.248 123.576C104.045 122.709 104.443 121.432 104.443 119.745V110.395H109.926ZM126.499 110.114C129.428 110.114 131.677 110.817 133.247 112.223C134.817 113.605 135.602 115.703 135.602 118.514V129.305H130.471V126.95C129.44 128.707 127.518 129.586 124.706 129.586C123.254 129.586 121.988 129.34 120.91 128.848C119.856 128.356 119.048 127.676 118.485 126.809C117.923 125.942 117.642 124.958 117.642 123.857C117.642 122.099 118.298 120.717 119.61 119.709C120.946 118.702 122.996 118.198 125.761 118.198H130.119C130.119 117.003 129.756 116.089 129.029 115.457C128.303 114.801 127.214 114.472 125.761 114.472C124.753 114.472 123.757 114.636 122.773 114.965C121.813 115.269 120.992 115.691 120.313 116.23L118.345 112.399C119.376 111.672 120.606 111.11 122.035 110.712C123.488 110.313 124.976 110.114 126.499 110.114ZM126.077 125.895C127.014 125.895 127.846 125.684 128.573 125.263C129.299 124.818 129.814 124.173 130.119 123.33V121.397H126.358C124.109 121.397 122.984 122.135 122.984 123.611C122.984 124.314 123.254 124.876 123.792 125.298C124.355 125.696 125.116 125.895 126.077 125.895ZM144.431 103.225H149.914V129.305H144.431V103.225ZM184.85 129.726C182.342 129.726 180.07 129.188 178.031 128.11C176.016 127.008 174.423 125.497 173.251 123.576C172.103 121.631 171.529 119.44 171.529 117.003C171.529 114.566 172.103 112.387 173.251 110.466C174.423 108.521 176.016 107.009 178.031 105.932C180.07 104.83 182.354 104.28 184.885 104.28C187.017 104.28 188.938 104.655 190.649 105.404C192.383 106.154 193.836 107.232 195.007 108.638L191.352 112.012C189.688 110.091 187.626 109.13 185.166 109.13C183.643 109.13 182.284 109.47 181.089 110.149C179.894 110.805 178.957 111.731 178.277 112.926C177.621 114.121 177.293 115.48 177.293 117.003C177.293 118.526 177.621 119.885 178.277 121.08C178.957 122.275 179.894 123.212 181.089 123.892C182.284 124.548 183.643 124.876 185.166 124.876C187.626 124.876 189.688 123.904 191.352 121.959L195.007 125.333C193.836 126.762 192.383 127.852 190.649 128.602C188.915 129.352 186.982 129.726 184.85 129.726ZM209.822 110.114C212.751 110.114 215 110.817 216.57 112.223C218.14 113.605 218.925 115.703 218.925 118.514V129.305H213.793V126.95C212.762 128.707 210.841 129.586 208.029 129.586C206.576 129.586 205.311 129.34 204.233 128.848C203.179 128.356 202.37 127.676 201.808 126.809C201.246 125.942 200.965 124.958 200.965 123.857C200.965 122.099 201.621 120.717 202.933 119.709C204.268 118.702 206.319 118.198 209.084 118.198H213.442C213.442 117.003 213.079 116.089 212.352 115.457C211.626 114.801 210.536 114.472 209.084 114.472C208.076 114.472 207.08 114.636 206.096 114.965C205.135 115.269 204.315 115.691 203.636 116.23L201.667 112.399C202.698 111.672 203.929 111.11 205.358 110.712C206.811 110.313 208.299 110.114 209.822 110.114ZM209.4 125.895C210.337 125.895 211.169 125.684 211.895 125.263C212.622 124.818 213.137 124.173 213.442 123.33V121.397H209.681C207.432 121.397 206.307 122.135 206.307 123.611C206.307 124.314 206.576 124.876 207.115 125.298C207.678 125.696 208.439 125.895 209.4 125.895ZM238.93 110.114C240.688 110.114 242.281 110.524 243.71 111.344C245.163 112.141 246.3 113.277 247.12 114.754C247.94 116.206 248.35 117.905 248.35 119.85C248.35 121.795 247.94 123.505 247.12 124.982C246.3 126.434 245.163 127.571 243.71 128.391C242.281 129.188 240.688 129.586 238.93 129.586C236.329 129.586 234.349 128.766 232.99 127.126V129.305H227.753V103.225H233.236V112.399C234.619 110.876 236.517 110.114 238.93 110.114ZM237.981 125.087C239.387 125.087 240.535 124.618 241.426 123.681C242.34 122.72 242.797 121.443 242.797 119.85C242.797 118.257 242.34 116.991 241.426 116.054C240.535 115.093 239.387 114.613 237.981 114.613C236.575 114.613 235.416 115.093 234.502 116.054C233.611 116.991 233.166 118.257 233.166 119.85C233.166 121.443 233.611 122.72 234.502 123.681C235.416 124.618 236.575 125.087 237.981 125.087ZM255.887 110.395H261.37V129.305H255.887V110.395ZM258.628 107.759C257.62 107.759 256.8 107.466 256.168 106.881C255.535 106.295 255.219 105.568 255.219 104.701C255.219 103.834 255.535 103.108 256.168 102.522C256.8 101.937 257.62 101.644 258.628 101.644C259.636 101.644 260.456 101.925 261.088 102.487C261.721 103.05 262.037 103.752 262.037 104.596C262.037 105.51 261.721 106.271 261.088 106.881C260.456 107.466 259.636 107.759 258.628 107.759ZM281.818 110.114C284.161 110.114 286.047 110.817 287.476 112.223C288.929 113.629 289.656 115.714 289.656 118.479V129.305H284.173V119.323C284.173 117.823 283.844 116.71 283.188 115.984C282.532 115.234 281.583 114.859 280.341 114.859C278.959 114.859 277.858 115.293 277.038 116.16C276.217 117.003 275.807 118.268 275.807 119.955V129.305H270.324V110.395H275.561V112.61C276.288 111.813 277.19 111.204 278.268 110.782C279.346 110.337 280.529 110.114 281.818 110.114ZM317.221 119.92C317.221 119.991 317.185 120.483 317.115 121.397H302.81C303.068 122.568 303.677 123.494 304.638 124.173C305.598 124.853 306.793 125.192 308.223 125.192C309.207 125.192 310.074 125.052 310.824 124.771C311.597 124.466 312.312 123.997 312.968 123.365L315.885 126.528C314.104 128.567 311.503 129.586 308.082 129.586C305.95 129.586 304.064 129.176 302.423 128.356C300.783 127.512 299.518 126.352 298.627 124.876C297.737 123.4 297.292 121.725 297.292 119.85C297.292 117.999 297.725 116.335 298.592 114.859C299.483 113.359 300.689 112.2 302.213 111.379C303.759 110.536 305.481 110.114 307.379 110.114C309.23 110.114 310.906 110.513 312.405 111.309C313.905 112.106 315.077 113.254 315.92 114.754C316.787 116.23 317.221 117.952 317.221 119.92ZM307.414 114.262C306.172 114.262 305.13 114.613 304.286 115.316C303.443 116.019 302.927 116.98 302.74 118.198H312.054C311.866 117.003 311.351 116.054 310.507 115.351C309.664 114.625 308.633 114.262 307.414 114.262ZM336.933 128.391C336.394 128.789 335.727 129.094 334.93 129.305C334.157 129.492 333.337 129.586 332.47 129.586C330.22 129.586 328.474 129.012 327.233 127.864C326.014 126.715 325.405 125.028 325.405 122.802V115.035H322.488V110.817H325.405V106.213H330.888V110.817H335.598V115.035H330.888V122.732C330.888 123.529 331.087 124.15 331.485 124.595C331.907 125.017 332.493 125.228 333.243 125.228C334.11 125.228 334.848 124.993 335.457 124.525L336.933 128.391ZM374.92 124.665V129.305H356.327V125.614L365.817 116.652C366.824 115.691 367.504 114.871 367.855 114.191C368.207 113.488 368.382 112.797 368.382 112.118C368.382 111.133 368.043 110.384 367.363 109.868C366.707 109.329 365.735 109.06 364.446 109.06C363.368 109.06 362.396 109.271 361.529 109.692C360.662 110.091 359.935 110.7 359.349 111.52L355.202 108.849C356.163 107.42 357.487 106.307 359.174 105.51C360.861 104.69 362.794 104.28 364.973 104.28C366.801 104.28 368.394 104.584 369.753 105.194C371.136 105.779 372.202 106.623 372.951 107.724C373.725 108.802 374.111 110.079 374.111 111.555C374.111 112.891 373.83 114.144 373.268 115.316C372.705 116.488 371.616 117.823 369.999 119.323L364.34 124.665H374.92ZM384.712 129.586C383.751 129.586 382.943 129.258 382.287 128.602C381.631 127.946 381.303 127.126 381.303 126.141C381.303 125.134 381.631 124.325 382.287 123.716C382.943 123.084 383.751 122.767 384.712 122.767C385.673 122.767 386.481 123.084 387.137 123.716C387.793 124.325 388.121 125.134 388.121 126.141C388.121 127.126 387.793 127.946 387.137 128.602C386.481 129.258 385.673 129.586 384.712 129.586ZM404.642 129.726C402.603 129.726 400.787 129.223 399.194 128.215C397.6 127.208 396.347 125.755 395.433 123.857C394.543 121.935 394.097 119.651 394.097 117.003C394.097 114.355 394.543 112.082 395.433 110.184C396.347 108.263 397.6 106.799 399.194 105.791C400.787 104.783 402.603 104.28 404.642 104.28C406.68 104.28 408.496 104.783 410.089 105.791C411.683 106.799 412.925 108.263 413.815 110.184C414.729 112.082 415.186 114.355 415.186 117.003C415.186 119.651 414.729 121.935 413.815 123.857C412.925 125.755 411.683 127.208 410.089 128.215C408.496 129.223 406.68 129.726 404.642 129.726ZM404.642 124.911C406.141 124.911 407.313 124.267 408.156 122.978C409.023 121.689 409.457 119.698 409.457 117.003C409.457 114.308 409.023 112.317 408.156 111.028C407.313 109.739 406.141 109.095 404.642 109.095C403.165 109.095 401.994 109.739 401.127 111.028C400.283 112.317 399.862 114.308 399.862 117.003C399.862 119.698 400.283 121.689 401.127 122.978C401.994 124.267 403.165 124.911 404.642 124.911Z" fill="#9E75EF"/>
+  <path d="M144.065 37.789C141.348 35.1781 138.124 33.1533 134.394 31.7146C130.718 30.276 126.668 29.5566 122.245 29.5566C117.876 29.5566 113.827 30.276 110.097 31.7146C106.367 33.1533 103.117 35.1781 100.346 37.789C97.5752 40.3999 95.4172 43.4637 93.872 46.9804C92.38 50.4971 91.634 54.3335 91.634 58.4896C91.634 62.6458 92.38 66.4822 93.872 69.9989C95.4172 73.5156 97.5485 76.5794 100.266 79.1903C103.037 81.8012 106.287 83.826 110.017 85.2646C113.8 86.7033 117.903 87.4226 122.325 87.4226C126.695 87.4226 130.718 86.7033 134.394 85.2646C138.124 83.826 141.348 81.8279 144.065 79.2702C146.836 76.6593 148.994 73.5955 150.539 70.0788C152.084 66.5088 152.857 62.6458 152.857 58.4896C152.857 54.2802 152.084 50.4438 150.539 46.9804C148.994 43.4637 146.836 40.3999 144.065 37.789ZM138.39 65.7628C137.538 67.9475 136.312 69.839 134.714 71.4376C133.115 73.0361 131.25 74.2616 129.119 75.1141C127.041 75.9667 124.75 76.3929 122.245 76.3929C119.741 76.3929 117.423 75.9667 115.292 75.1141C113.161 74.2616 111.296 73.0361 109.697 71.4376C108.152 69.839 106.926 67.9475 106.021 65.7628C105.168 63.5249 104.742 61.1005 104.742 58.4896C104.742 55.8255 105.168 53.4011 106.021 51.2164C106.926 49.0318 108.179 47.1402 109.777 45.5417C111.376 43.9432 113.214 42.7177 115.292 41.8652C117.423 41.0126 119.741 40.5863 122.245 40.5863C124.75 40.5863 127.068 41.0126 129.199 41.8652C131.33 42.7177 133.169 43.9432 134.714 45.5417C136.312 47.1402 137.538 49.0318 138.39 51.2164C139.296 53.4011 139.749 55.8255 139.749 58.4896C139.749 61.1538 139.296 63.5782 138.39 65.7628Z" fill="#1a1a2e"/>
+  <path d="M63.9137 69.8359L51.2322 30.5215H39.2434L26.049 69.847L13.4275 30.5215H0L18.3029 86.4693H32.2099L44.8914 48.5602L57.2266 86.4693H71.1336L89.4365 30.5215H77.0481L63.9137 69.8359Z" fill="#1a1a2e"/>
+  <path d="M290.805 30.5215H277.857V86.4693H290.805V30.5215Z" fill="#1a1a2e"/>
+  <path d="M416.473 46.9804C414.928 43.4637 412.77 40.3999 409.999 37.789C407.282 35.1781 404.058 33.1533 400.328 31.7146C396.652 30.276 392.602 29.5566 388.18 29.5566C383.811 29.5566 379.761 30.276 376.031 31.7146C372.301 33.1533 369.051 35.1781 366.28 37.789C363.51 40.3999 361.352 43.4637 359.806 46.9804C358.314 50.4971 357.568 54.3335 357.568 58.4896C357.568 62.6458 358.314 66.4822 359.806 69.9989C361.352 73.5156 363.483 76.5794 366.2 79.1903C368.971 81.8012 372.221 83.826 375.951 85.2646C379.734 86.7033 383.837 87.4226 388.26 87.4226C392.629 87.4226 396.652 86.7033 400.328 85.2646C404.058 83.826 407.282 81.8279 409.999 79.2702C412.77 76.6593 414.928 73.5955 416.473 70.0788C418.019 66.5088 418.791 62.6458 418.791 58.4896C418.791 54.2802 418.019 50.4438 416.473 46.9804ZM404.325 65.7628C403.472 67.9475 402.247 69.839 400.648 71.4376C399.05 73.0361 397.185 74.2616 395.053 75.1141C392.975 75.9667 390.684 76.3929 388.18 76.3929C385.675 76.3929 383.358 75.9667 381.226 75.1141C379.095 74.2616 377.23 73.0361 375.632 71.4376C374.086 69.839 372.861 67.9475 371.955 65.7628C371.102 63.5249 370.676 61.1005 370.676 58.4896C370.676 55.8255 371.102 53.4011 371.955 51.2164C372.861 49.0318 374.113 47.1402 375.711 45.5417C377.31 43.9432 379.148 42.7177 381.226 41.8652C383.358 41.0126 385.675 40.5863 388.18 40.5863C390.684 40.5863 393.002 41.0126 395.133 41.8652C397.265 42.7177 399.103 43.9432 400.648 45.5417C402.247 47.1402 403.472 49.0318 404.325 51.2164C405.231 53.4011 405.683 55.8255 405.683 58.4896C405.683 61.1538 405.231 63.5782 404.325 65.7628Z" fill="#1a1a2e"/>
+  <path d="M340.363 68.4861C343.986 66.8875 346.783 64.5964 348.755 61.6125C350.726 58.5753 351.712 54.9787 351.712 50.8225C351.712 46.6131 350.726 42.9899 348.755 39.9527C346.783 36.9155 343.986 34.5977 340.363 32.9992C336.739 31.3474 332.423 30.5215 327.415 30.5215H303.197V86.4693H316.145V70.8838H327.415C327.619 70.8838 327.805 70.8616 328.01 70.8594L338.764 86.4693H352.751L340.249 68.5282C340.285 68.5127 340.327 68.5016 340.363 68.4861ZM335.647 43.6293C337.618 45.3343 338.604 47.7321 338.604 50.8225C338.604 53.8597 337.618 56.2575 335.647 58.0158C333.675 59.7209 330.692 60.5734 326.695 60.5734H316.145V41.0716H326.695C330.692 41.0716 333.675 41.9242 335.647 43.6293Z" fill="#1a1a2e"/>
+  <path d="M198.867 68.4861C202.491 66.8875 205.288 64.5964 207.26 61.6125C209.231 58.5753 210.217 54.9787 210.217 50.8225C210.217 46.6131 209.231 42.9899 207.26 39.9527C205.288 36.9155 202.491 34.5977 198.867 32.9992C195.244 31.3474 190.928 30.5215 185.92 30.5215H161.702V86.4693H174.65V70.8838H185.92C186.124 70.8838 186.31 70.8616 186.515 70.8594L197.269 86.4693H211.256L198.754 68.5282C198.79 68.5127 198.832 68.5016 198.867 68.4861ZM194.152 43.6293C196.123 45.3343 197.109 47.7321 197.109 50.8225C197.109 53.8597 196.123 56.2575 194.152 58.0158C192.18 59.7209 189.196 60.5734 185.2 60.5734H174.65V41.0716H185.2C189.196 41.0716 192.18 41.9242 194.152 43.6293Z" fill="#1a1a2e"/>
+  <path d="M271.617 30.5215H257.231L232.454 56.6305V30.5215H219.586V86.4693H232.454V72.3469L239.951 64.5209L257.87 86.4693H272.976L248.455 55.4493L271.617 30.5215Z" fill="#1a1a2e"/>
+  <path d="M140.153 0.00721339L100.829 7.47358C100.463 7.5424 100.266 8.11743 100.388 8.75461L101.813 16.2565C101.935 16.8959 102.328 17.3577 102.694 17.2866L142.018 9.82028C142.384 9.75145 142.582 9.17644 142.46 8.53925L141.034 1.03736C140.912 0.397961 140.519 -0.0638314 140.153 0.00721339Z" fill="#5DEFFF"/>
+</svg>`;
+
+// Workiro CTA block as it appears at the bottom of the printable PDFs.
+// Same copy as the on-screen sponsors footer, restyled for print.
+function _workiroPdfFooterHtml() {
+  return `
+    <section class="wk-foot">
+      <div class="wk-foot-logo">${_WORKIRO_LOGO_INLINE}</div>
+      <p class="wk-foot-cta">
+        <strong>Cloud document management for UK accountants</strong> — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.
+      </p>
+      <p class="wk-foot-link"><a href="https://workiro.com">workiro.com&nbsp;→</a></p>
+      <p class="wk-foot-fineprint">This is a free planner from Workiro, built for Accountex 2026.</p>
+    </section>
+  `;
+}
+
+// Shared print stylesheet — used by both the debrief PDF and the CPD
+// log PDF so they read as one matched pair when printed together.
+function _printSharedStyles() {
+  return `
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; line-height: 1.55; margin: 1.6cm 1.8cm; color: #1a1a2e; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-eyebrow { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 9pt; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; color: #6b6b80; margin: 0 0 6px; }
+    .doc-title { font-family: Georgia, 'Iowan Old Style', serif; font-style: italic; font-weight: 500; font-size: 30pt; line-height: 1.05; letter-spacing: -0.015em; margin: 0 0 8px; color: #0a0a12; }
+    .doc-meta { font-size: 10pt; color: #6b6b80; margin: 0 0 4px; }
+    .doc-meta strong { color: #1a1a2e; font-weight: 700; }
+    .doc-divider { height: 1px; background: linear-gradient(90deg, #1a1a2e 0%, #1a1a2e 24%, transparent 100%); margin: 22px 0 24px; border: 0; }
+    .section-eyebrow { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 9.5pt; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: #0fb88a; margin: 0 0 14px; }
+    .section-eyebrow.tone-purple { color: #a855f7; }
+    .section-eyebrow.tone-pink   { color: #ff5e84; }
+    h2.section-title { font-family: Georgia, serif; font-style: italic; font-size: 20pt; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 18px; color: #0a0a12; }
+
+    /* Workiro footer */
+    .wk-foot { margin-top: 48px; padding-top: 22px; border-top: 1px solid #e0e0e8; text-align: left; page-break-inside: avoid; }
+    .wk-foot-logo { margin-bottom: 14px; }
+    .wk-foot-cta { font-size: 10.5pt; line-height: 1.55; color: #1a1a2e; margin: 0 0 10px; max-width: 480px; }
+    .wk-foot-cta strong { font-weight: 700; }
+    .wk-foot-link { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 10pt; font-weight: 700; margin: 0 0 14px; }
+    .wk-foot-link a { color: #6f3fd1; text-decoration: none; }
+    .wk-foot-fineprint { font-size: 8.5pt; color: #8a8a9c; font-style: italic; margin: 0; }
+    @media print { body { margin: 1.4cm 1.6cm; } }
+  `;
 }
 
 // ── Debrief tab ───────────────────────────────────────────────────────────────
@@ -3178,27 +3262,270 @@ function showLoading(show) {
 
 // ── Debrief PDF helper ────────────────────────────────────────────────────────
 
-function buildPrintHtml(text, name, company) {
-  const header = [name, company].filter(Boolean).join(' · ') || 'Accountex 2026';
-  const escaped = text
+// Rich, structured debrief PDF — built directly from plan + team
+// data (not the textarea, which is the plain-text email/copy variant).
+// Adds a stats strip, bold per-rater pills, author-bold notes, and the
+// Workiro footer block. Page-break-inside: avoid keeps each session/
+// booth card from splitting awkwardly across pages.
+function buildPrintHtml() {
+  const firstName = _userProfile?.first_name || '';
+  const lastName  = _userProfile?.last_name  || '';
+  const company   = _userProfile?.company    || '';
+  const userName  = [firstName, lastName].filter(Boolean).join(' ');
+  const headerLine = [userName, company].filter(Boolean).join(' · ') || 'Accountex 2026';
+
+  const esc = (str) => String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // ── Source data ───────────────────────────────────────────────────
+  const heatRanked      = buildHeatRanked();
+  const boothHeatRanked = buildBoothHeatRanked();
+  const allNotes  = _allNotesNow().filter(n => n.note_text?.trim());
+  const members   = _teamData?.members || [];
+  const teamPlans = _teamData?.teamPlans || [];
+
+  const authorOf = (id) => {
+    if (!id) return '';
+    if (id === _authUser?.id) return userName || 'You';
+    const m = members.find(mm => mm.users?.id === id);
+    return m?.users?.first_name || 'Teammate';
+  };
+
+  // Per-rater list (mirrors the on-screen `ratersFor` in the debrief tab).
+  function ratersFor(itemType, itemId) {
+    const plans = teamPlans.length ? teamPlans : (_plan ? [_plan] : []);
+    const idStr = String(itemId);
+    const out = [];
+    for (const p of plans) {
+      const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
+      const it = list.find(x => itemType === 'booth'
+        ? String(x.stand_number) === idStr
+        : String(x.session_id) === idStr);
+      if (!it || !it.rating) continue;
+      const isMe = p.user_id === _authUser?.id;
+      const member = isMe ? null : members.find(mm => mm.users?.id === p.user_id);
+      const name = isMe ? (firstName || 'You')
+                        : (member?.users?.first_name || 'Teammate');
+      out.push({ name, rating: it.rating, isMe });
+    }
+    out.sort((a, b) => (a.isMe ? -1 : b.isMe ? 1 : a.name.localeCompare(b.name)));
+    return out;
+  }
+
+  function notesFor(itemType, itemId) {
+    const id = String(itemId);
+    return allNotes
+      .filter(n => n.item_type === itemType && String(n.item_id) === id)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  const flames = (n) => '●'.repeat(n) + '○'.repeat(Math.max(0, 3 - n));
+
+  function slotLine(s) {
+    let datePart = '';
+    if (s.date) {
+      const m = /^(\d{1,2})-([A-Za-z]+)-\d+$/.exec(s.date);
+      if (m) {
+        const dow = s.day === 'Day 1' ? 'Wed' : 'Thu';
+        datePart = `${dow} ${parseInt(m[1], 10)} ${m[2]}`;
+      }
+    }
+    if (!datePart) datePart = s.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+    const time = s.start_time && s.end_time
+      ? `${s.start_time}–${s.end_time}`
+      : (s.start_time || '');
+    return [datePart, time, s.theatre].filter(Boolean).join(' · ');
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────
+  const sessionsInPlan = (_plan?.sessions || []).length;
+  const boothsInPlan   = (_plan?.booths   || []).length;
+  const cpdHours       = (sessionsInPlan * (40/60)).toFixed(1);
+  const ratedItems     = heatRanked.length + boothHeatRanked.length;
+  const noteCount      = allNotes.length;
+  const allAvgs        = [...heatRanked, ...boothHeatRanked].map(h => h.avgRating);
+  const overallAvg     = allAvgs.length
+    ? (allAvgs.reduce((a,b)=>a+b,0) / allAvgs.length).toFixed(1)
+    : '—';
+
+  const statTile = (num, label) => `
+    <div class="stat-tile">
+      <div class="stat-num">${esc(String(num))}</div>
+      <div class="stat-label">${esc(label)}</div>
+    </div>`;
+
+  const statsHtml = `
+    <div class="stats-strip">
+      ${statTile(cpdHours, 'CPD hours')}
+      ${statTile(ratedItems, 'Rated')}
+      ${statTile(noteCount, 'Notes captured')}
+      ${statTile(overallAvg, 'Average score')}
+    </div>`;
+
+  // ── Mission ───────────────────────────────────────────────────────
+  const missionHtml = _plan?.problem ? `
+    <section class="block">
+      <div class="section-eyebrow tone-pink">Your mission</div>
+      <blockquote class="mission-quote">${esc(_plan.problem)}</blockquote>
+    </section>
+    <hr class="doc-divider">` : '';
+
+  // ── Top sessions / vendors ────────────────────────────────────────
+  function rankCard(rank, title, meta, raters, avgRating, raterCount, notes, tone) {
+    const rated = raters.length ? `
+      <div class="rater-row">
+        ${raters.map(r => `
+          <span class="rater-pill rater-pill--${tone}">
+            <strong>${esc(r.name)}${r.isMe ? ' (you)' : ''}</strong>
+            <span class="rater-flames">${flames(r.rating)}</span>
+          </span>
+        `).join('')}
+      </div>` : '';
+    const avg = raterCount > 0 ? `
+      <div class="avg-block avg-block--${tone}">
+        <div class="avg-flames">${flames(Math.round(avgRating))}</div>
+        <div class="avg-num">${avgRating.toFixed(1)}</div>
+        <div class="avg-label">Average · ${raterCount} rating${raterCount === 1 ? '' : 's'}</div>
+      </div>` : '';
+    const notesHtml = notes.length ? `
+      <div class="notes-block notes-block--${tone}">
+        ${notes.map(n => `
+          <p class="note-row"><strong class="note-author note-author--${tone}">${esc(authorOf(n.created_by))}:</strong> ${esc(n.note_text)}</p>
+        `).join('')}
+      </div>` : '';
+    return `
+      <article class="rank-card">
+        <div class="rank-card-head">
+          <div class="rank-num rank-num--${tone}">#${rank}</div>
+          <div class="rank-card-main">
+            <h3 class="rank-card-title">${esc(title)}</h3>
+            <div class="rank-card-meta">${esc(meta)}</div>
+          </div>
+        </div>
+        ${rated}
+        ${avg}
+        ${notesHtml}
+      </article>`;
+  }
+
+  const sessionsSection = heatRanked.length ? `
+    <section class="block">
+      <div class="section-eyebrow">Top-rated sessions</div>
+      <h2 class="section-title">By you and your team</h2>
+      ${heatRanked.map((h, i) => {
+        const s = h.session;
+        return rankCard(
+          i + 1,
+          s.title || 'Session',
+          slotLine(s),
+          ratersFor('session', s.session_id),
+          h.avgRating,
+          h.raterCount,
+          notesFor('session', s.session_id),
+          'mint',
+        );
+      }).join('')}
+    </section>` : '';
+
+  const boothsSection = boothHeatRanked.length ? `
+    <section class="block">
+      <div class="section-eyebrow tone-purple">Top-rated booths</div>
+      <h2 class="section-title">Vendors worth a follow-up</h2>
+      ${boothHeatRanked.map((h, i) => {
+        const b = h.booth;
+        return rankCard(
+          i + 1,
+          b.company_name || 'Vendor',
+          `Stand ${b.stand_number}`,
+          ratersFor('booth', b.stand_number),
+          h.avgRating,
+          h.raterCount,
+          notesFor('booth', b.stand_number),
+          'purple',
+        );
+      }).join('')}
+    </section>` : '';
+
+  const emptyState = (!heatRanked.length && !boothHeatRanked.length) ? `
+    <p class="empty-state">Rate sessions and vendors on the Checklist tab — your debrief will fill in here.</p>` : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Accountex 2026 Debrief</title>
+<title>Accountex 2026 Debrief — ${esc(headerLine)}</title>
 <style>
-  body { font-family: Georgia, serif; font-size: 13pt; line-height: 1.7; margin: 2cm 2.5cm; color: #111; }
-  h1 { font-size: 18pt; margin: 0 0 4px; }
-  .meta { font-size: 10pt; color: #666; margin-bottom: 28px; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
-  pre { font-family: inherit; white-space: pre-wrap; word-break: break-word; margin: 0; }
-  @media print { body { margin: 1.5cm 2cm; } }
+  ${_printSharedStyles()}
+  /* Stats strip */
+  .stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0 26px; page-break-inside: avoid; }
+  .stat-tile { border: 1px solid #e0e0e8; border-radius: 8px; padding: 14px 14px 12px; background: #f8f8fb; }
+  .stat-num { font-family: Georgia, serif; font-style: italic; font-weight: 600; font-size: 22pt; line-height: 1; color: #0fb88a; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .stat-tile:nth-child(2) .stat-num { color: #6f3fd1; }
+  .stat-tile:nth-child(3) .stat-num { color: #1a1a2e; }
+  .stat-tile:nth-child(4) .stat-num { color: #d3506f; }
+  .stat-label { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #6b6b80; }
+
+  /* Mission */
+  .mission-quote { margin: 0; padding: 14px 18px; background: rgba(255,94,132,0.05); border-left: 3px solid #ff5e84; font-size: 12pt; color: #1a1a2e; font-style: italic; line-height: 1.5; border-radius: 0 6px 6px 0; }
+
+  /* Rank cards */
+  .block { margin-bottom: 28px; }
+  .rank-card { padding: 16px 18px; border: 1px solid #e0e0e8; border-radius: 10px; margin-bottom: 14px; page-break-inside: avoid; background: #fff; }
+  .rank-card-head { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; margin-bottom: 12px; }
+  .rank-num { font-family: Georgia, serif; font-style: italic; font-weight: 600; font-size: 30pt; line-height: 1; letter-spacing: -0.04em; min-width: 48px; text-align: center; }
+  .rank-num--mint   { color: #0fb88a; }
+  .rank-num--purple { color: #6f3fd1; }
+  .rank-card-title { margin: 0 0 4px; font-family: Georgia, serif; font-weight: 700; font-size: 13.5pt; letter-spacing: -0.01em; line-height: 1.3; color: #0a0a12; }
+  .rank-card-meta { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8.5pt; letter-spacing: 0.10em; text-transform: uppercase; color: #6b6b80; font-weight: 700; }
+
+  /* Per-rater pills */
+  .rater-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding-top: 10px; border-top: 1px dashed #e8e8ef; }
+  .rater-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 9.5pt; line-height: 1.4; }
+  .rater-pill strong { font-weight: 700; }
+  .rater-pill--mint   { background: rgba(34,230,168,0.10); border: 1px solid rgba(15,184,138,0.30); }
+  .rater-pill--mint strong   { color: #0fb88a; }
+  .rater-pill--purple { background: rgba(168,85,247,0.08); border: 1px solid rgba(111,63,209,0.28); }
+  .rater-pill--purple strong { color: #6f3fd1; }
+  .rater-flames { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.10em; color: #d3506f; font-weight: 700; }
+
+  /* Avg block */
+  .avg-block { display: flex; align-items: baseline; gap: 12px; padding: 10px 14px; border-radius: 8px; margin: 0 0 10px; }
+  .avg-block--mint   { background: rgba(34,230,168,0.08); }
+  .avg-block--purple { background: rgba(168,85,247,0.07); }
+  .avg-flames { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 11pt; letter-spacing: 0.06em; color: #d3506f; font-weight: 700; }
+  .avg-num { font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 18pt; line-height: 1; letter-spacing: -0.02em; }
+  .avg-block--mint   .avg-num { color: #0fb88a; }
+  .avg-block--purple .avg-num { color: #6f3fd1; }
+  .avg-label { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.10em; text-transform: uppercase; font-weight: 700; color: #6b6b80; margin-left: auto; }
+
+  /* Notes */
+  .notes-block { padding: 10px 14px; border-radius: 8px; }
+  .notes-block--mint   { background: rgba(34,230,168,0.05); border: 1px solid rgba(15,184,138,0.18); }
+  .notes-block--purple { background: rgba(168,85,247,0.04); border: 1px solid rgba(111,63,209,0.18); }
+  .note-row { font-size: 10.5pt; line-height: 1.5; margin: 0 0 6px; color: #1a1a2e; }
+  .note-row:last-child { margin: 0; }
+  .note-author { font-weight: 700; margin-right: 4px; }
+  .note-author--mint   { color: #0fb88a; }
+  .note-author--purple { color: #6f3fd1; }
+
+  .empty-state { padding: 32px 24px; background: #f8f8fb; border-radius: 8px; color: #6b6b80; font-style: italic; text-align: center; }
 </style>
 </head>
 <body>
-<h1>Accountex 2026 — Debrief</h1>
-<div class="meta">${header}</div>
-<pre>${escaped}</pre>
+<div class="doc-eyebrow">Accountex 2026 · Debrief</div>
+<h1 class="doc-title">Your debrief.</h1>
+<p class="doc-meta">Generated for <strong>${esc(headerLine)}</strong></p>
+${statsHtml}
+
+<hr class="doc-divider">
+
+${missionHtml}
+${sessionsSection}
+${boothsSection}
+${emptyState}
+
+${_workiroPdfFooterHtml()}
+
 <script>window.onload = function() { window.print(); };<\/script>
 </body>
 </html>`;
@@ -3432,10 +3759,7 @@ window.planEmailDebrief = function() {
 };
 
 window.planDownloadDebrief = function() {
-  const ta      = document.getElementById('debrief-textarea');
-  const name    = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ');
-  const company = _userProfile?.company || '';
-  const html = buildPrintHtml(ta ? ta.value : '', name, company);
+  const html = buildPrintHtml();
   const blob = new Blob([html], { type: 'text/html' });
   const url  = URL.createObjectURL(blob);
   const win  = window.open(url, '_blank');

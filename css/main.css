@@ -4687,11 +4687,8 @@ button.app-pill.purple.clickable:hover {
 /* ═══ TURN B — Note panel: three states (idle / editing / saved) ═══ */
 
 .checklist-note-panel {
-  padding: 10px 16px 12px 92px; /* aligns with title after stacked tick+time leftcol */
+  padding: 12px 16px;
   border-top: 1px dashed var(--ink-3);
-}
-@media (max-width: 780px) {
-  .checklist-note-panel { padding-left: 16px; }
 }
 
 /* --- IDLE state: quiet "Add a note" prompt, always visible --- */

@@ -1811,7 +1811,7 @@ body::before {
 .app-tabs-credits {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-shrink: 0;
 }
 .app-tabs-credits-label {
@@ -1831,13 +1831,13 @@ body::before {
 }
 .app-tabs-credits a:hover { opacity: 1; }
 .app-tabs-credits img {
-  height: 26px;
+  height: 32px;
   width: auto;
   display: block;
 }
 @media (max-width: 640px) {
-  .app-tabs-credits { gap: 8px; }
-  .app-tabs-credits img { height: 18px; }
+  .app-tabs-credits { gap: 11px; }
+  .app-tabs-credits img { height: 22px; }
   .app-tabs-credits-label { font-size: 8.5px; letter-spacing: 0.12em; }
 }
 .app-tabs-brand {
@@ -4008,6 +4008,15 @@ button.app-pill.purple.clickable:hover {
   overflow: hidden;
 }
 .checklist-row:hover { border-color: var(--ink-4); }
+/* Session cards get a slightly lighter stroke than the base — just
+   enough definition that one card visibly ends and the next begins
+   without competing with the booth purple identity below. */
+.checklist-row.is-session {
+  border-color: rgba(255,255,255,0.10);
+}
+.checklist-row.is-session:hover {
+  border-color: rgba(255,255,255,0.18);
+}
 .checklist-row.attended {
   background: rgba(34,230,168,0.04);
   border-color: rgba(34,230,168,0.22);

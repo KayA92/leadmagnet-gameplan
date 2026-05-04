@@ -637,9 +637,6 @@ async function handleSaveSubmit(e) {
     );
     if (userErr) throw userErr;
 
-    // NOTE: firm_size / firm_mode / pains are intentionally NOT inserted yet,
-    // pending migration 20260504000000. Once it lands, add them back here so
-    // new signups capture full Stage-5b context.
     const { data: savedPlan, error: planErr } = await supabase.from('plans').insert({
       user_id:     userId,
       attend_mode: state.answers.attendMode,
@@ -647,6 +644,9 @@ async function handleSaveSubmit(e) {
       categories:  state.answers.categories,
       time_window: state.answers.time,
       role:        state.answers.role,
+      pains:       state.answers.pains     || [],
+      firm_size:   state.answers.firmSize  || null,
+      firm_mode:   state.answers.mode      || null,
       sessions:    enrichedSessions,
       booths:      enrichedBooths,
       ai_themes:   state.plan?.themes || [],
@@ -899,11 +899,20 @@ function decorateAndRankByCategory() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 export async function initWizard() {
   // Clear any stale hash from a previous session so we always start at stage 0
-  if (window.location.hash) history.replaceState(null, '', location.pathname);
+  if (window.location.hash) history.replaceState(null, '', location.pathname + location.search);
 
   // If arriving via a team invite link, store the token for later use on save
-  const pendingTeamToken = new URLSearchParams(window.location.search).get('team');
+  const _urlParams = new URLSearchParams(window.location.search);
+  const pendingTeamToken = _urlParams.get('team');
   if (pendingTeamToken) state.teamInviteToken = pendingTeamToken;
+
+  // Pre-populate save-form email when the invite link includes ?email=ENCODED
+  const _emailParam = _urlParams.get('email');
+  if (_emailParam) {
+    state.user.email = decodeURIComponent(_emailParam);
+    const _emailInput = document.getElementById('inp-email');
+    if (_emailInput) _emailInput.value = state.user.email;
+  }
 
   // Load data files
   try {

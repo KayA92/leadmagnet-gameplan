@@ -139,10 +139,14 @@
   const resendBtn = document.getElementById('login-page-resend-btn');
 
   // Pass through invite token if present in the URL — preserves the team-invite
-  // flow when emails point at /login/?invite=TOKEN
+  // flow when emails point at /login/?team=TOKEN
   const params = new URLSearchParams(window.location.search);
-  const inviteToken = params.get('invite');
+  const inviteToken = params.get('team');
   const originalBtnContent = submitBtn.innerHTML;
+
+  // Pre-populate email when the invite link includes ?email=ENCODED
+  const emailParam = params.get('email');
+  if (emailParam) emailInput.value = decodeURIComponent(emailParam);
 
   // Resend state — populated after a successful first send.
   let lastEmail = '';
@@ -151,7 +155,7 @@
 
   // Build the redirect URL identically for first-send + resend.
   const buildRedirectUrl = () => inviteToken
-    ? `${window.location.origin}/plan/?invite=${encodeURIComponent(inviteToken)}&`
+    ? `${window.location.origin}/plan/?team=${encodeURIComponent(inviteToken)}&`
     : `${window.location.origin}/plan/?`;
 
   // Reset any pending resend state — called when the user types a different

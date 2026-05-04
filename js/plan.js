@@ -15,6 +15,7 @@ let _allSessions = [];
 let _allExhibitors = [];
 let _teamData    = null;
 let _authUser    = null;
+let _pendingInvites = null; // null = not yet loaded; [] = loaded empty; [...] = loaded
 let _currentTab  = 'checklist';
 
 let _planEditorMode      = null;
@@ -93,9 +94,6 @@ async function loadLatestPlan(userId) {
 }
 
 async function loadTeamData(teamId) {
-  // NOTE: firm_size / firm_mode / pains are intentionally NOT in this select
-  // until migration 20260504000000 lands. Once it does, add them back here so
-  // the team card can render firm size in the identity row.
   const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
@@ -103,7 +101,7 @@ async function loadTeamData(teamId) {
       .eq('team_id', teamId),
     supabase
       .from('plans')
-      .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
+      .select('id, user_id, problem, categories, role, pains, firm_size, firm_mode, sessions, booths, ai_themes')
       .eq('team_id', teamId),
     supabase
       .from('teams')
@@ -125,6 +123,29 @@ async function loadTeamData(teamId) {
     company:     teamRow?.company      || null,
     teamId,
   };
+}
+
+async function loadPendingInvites(teamId) {
+  const { data } = await supabase
+    .from('pending_invites')
+    .select('email, sent_at')
+    .eq('team_id', teamId)
+    .order('sent_at', { ascending: false });
+  const fromDB = (data || []).map(r => ({
+    email:  r.email,
+    sentAt: new Date(r.sent_at).getTime(),
+  }));
+  // Merge with localStorage so invites are visible even if the previous DB
+  // write failed (e.g. network hiccup). DB is authoritative; localStorage
+  // only fills in gaps for entries not yet confirmed in the DB.
+  try {
+    const lsRaw = localStorage.getItem(PENDING_INVITES_KEY);
+    const fromLS = lsRaw ? JSON.parse(lsRaw).filter(e => e?.email && e?.sentAt) : [];
+    const dbEmails = new Set(fromDB.map(e => e.email));
+    _pendingInvites = [...fromDB, ...fromLS.filter(e => !dbEmails.has((e.email || '').toLowerCase()))];
+  } catch {
+    _pendingInvites = fromDB;
+  }
 }
 
 // Firm-size + firm-mode labels used by the team card identity row.
@@ -1093,10 +1114,10 @@ function renderTeammateCard(m, index) {
   const identityParts = [roleLabel, firmSizeLabel, firmName].filter(Boolean).map(escHtml);
 
   let painLabels = [];
-  if (Array.isArray(memberPlan?.pains) && memberPlan.pains.length) {
-    painLabels = memberPlan.pains.map(s => s);
-  } else if (memberPlan?.problem) {
+  if (memberPlan?.problem) {
     painLabels = String(memberPlan.problem).split(/,\s*/).map(s => s.trim()).filter(Boolean);
+  } else if (Array.isArray(memberPlan?.pains) && memberPlan.pains.length) {
+    painLabels = memberPlan.pains.map(s => s);
   }
 
   const stackGapLabels = (memberPlan?.categories || [])
@@ -1151,15 +1172,16 @@ function renderTeammateCard(m, index) {
   `;
 }
 
-// Pending team invites — UX-only memory of recently-sent emails. Lives
-// in localStorage so it survives reloads but doesn't require any DB
-// schema changes. Auto-expires entries older than 7 days. The user can
-// resend (re-fires the magic link) or cancel (just removes from the
-// list — once sent, the email is sent; "cancel" is a memory clean-up).
+// Pending team invites — backed by the `pending_invites` Supabase table,
+// with localStorage kept as a fallback for solo users and for the instant
+// optimistic update before the DB write resolves.
 const PENDING_INVITES_KEY = 'pendingTeamInvites';
 const PENDING_INVITE_TTL_MS = 7 * 24 * 3600 * 1000;
 
 function _readPendingInvites() {
+  // Prefer the in-memory state loaded from Supabase (set by loadPendingInvites).
+  if (_pendingInvites !== null) return _pendingInvites;
+  // localStorage fallback: used before DB load completes or for solo users.
   try {
     const raw = localStorage.getItem(PENDING_INVITES_KEY);
     if (!raw) return [];
@@ -1176,13 +1198,39 @@ function _readPendingInvites() {
 function _writePendingInvites(arr) {
   try { localStorage.setItem(PENDING_INVITES_KEY, JSON.stringify(arr)); } catch {}
 }
-function rememberPendingInvite(email) {
-  const list = _readPendingInvites().filter(e => e.email !== email);
-  list.unshift({ email, sentAt: Date.now() });
-  _writePendingInvites(list);
+async function rememberPendingInvite(email) {
+  const lc = email.toLowerCase();
+  const entry = { email: lc, sentAt: Date.now() };
+  // Update in-memory state immediately so the UI re-renders without waiting for DB.
+  if (_pendingInvites !== null) {
+    _pendingInvites = [entry, ..._pendingInvites.filter(e => e.email !== lc)];
+  }
+  // Keep localStorage in sync as a fallback.
+  try {
+    const stored = JSON.parse(localStorage.getItem(PENDING_INVITES_KEY) || '[]');
+    _writePendingInvites([entry, ...stored.filter(e => e?.email && e.email !== lc)]);
+  } catch {}
+  // Persist to Supabase — awaited so errors surface rather than silently failing.
+  if (_plan?.team_id) {
+    const { error } = await supabase.from('pending_invites').upsert(
+      { team_id: _plan.team_id, email: lc, invited_by: _authUser?.id || null,
+        sent_at: new Date().toISOString() },
+      { onConflict: 'team_id,email' },
+    );
+    if (error) console.error('[pending_invites] upsert failed:', error);
+  }
 }
 function forgetPendingInvite(email) {
+  const lc = email.toLowerCase();
+  if (_pendingInvites !== null) {
+    _pendingInvites = _pendingInvites.filter(e => e.email.toLowerCase() !== lc);
+  }
   _writePendingInvites(_readPendingInvites().filter(e => e.email !== email));
+  if (_plan?.team_id) {
+    supabase.from('pending_invites').delete()
+      .eq('team_id', _plan.team_id)
+      .ilike('email', email);
+  }
 }
 function _formatRelativeTime(ms) {
   const diff = Math.max(0, Date.now() - ms);
@@ -3159,7 +3207,10 @@ async function handleSignIn(authUser, teamToken) {
     let teamData = null;
     if (full.team_id) {
       log('loadTeamData', `team=${full.team_id}`);
-      teamData = await loadTeamData(full.team_id);
+      [teamData] = await Promise.all([
+        loadTeamData(full.team_id),
+        loadPendingInvites(full.team_id),
+      ]);
       log('loadTeamData', `members=${teamData?.members?.length ?? 0}`);
     }
 
@@ -3188,6 +3239,17 @@ async function handleSignIn(authUser, teamToken) {
           { ...workiro, reason: 'The team behind this Game Plan — come see us at Stand 1144.' },
         ];
         await supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
+      }
+    }
+
+    // Check for a pending invite the user hasn't acted on yet (in-app path —
+    // fires when the invitee is already on the plan page and just refreshed,
+    // without clicking the invite email). Only runs if no URL-based token.
+    if (!_pendingJoinToken) {
+      const { data: incoming } = await supabase.rpc('get_incoming_invite');
+      if (incoming?.invite_token) {
+        _pendingJoinToken   = incoming.invite_token;
+        _pendingJoinCompany = incoming.company || null;
       }
     }
 
@@ -4108,8 +4170,14 @@ async function _sendTeamInvite(email, opts = {}) {
     btn.innerHTML = `<span class="team-invite-send-label">Sending…</span>`;
   }
 
-  const redirectTo = `${window.location.origin}/magic-link-confirm/?team=${_teamData.inviteToken}&`;
-  const { error } = await sendMagicLink(email, redirectTo);
+  const { error } = await supabase.functions.invoke('send-team-invite', {
+    body: {
+      inviteeEmail:   email,
+      inviteToken:    _teamData.inviteToken,
+      inviterName:    _userProfile?.first_name || '',
+      inviterCompany: _teamData?.company || '',
+    },
+  });
 
   if (opts.fromInputBtn && btn) {
     btn.disabled = false;
@@ -4122,7 +4190,7 @@ async function _sendTeamInvite(email, opts = {}) {
     return false;
   }
 
-  rememberPendingInvite(email);
+  await rememberPendingInvite(email);
   if (status) { status.textContent = `${opts.resend ? 'Resent' : 'Invite sent'} to ${email}`; status.className = 'team-invite-status success'; }
   setTimeout(() => { if (status) status.textContent = ''; }, 5000);
   return true;

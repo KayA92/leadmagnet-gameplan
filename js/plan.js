@@ -1383,7 +1383,7 @@ function renderTeamTab() {
 
   const heroSub = isFull
     ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
-    : `More eyes on the floor. Aligned before you arrive.`;
+    : `More coverage. Shared notes. Joint decisions.`;
 
   const eyebrowLabel = isFull ? 'Workspace at capacity' : 'Workspace invite';
 
@@ -1439,7 +1439,7 @@ function renderTeamTab() {
         <div class="app-section team-pre-show">
           <div class="team-section-eyebrow tone-purple">Team intel</div>
           <h3 class="team-section-title team-section-title-xl">Your team's <em>onboarding answers.</em></h3>
-          <p class="team-section-lede">Get aligned before, during, and after Accountex.</p>
+          <p class="team-section-lede">Each teammate's onboarding answers — pains and software gaps, side-by-side.</p>
           <div class="team-section-count-row">
             <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>
           </div>

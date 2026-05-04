@@ -1722,6 +1722,56 @@ body::before {
   margin: 0 auto;
 }
 
+/* "Install as app" promo strip — sits above the tab bar on mobile only.
+   Dismissible (one-time, persisted in localStorage). Hidden when already
+   running standalone, hidden on desktop where install isn't a thing. */
+.install-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  background: rgba(34,230,168,0.06);
+  border-bottom: 1px solid rgba(34,230,168,0.22);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.install-strip-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(34,230,168,0.14);
+  color: var(--mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.install-strip-body {
+  flex: 1;
+  min-width: 0;
+}
+.install-strip-body strong { color: var(--text); font-weight: 600; }
+.install-strip-dismiss {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.install-strip-dismiss:hover { background: var(--ink-3); color: var(--text); }
+@media (max-width: 640px) {
+  .install-strip { padding: 10px 14px; font-size: 12px; gap: 10px; }
+  .install-strip-icon { width: 28px; height: 28px; }
+}
+
 /* Tab bar — two-row layout: brand row, then tabs row */
 .app-tabs {
   position: sticky;

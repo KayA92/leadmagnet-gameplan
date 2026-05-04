@@ -2276,11 +2276,48 @@ function sponsorsFooterHtml() {
 
 // ── Main render ───────────────────────────────────────────────────────────────
 
+// "Install as app" promo strip — sits above the top-bar on mobile only.
+// Detects iOS vs Android and shows the right Add-to-Home-Screen path.
+// Dismisses for life via localStorage; if the page is loaded standalone
+// (already installed) we never show it.
+function renderInstallStrip() {
+  if (typeof navigator === 'undefined') return '';
+  if (localStorage.getItem('installStripDismissed') === '1') return '';
+  // If already running as an installed PWA, don't re-pitch the install.
+  const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                       || window.navigator.standalone === true;
+  if (isStandalone) return '';
+  const ua        = navigator.userAgent || '';
+  const isIOS     = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  if (!isIOS && !isAndroid) return '';
+  const steps = isIOS
+    ? 'Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>'
+    : 'Tap menu <strong>⋮</strong> → <strong>Install app</strong>';
+  return `
+    <div class="install-strip" id="installStrip">
+      <div class="install-strip-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </div>
+      <div class="install-strip-body">
+        <strong>Install this as an app for the show:</strong> ${steps}. Opens full-screen, always logged in.
+      </div>
+      <button class="install-strip-dismiss" onclick="dismissInstallStrip()" aria-label="Dismiss" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  `;
+}
+window.dismissInstallStrip = function() {
+  localStorage.setItem('installStripDismissed', '1');
+  document.getElementById('installStrip')?.remove();
+};
+
 function renderApp() {
   const root = $('plan-root');
   if (!root) return;
 
-  root.innerHTML = renderTabNav() + `<div class="plan-tab-content">${renderCurrentTab()}</div>`;
+  root.innerHTML = renderInstallStrip() + renderTabNav() + `<div class="plan-tab-content">${renderCurrentTab()}</div>`;
 
   if (_currentTab === 'checklist') {
     attachPlanListeners(_plan.id, _plan.sessions, _plan.booths);

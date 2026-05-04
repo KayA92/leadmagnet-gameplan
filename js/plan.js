@@ -967,7 +967,7 @@ function renderChecklistTab() {
           <div class="sponsor-card-logo">
             <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals.</p>
+          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
             workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -977,7 +977,7 @@ function renderChecklistTab() {
           <div class="sponsor-card-logo">
             <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
           <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
             xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -2212,7 +2212,7 @@ function sponsorsFooterHtml() {
           <div class="sponsor-card-logo">
             <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come say hi at stand <strong>1144</strong>.</p>
+          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
             workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -2222,7 +2222,7 @@ function sponsorsFooterHtml() {
           <div class="sponsor-card-logo">
             <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
           <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
             xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -3285,7 +3285,7 @@ async function initDemoMode() {
     _plan = {
       id: 'demo-plan',
       user_id: 'demo-user',
-      team_id: null,
+      team_id: 'demo-team',
       attend_mode: 'team-lead',
       problem: 'AI — where to even start, Margin squeeze, MTD volume problem',
       categories: ['practice-mgmt', 'tax-mtd', 'ai-automation'],
@@ -3295,7 +3295,48 @@ async function initDemoMode() {
       ai_themes: [],
       notes: [],
     };
-    _teamData = null;
+
+    // Stub team with the demo user + 2 fake teammates so the Team tab
+    // shows its full populated state (AI synthesis, who's-going-and-why,
+    // etc.). Real users get a team auto-created on first sign-in; demo
+    // skips auth, so we fake one here.
+    const teamPlanFor = (uid, problem, categories, role, sessIds) => ({
+      id: `demo-plan-${uid}`,
+      user_id: uid,
+      problem,
+      categories,
+      role,
+      sessions: (allSessions || []).filter(s => sessIds.includes(s.session_id)).slice(0, 6),
+      booths: [],
+      ai_themes: [],
+    });
+    _teamData = {
+      teamId: 'demo-team',
+      company: 'Demo Firm Ltd',
+      inviteToken: 'demo-invite-token',
+      members: [
+        { role: 'lead',   joined_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          users: { id: 'demo-user', first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' } },
+        { role: 'member', joined_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+          users: { id: 'demo-sarah', first_name: 'Sarah', last_name: 'Reid', company: 'Demo Firm Ltd' } },
+        { role: 'member', joined_at: new Date(Date.now() - 86400000 * 1).toISOString(),
+          users: { id: 'demo-james', first_name: 'James', last_name: 'O’Connor', company: 'Demo Firm Ltd' } },
+      ],
+      teamPlans: [
+        _plan,
+        teamPlanFor('demo-sarah',
+          'Slow client onboarding, AML / KYC pressure, Document chaos',
+          ['aml-onboarding', 'doc-mgmt', 'practice-mgmt'],
+          'senior',
+          (allSessions || []).slice(8, 14).map(s => s.session_id)),
+        teamPlanFor('demo-james',
+          'Margin squeeze, Charging for advice, Stuck in compliance',
+          ['proposals', 'forecasting', 'practice-mgmt'],
+          'partner',
+          (allSessions || []).slice(4, 10).map(s => s.session_id)),
+      ],
+      allNotes: [],
+    };
 
     log('renderApp');
     showLoading(false);

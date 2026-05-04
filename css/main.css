@@ -4319,6 +4319,98 @@ button.app-pill.purple.clickable:hover {
   letter-spacing: -0.01em;
   margin-top: 8px;
 }
+
+/* ── Match badge: 4-tier bucket label + ranking line ────────────────────
+   Replaces raw % displays everywhere. Tier palette mirrors Stage 1 heat
+   bands (SCORCHING/HOT/WARM/SPECIALIST) so users decode it instantly:
+     top     → pink     (sparkle + glow, the only celebrated tier)
+     high    → coral
+     medium  → amber
+     neutral → cool-blue (browse contexts only — Edit modals, swap alts)
+*/
+.match-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 8px;
+}
+.match-bucket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 100px;
+  border: 1px solid;
+  background: transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.match-bucket-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.match-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-left: 2px;
+}
+/* TOP — pink + sparkle + soft glow on the pill background */
+.match-badge.tier-top .match-bucket {
+  border-color: rgba(255,94,132,0.45);
+  background: rgba(255,94,132,0.10);
+  color: var(--pink);
+  box-shadow: 0 0 14px rgba(255,94,132,0.20);
+}
+/* HIGH — coral, no icon, no glow */
+.match-badge.tier-high .match-bucket {
+  border-color: rgba(255,138,92,0.40);
+  background: rgba(255,138,92,0.06);
+  color: var(--coral);
+}
+/* MEDIUM — amber, no icon, no glow */
+.match-badge.tier-medium .match-bucket {
+  border-color: rgba(251,191,36,0.36);
+  background: rgba(251,191,36,0.05);
+  color: var(--amber);
+}
+/* NEUTRAL — cool blue, no icon, no glow (browse-only) */
+.match-badge.tier-neutral .match-bucket {
+  border-color: rgba(106,169,255,0.38);
+  background: rgba(106,169,255,0.05);
+  color: var(--cool-blue);
+}
+/* Compact: tighter pills + smaller rank line for swap/alt rows */
+.match-badge.compact { gap: 3px; }
+.match-badge.compact .match-bucket {
+  padding: 3px 9px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.match-badge.compact .match-rank {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.checklist-row.attended .match-badge { opacity: 0.4; }
+
+/* Plan reveal mini-item: badge sits in the right column, right-aligned */
+.mini-item .match-badge { align-items: flex-end; padding-left: 8px; }
+.mini-item .match-rank { padding-left: 0; }
+
+/* Editor row + slot-swap row: small left-aligned badge under the title */
+.editor-row .match-badge,
+.slot-swap-row .match-badge { margin-top: 6px; }
+.checklist-alternative-card .match-badge { margin-top: 4px; margin-bottom: 4px; }
 /* Tags row — quiet outline pills, muted grey. No fill, no "+" prefix,
    no yellow; tags are descriptive labels, not interactive controls. */
 .checklist-why-tags {

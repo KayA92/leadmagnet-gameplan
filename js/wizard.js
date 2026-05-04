@@ -339,11 +339,74 @@ async function startReveal() {
 // ── Plan preview rendering (stage 7) ─────────────────────────────────────────
 const TICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
-// TODO: Replace with real match_confidence values from matcher response.
-// Backend will return a `match_confidence` field (0-100) per session and per booth.
-// When live, remove these dummy arrays and read each item's `match_confidence`.
-const SESSION_DUMMY_CONFIDENCE = [96, 94, 91, 89, 87, 85, 83, 81, 79, 77, 76];
-const BOOTH_DUMMY_CONFIDENCE   = [94, 91, 88, 85, 82, 79, 77, 75, 73];
+// ── Match bucket + ranking display model ─────────────────────────────────
+// 4-tier bucket replaces raw % everywhere (top / high / medium / neutral).
+// Display: bucket label pill + "#3 of 240". Tier palette mirrors Stage 1
+// heat bands (pink → coral → amber → cool-blue) so users decode without
+// a legend. NEUTRAL is browse-only; the user's plan only contains
+// top / high / medium picks per the spec.
+//
+// TODO: Replace dummy bucket label and ranking with real values from matcher.
+//   match.bucket: "top" | "high" | "medium" | "neutral"
+//   match.rank:   number  (global rank in matcher output)
+//   match.total:  number  (total session/booth pool count)
+const SESSION_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 3  },
+  { bucket: 'top',    rank: 7  },
+  { bucket: 'high',   rank: 11 },
+  { bucket: 'high',   rank: 18 },
+  { bucket: 'high',   rank: 24 },
+  { bucket: 'high',   rank: 31 },
+  { bucket: 'medium', rank: 42 },
+  { bucket: 'medium', rank: 58 },
+  { bucket: 'medium', rank: 71 },
+  { bucket: 'medium', rank: 84 },
+  { bucket: 'medium', rank: 97 },
+];
+const BOOTH_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 1  },
+  { bucket: 'high',   rank: 4  },
+  { bucket: 'high',   rank: 8  },
+  { bucket: 'high',   rank: 12 },
+  { bucket: 'medium', rank: 18 },
+  { bucket: 'medium', rank: 24 },
+  { bucket: 'medium', rank: 31 },
+  { bucket: 'medium', rank: 38 },
+];
+const FALLBACK_MATCH_TOTAL = { session: 240, booth: 90 };
+const HIDDEN_ALT_DUMMY = { bucket: 'high', count: 3, ranks: [14, 17, 21] };
+
+function dummyMatchByPlanRank(rankInPlan, type) {
+  const arr = type === 'booth' ? BOOTH_PLAN_DUMMY : SESSION_PLAN_DUMMY;
+  if (!Number.isFinite(rankInPlan) || rankInPlan < 1) return arr[arr.length - 1];
+  return arr[Math.min(rankInPlan - 1, arr.length - 1)];
+}
+
+function bucketLabel(bucket) {
+  switch (bucket) {
+    case 'top':     return 'Top match';
+    case 'high':    return 'High match';
+    case 'medium':  return 'Medium match';
+    case 'neutral': return 'Neutral match';
+    default:        return 'Match';
+  }
+}
+
+function matchTotal(type) {
+  if (type === 'booth') return (state.allExhibitors?.length) || FALLBACK_MATCH_TOTAL.booth;
+  return (state.allSessions?.length) || FALLBACK_MATCH_TOTAL.session;
+}
+
+function renderMatchBadge({ bucket, rank, type, compact = false }) {
+  const total   = matchTotal(type);
+  const sparkle = bucket === 'top'
+    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/></svg>'
+    : '';
+  return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
+    <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
+    <span class="match-rank">#${rank} of ${total}</span>
+  </div>`;
+}
 
 function renderPlanPreview() {
   const container = $('plan-preview-content');
@@ -379,39 +442,31 @@ function renderPlanPreview() {
     if (b) boothItems.push(b);
   });
 
-  const confidenceFor = (arr, i) => arr[Math.min(i, arr.length - 1)];
-
   const renderSession = (s, i) => {
     const dayNum = s.day === 'Day 1' ? 1 : 2;
     const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
-    const confidence = confidenceFor(SESSION_DUMMY_CONFIDENCE, i);
+    const m = dummyMatchByPlanRank(i + 1, 'session');
     return `<div class="mini-item" style="animation-delay:${i * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(s.title)}</div>
         <div class="mini-meta"><span class="type-pill session">Session</span>${timeStr}</div>
       </div>
-      <div class="mini-confidence">
-        <div class="mini-confidence-num">${confidence}%</div>
-        <div class="mini-confidence-label">AI MATCH<br>CONFIDENCE</div>
-      </div>
+      ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session' })}
     </div>`;
   };
 
   const renderBooth = (b, i, animIndex) => {
     const desc = (b.normalised_products || []).slice(0, 2).join(', ');
     const hostMark = b.is_host ? ` · <span style="color:var(--purple);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Host partner</span>` : '';
-    const confidence = confidenceFor(BOOTH_DUMMY_CONFIDENCE, i);
+    const m = dummyMatchByPlanRank(i + 1, 'booth');
     return `<div class="mini-item" style="animation-delay:${animIndex * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(b.company_name)}${hostMark}</div>
         <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(b.stand_number || '')} · ${escHtml(desc)}</div>
       </div>
-      <div class="mini-confidence">
-        <div class="mini-confidence-num">${confidence}%</div>
-        <div class="mini-confidence-label">AI MATCH<br>CONFIDENCE</div>
-      </div>
+      ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth' })}
     </div>`;
   };
 
@@ -421,10 +476,14 @@ function renderPlanPreview() {
     .join('');
 
   // TODO: Replace with real reserve_list from matcher response.
-  // Backend will return a `reserve_list` array of 4-7 sessions ranked just below
-  // the primary picks (within ~5% of the lowest top-pick score).
-  // Display: count + score range only. Titles stay hidden until user saves plan.
+  // Backend will return a `reserve_list` array of 4-7 sessions whose
+  // bucket = 'high' (just below the primary picks). Each carries
+  // { bucket, rank, total }. Display: count + tier label only. Titles
+  // stay hidden until the user saves their plan.
   // If reserve_list is empty or null, hide this entire section.
+  const altCount   = HIDDEN_ALT_DUMMY.count;
+  const altTier    = bucketLabel(HIDDEN_ALT_DUMMY.bucket).toUpperCase();
+  const altPlural  = altCount === 1 ? 'alternative' : 'alternatives';
   const hiddenAlternativesHtml = `
     <div class="hidden-alternatives">
       <div class="hidden-alt-eyebrow">
@@ -432,7 +491,7 @@ function renderPlanPreview() {
         HIDDEN ALTERNATIVES
       </div>
       <div class="hidden-alt-body">
-        3 sessions ranked 87-91% match, ready to swap in. Save your plan to unlock.
+        <strong>${altCount} ${altTier}</strong> ${altPlural} ready to swap in. Save your plan to unlock.
       </div>
     </div>
   `;

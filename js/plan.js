@@ -180,35 +180,121 @@ const CATEGORY_LABELS = {
 
 // ── AI match helpers ──────────────────────────────────────────────────────────
 
-// TODO: Replace with real match_confidence from matcher response.
-// Backend will return a `match_confidence` (0-100) per session and per booth.
-// Until that ships:
-//   · For ranked items (matcher already ordered them — sessions/booths in
-//     the user's plan), use SESSION_DUMMY_CONFIDENCE / BOOTH_DUMMY_CONFIDENCE
-//     looked up by rank. This gives a believable descending order on screen
-//     that matches the matcher's intended ranking.
-//   · For unranked items (alternatives in swap modals, sessions browsed in
-//     the editor), fall back to a stable per-id hash so each session shows
-//     a consistent % across renders.
-const SESSION_DUMMY_CONFIDENCE = [96, 94, 91, 89, 87, 85, 83, 81, 79, 77, 76, 75];
-const BOOTH_DUMMY_CONFIDENCE   = [94, 91, 88, 85, 82, 79, 77, 75, 73, 71, 70];
+// ── Match bucket + ranking display model ─────────────────────────────────
+// Replaces raw "% AI Match Confidence" everywhere. Two-part display:
+//   1. Bucket tier label (top / high / medium / neutral) — coloured pill
+//   2. Ranking — "#3 of 240"
+//
+// Tier colour palette mirrors the Stage 1 onboarding heat bands so users
+// decode it without a legend (pink → coral → amber → cool-blue).
+//
+// TODO: Replace dummy bucket label and ranking with real values from matcher.
+//   match.bucket: "top" | "high" | "medium" | "neutral"
+//   match.rank:   number  (global rank in matcher output)
+//   match.total:  number  (total session/booth pool count)
+const SESSION_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 3  },
+  { bucket: 'top',    rank: 7  },
+  { bucket: 'high',   rank: 11 },
+  { bucket: 'high',   rank: 18 },
+  { bucket: 'high',   rank: 24 },
+  { bucket: 'high',   rank: 31 },
+  { bucket: 'medium', rank: 42 },
+  { bucket: 'medium', rank: 58 },
+  { bucket: 'medium', rank: 71 },
+  { bucket: 'medium', rank: 84 },
+  { bucket: 'medium', rank: 97 },
+];
+const BOOTH_PLAN_DUMMY = [
+  { bucket: 'top',    rank: 1  },
+  { bucket: 'high',   rank: 4  },
+  { bucket: 'high',   rank: 8  },
+  { bucket: 'high',   rank: 12 },
+  { bucket: 'medium', rank: 18 },
+  { bucket: 'medium', rank: 24 },
+  { bucket: 'medium', rank: 31 },
+  { bucket: 'medium', rank: 38 },
+];
+const FALLBACK_MATCH_TOTAL = { session: 240, booth: 90 };
+const BUCKET_RANK_FLOOR    = { top: 1, high: 8, medium: 30, neutral: 100 };
 
-function dummyByRank(rank, type) {
-  const arr = type === 'booth' ? BOOTH_DUMMY_CONFIDENCE : SESSION_DUMMY_CONFIDENCE;
-  if (!Number.isFinite(rank) || rank < 1) return arr[arr.length - 1];
-  return arr[Math.min(rank - 1, arr.length - 1)];
+// In-plan items: by rank-in-plan (1-indexed). Sessions+booths that the
+// matcher put in the user's plan get top/high/medium per the spec.
+function dummyMatchByPlanRank(rankInPlan, type) {
+  const arr = type === 'booth' ? BOOTH_PLAN_DUMMY : SESSION_PLAN_DUMMY;
+  if (!Number.isFinite(rankInPlan) || rankInPlan < 1) return arr[arr.length - 1];
+  return arr[Math.min(rankInPlan - 1, arr.length - 1)];
 }
 
-function aiMatchConfidence(idStr, type) {
+// Browse contexts (Edit modals, Swap alternatives): hash by id so each
+// session/booth has a stable bucket+rank across renders. Distribution
+// roughly mirrors a real matcher: top 4%, high 14%, medium 27%, neutral rest.
+function dummyMatchByHash(idStr, type) {
   const s = String(idStr || '');
   let h = 0;
   for (let i = 0; i < s.length; i++) {
     h = ((h << 5) - h) + s.charCodeAt(i);
     h |= 0;
   }
-  const norm = (Math.abs(h) % 1000) / 1000;
-  const [lo, hi] = type === 'booth' ? [70, 95] : [75, 98];
-  return Math.round(lo + norm * (hi - lo));
+  const total = FALLBACK_MATCH_TOTAL[type === 'booth' ? 'booth' : 'session'];
+  const norm  = (Math.abs(h) % 1000) / 1000;
+  let bucket, rank;
+  if (norm < 0.04) {
+    bucket = 'top';
+    rank   = Math.max(1, Math.round(norm / 0.04 * (BUCKET_RANK_FLOOR.high - 1)));
+  } else if (norm < 0.18) {
+    bucket = 'high';
+    rank   = Math.round(BUCKET_RANK_FLOOR.high + ((norm - 0.04) / 0.14) * (BUCKET_RANK_FLOOR.medium - BUCKET_RANK_FLOOR.high));
+  } else if (norm < 0.45) {
+    bucket = 'medium';
+    rank   = Math.round(BUCKET_RANK_FLOOR.medium + ((norm - 0.18) / 0.27) * (BUCKET_RANK_FLOOR.neutral - BUCKET_RANK_FLOOR.medium));
+  } else {
+    bucket = 'neutral';
+    rank   = Math.round(BUCKET_RANK_FLOOR.neutral + ((norm - 0.45) / 0.55) * (total - BUCKET_RANK_FLOOR.neutral));
+  }
+  return { bucket, rank: Math.min(Math.max(rank, 1), total) };
+}
+
+function matchTotal(type) {
+  if (type === 'booth') return (typeof _allExhibitors !== 'undefined' && _allExhibitors?.length) || FALLBACK_MATCH_TOTAL.booth;
+  return (typeof _allSessions !== 'undefined' && _allSessions?.length) || FALLBACK_MATCH_TOTAL.session;
+}
+
+function bucketLabel(bucket) {
+  switch (bucket) {
+    case 'top':     return 'Top match';
+    case 'high':    return 'High match';
+    case 'medium':  return 'Medium match';
+    case 'neutral': return 'Neutral match';
+    default:        return 'Match';
+  }
+}
+
+// Compact two-line badge — used everywhere a card needs to show its match.
+// Pass { bucket, rank, type } where type is 'session' | 'booth' (used to
+// pick the total). Optional `compact` for tight contexts (alts row, swap modal).
+function renderMatchBadge({ bucket, rank, type, compact = false }) {
+  const total   = matchTotal(type);
+  const sparkle = bucket === 'top'
+    ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/></svg>'
+    : '';
+  return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
+    <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
+    <span class="match-rank">#${rank} of ${total}</span>
+  </div>`;
+}
+
+// Resolves a match for ANY session/booth — uses real matcher data if
+// present, otherwise picks the right dummy strategy.
+function matchForSession(s, planRankIndex) {
+  if (s?.match?.bucket && Number.isFinite(s?.match?.rank)) return s.match;
+  if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'session');
+  return dummyMatchByHash(s?.session_id, 'session');
+}
+function matchForBooth(b, planRankIndex) {
+  if (b?.match?.bucket && Number.isFinite(b?.match?.rank)) return b.match;
+  if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'booth');
+  return dummyMatchByHash(b?.stand_number || b?.company_name, 'booth');
 }
 
 // Human-readable labels for the user's selected categories. Includes both the
@@ -262,8 +348,10 @@ const ROLE_LABELS = {
 };
 
 // Tag rules:
-// - Only show tags for sessions with confidence >= 80% (top picks).
-//   Borderline matches (75-79%) get a clean card — number alone is honest.
+// - Only TOP and HIGH bucket matches get "why matched" tags. Medium and
+//   neutral cards stay clean — the bucket label alone is honest enough.
+// - Caller passes the resolved bucket so we don't double-compute. If
+//   omitted, fall back to dummyMatchByHash (browse contexts).
 // - Surface every onboarding answer the matcher would have weighted, using
 //   the user's full labels (never extracted fragments). Sources:
 //     · Selected categories that overlap session.canonical_categories
@@ -272,9 +360,9 @@ const ROLE_LABELS = {
 //     · TODO: firm_size / mode / role_bucket once persisted in plans table
 //       (currently only `role` is stored alongside categories + problem)
 // - Cap at 6 tags so cards stay legible on mobile.
-function whyMatched(session, plan) {
-  const conf = session.match_confidence ?? aiMatchConfidence(session.session_id, 'session');
-  if (conf < 80) return [];
+function whyMatched(session, plan, bucket) {
+  const resolved = bucket || dummyMatchByHash(session.session_id, 'session').bucket;
+  if (resolved !== 'top' && resolved !== 'high') return [];
 
   const tags = [];
   const sessionCats = session.canonical_categories || [];
@@ -559,7 +647,9 @@ function renderChecklistTab() {
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
-    const whyTags      = whyMatched(item, plan);
+    const planRankIdx  = (item.rank && Number.isFinite(item.rank)) ? item.rank : (i + 1);
+    const match        = matchForSession(item, planRankIdx);
+    const whyTags      = whyMatched(item, plan, match.bucket);
     const alts         = findStrongAlternatives(item);
     const teamNotes    = teamNotesByItem[noteKey] || [];
 
@@ -571,33 +661,31 @@ function renderChecklistTab() {
            Swap
          </button>`;
 
-    const confidence = item.match_confidence ?? dummyByRank(item.rank, 'session');
-    // Single-line match — "96% AI Match Confidence" in pink at the title's
-    // weight class. Tags only render for strong picks (>= 80%); borderline
-    // cards (75-79%) stay clean — the number alone is honest.
+    // Two-part match display: bucket pill + ranking line. Tags only
+    // render for top/high tiers — medium and neutral cards stay clean.
     const whyHtml = `
-      <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
+      ${renderMatchBadge({ bucket: match.bucket, rank: match.rank, type: 'session' })}
       ${whyTags.length ? `<div class="checklist-why-tags">
         ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
 
-    // Collapsed-by-default alternatives. The summary now leads with the
-    // top alternative's % match and a swap icon — no time repetition
-    // (already shown in the leftcol). Click to expand the full cards.
+    // Collapsed-by-default alternatives. Summary leads with the top
+    // alt's bucket label (e.g. "HIGH MATCH alternative also available").
+    // Click to expand full cards, each showing its own bucket + rank.
     const sortedAlts = [...alts]
-      .map(alt => ({ alt, conf: alt.match_confidence ?? aiMatchConfidence(alt.session_id, 'session') }))
-      .sort((a, b) => b.conf - a.conf);
+      .map(alt => ({ alt, m: matchForSession(alt) }))
+      .sort((a, b) => a.m.rank - b.m.rank);
     const altCount = sortedAlts.length;
-    const topAltConf = sortedAlts[0]?.conf ?? 0;
+    const topAltBucket = sortedAlts[0]?.m?.bucket;
     const altsHtml = altCount ? `
       <details class="checklist-alternatives">
         <summary class="checklist-alternatives-summary">
           ${SWAP_SVG}
-          <span><strong>${topAltConf}%</strong> AI-matched session also available</span>
+          <span><strong>${escHtml(bucketLabel(topAltBucket).toUpperCase())}</strong> alternative also available</span>
           <span class="checklist-alternatives-toggle"><span class="show">show</span><span class="hide">hide</span></span>
         </summary>
-        ${sortedAlts.map(({ alt, conf }) => {
-          const altTags = whyMatched(alt, plan);
+        ${sortedAlts.map(({ alt, m }) => {
+          const altTags = whyMatched(alt, plan, m.bucket);
           const altTagsHtml = altTags.length
             ? `<div class="checklist-why-tags">${altTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
             : '';
@@ -606,11 +694,8 @@ function renderChecklistTab() {
             <div class="checklist-alternative-body">
               <div class="checklist-alternative-title">${escHtml(alt.title || '')}</div>
               <div class="checklist-alternative-meta">${escHtml(alt.theatre || '')}</div>
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
               ${altTagsHtml}
-            </div>
-            <div class="checklist-alternative-confidence">
-              <div class="row-confidence-num">${conf}%</div>
-              <div class="row-confidence-label">AI MATCH</div>
             </div>
             <div class="checklist-alternative-actions">
               <button class="checklist-alternative-btn swap" onclick="planSwapSession('${escHtml(item.session_id)}','${escHtml(alt.session_id)}')" type="button">
@@ -756,7 +841,8 @@ function renderChecklistTab() {
          </div>`;
 
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
-    const confidence  = item.match_confidence ?? dummyByRank(displayRank || item.rank || (i + 1), 'booth');
+    const boothPlanRank = displayRank || item.rank || (i + 1);
+    const boothMatch    = matchForBooth(item, boothPlanRank);
     const truncatedDesc = truncateBoothDesc(desc);
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
 
@@ -792,7 +878,7 @@ function renderChecklistTab() {
           <div class="checklist-main">
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
-            <div class="checklist-match-line">${confidence}% AI Match Confidence</div>
+            ${renderMatchBadge({ bucket: boothMatch.bucket, rank: boothMatch.rank, type: 'booth' })}
             ${truncatedDesc ? `<p class="booth-desc">${escHtml(truncatedDesc)}</p>` : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
@@ -2013,14 +2099,11 @@ function renderPlanEditorSessions(container) {
         <span class="editor-day-divider-line"></span>
       </div>`;
     }
-    // Sort sessions within a start-time group by AI match confidence
-    // descending — top match shows first.
-    const sortedSlot = [...sessions].sort((a, b) => {
-      const ca = a.match_confidence ?? aiMatchConfidence(a.session_id, 'session');
-      const cb = b.match_confidence ?? aiMatchConfidence(b.session_id, 'session');
-      return cb - ca;
-    });
-    const slotPlanCount = sortedSlot.filter(s => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
+    // Sort sessions within a start-time group by ranking ascending —
+    // top match shows first. Compute match once per session, reuse below.
+    const enriched = sessions.map(s => ({ s, m: matchForSession(s) }));
+    enriched.sort((a, b) => a.m.rank - b.m.rank);
+    const slotPlanCount = enriched.filter(({ s }) => planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)).length;
     const hasClash = slotPlanCount >= 2;
     html += `<div class="editor-slot${hasClash ? ' has-clash' : ''}">
       <div class="editor-slot-head">
@@ -2028,10 +2111,9 @@ function renderPlanEditorSessions(container) {
         ${hasClash ? `<div class="editor-clash-warning">${slotPlanCount} sessions selected at this time</div>` : ''}
       </div>
       <div class="editor-slot-rows">`;
-    for (const s of sortedSlot) {
-      const inPlan     = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
-      const confidence = s.match_confidence ?? aiMatchConfidence(s.session_id, 'session');
-      const speaker    = (s.speakers || [])[0];
+    for (const { s, m } of enriched) {
+      const inPlan  = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
+      const speaker = (s.speakers || [])[0];
       const metaParts = [
         s.theatre ? `<span>${escHtml(s.theatre)}</span>` : '',
         speaker ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>` : '',
@@ -2043,10 +2125,7 @@ function renderPlanEditorSessions(container) {
             <div class="editor-row-title">${escHtml(s.title || s.session_id)}</div>
             <div class="editor-row-meta">${metaParts}</div>
             ${blurb ? `<div class="editor-row-blurb">${escHtml(blurb)}</div>` : ''}
-          </div>
-          <div class="editor-row-confidence">
-            <div class="row-confidence-num">${confidence}%</div>
-            <div class="row-confidence-label">AI Match<br>Confidence</div>
+            ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
           </div>
           <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
             onclick="togglePlanSession('${escHtml(String(s.session_id))}','${escHtml(s.day||'')}','${escHtml(s.start_time||'')}')" type="button">
@@ -2097,27 +2176,29 @@ function renderPlanEditorBooths(container) {
     return;
   }
 
-  // Sort booths by AI match confidence desc — top matches first
-  const sortedBooths = [...filtered].sort((a, b) => {
-    const ca = a.match_confidence ?? aiMatchConfidence(a.stand_number || a.company_name, 'booth');
-    const cb = b.match_confidence ?? aiMatchConfidence(b.stand_number || b.company_name, 'booth');
-    return cb - ca;
+  // In-plan booths pin to top; out-of-plan sort by rank ascending.
+  const planBoothRankIndex = new Map();
+  (_plan?.booths || []).forEach((b, idx) => planBoothRankIndex.set(b.stand_number, idx + 1));
+
+  const enriched = filtered.map(e => {
+    const inPlan = planNums.has(e.stand_number);
+    const m = matchForBooth(e, inPlan ? planBoothRankIndex.get(e.stand_number) : null);
+    return { e, inPlan, m };
+  });
+  enriched.sort((a, b) => {
+    if (a.inPlan !== b.inPlan) return a.inPlan ? -1 : 1;
+    return a.m.rank - b.m.rank;
   });
 
-  const rows = sortedBooths.map(e => {
-    const inPlan     = planNums.has(e.stand_number);
-    const confidence = e.match_confidence ?? aiMatchConfidence(e.stand_number || e.company_name, 'booth');
-    const blurb      = e.company_description ? truncateBoothDesc(e.company_description) : '';
+  const rows = enriched.map(({ e, inPlan, m }) => {
+    const blurb = e.company_description ? truncateBoothDesc(e.company_description) : '';
     return `
       <div class="editor-row${inPlan ? ' in-plan' : ''}">
         <div class="editor-row-main">
           <div class="editor-row-title">${escHtml(e.company_name || '')}</div>
           <div class="editor-row-meta">Booth · Stand ${escHtml(String(e.stand_number || ''))}</div>
           ${blurb ? `<div class="editor-row-blurb">${escHtml(blurb)}</div>` : ''}
-        </div>
-        <div class="editor-row-confidence">
-          <div class="row-confidence-num">${confidence}%</div>
-          <div class="row-confidence-label">AI Match<br>Confidence</div>
+          ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
         </div>
         <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
           onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
@@ -2873,12 +2954,12 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
   const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
   const scored = candidates.map(s => ({
     session: s,
-    score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
-    confidence: aiMatchConfidence(s.session_id, 'session'),
+    score:   (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+    match:   matchForSession(s),
   }));
-  // Sort by AI match confidence desc, then category-match score, then title.
+  // Sort by ranking ascending (top match first), then category overlap.
   scored.sort((a, b) =>
-    b.confidence - a.confidence ||
+    a.match.rank - b.match.rank ||
     b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
@@ -2886,9 +2967,9 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No sessions in this time window.</div>'
-    : scored.map(({ session: s, confidence }) => {
+    : scored.map(({ session: s, match: m }) => {
         const inPlan = planIds.has(s.session_id);
-        const swapTags = whyMatched(s, _plan || {});
+        const swapTags = whyMatched(s, _plan || {}, m.bucket);
         const tagsHtml = swapTags.length
           ? `<div class="checklist-why-tags">${swapTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
           : '';
@@ -2897,12 +2978,9 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
               ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
-            </div>
-            <div class="slot-swap-row-confidence">
-              <div class="row-confidence-num">${confidence}%</div>
-              <div class="row-confidence-label">AI Match</div>
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
@@ -2943,13 +3021,12 @@ window.planOpenSlotSwap = function(currentId, ev) {
   const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
   const scored = candidates.map(s => ({
     session: s,
-    score: (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
-    confidence: aiMatchConfidence(s.session_id, 'session'),
+    score:   (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
+    match:   matchForSession(s),
   }));
-  // Sort by AI match confidence desc — closest swaps appear first, so the
-  // user can see how near each alternative is to their current pick.
+  // Sort by ranking ascending — closest swaps appear first.
   scored.sort((a, b) =>
-    b.confidence - a.confidence ||
+    a.match.rank - b.match.rank ||
     b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
@@ -2970,9 +3047,9 @@ window.planOpenSlotSwap = function(currentId, ev) {
 
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other sessions at this time slot.</div>'
-    : scored.map(({ session: s, confidence }) => {
+    : scored.map(({ session: s, match: m }) => {
         const inPlan = planIds.has(s.session_id);
-        const swapTags = whyMatched(s, _plan || {});
+        const swapTags = whyMatched(s, _plan || {}, m.bucket);
         const tagsHtml = swapTags.length
           ? `<div class="checklist-why-tags">${swapTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}</div>`
           : '';
@@ -2981,12 +3058,9 @@ window.planOpenSlotSwap = function(currentId, ev) {
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
               ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
-            </div>
-            <div class="slot-swap-row-confidence">
-              <div class="row-confidence-num">${confidence}%</div>
-              <div class="row-confidence-label">AI Match</div>
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'

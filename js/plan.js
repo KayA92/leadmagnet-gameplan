@@ -1231,7 +1231,7 @@ function renderTeamPreview() {
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
         With your team in
       </div>
-      <h3 class="team-preview-headline">Your Planner is <em>10× more useful</em> with the team in.</h3>
+      <h3 class="team-preview-headline">Your Planner is <em>even more useful</em> with the team in.</h3>
       <p class="team-preview-sub">Live notes, ratings, and team intel flowing in side-by-side. Every session — every booth — through your whole team's eyes. Here's what one card looks like when team mode is on:</p>
 
       <!-- Mockup session card — uses real class names so it inherits

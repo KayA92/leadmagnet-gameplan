@@ -9457,12 +9457,12 @@ button.app-pill.purple.clickable:hover {
 .sponsors-footer-heading {
   font-family: 'Fraunces', serif;
   font-weight: 400;
-  font-size: clamp(30px, 4vw, 42px);
-  line-height: 1.1;
+  font-size: clamp(36px, 5vw, 54px);
+  line-height: 1.08;
   letter-spacing: -0.02em;
   font-variation-settings: 'SOFT' 40;
   color: var(--text);
-  margin: 0 0 32px;
+  margin: 0 0 36px;
   text-wrap: balance;
 }
 .sponsors-footer-heading em {
@@ -9585,7 +9585,7 @@ button.app-pill.purple.clickable:hover {
 .sponsor-card-link:hover { opacity: 0.8; }
 @media (max-width: 600px) {
   .sponsors-footer { padding: 48px 20px 48px; margin-top: 60px; }
-  .sponsors-footer-heading { font-size: 28px; margin-bottom: 24px; }
+  .sponsors-footer-heading { font-size: 34px; margin-bottom: 28px; }
   .sponsors-grid { grid-template-columns: 1fr; }
   .sponsor-card { padding: 32px 24px 26px; gap: 18px; }
   .sponsor-card-logo { min-height: 80px; }

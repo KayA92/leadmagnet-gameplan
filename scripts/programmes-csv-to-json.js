@@ -353,6 +353,13 @@ function writePainScoresCsv(programmes) {
   console.log(`Written pain scores CSV → ${outPath}`);
 }
 
+// Concurrency pool: keeps N async tasks in flight simultaneously.
+function runConcurrent(items, concurrency, fn) {
+  const queue = [...items];
+  const worker = async () => { while (queue.length > 0) await fn(queue.shift()); };
+  return Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+}
+
 async function runScoring(programmes, { tagFilter, programmeFilter }) {
   loadEnv();
 
@@ -381,7 +388,7 @@ async function runScoring(programmes, { tagFilter, programmeFilter }) {
   const systemPrompt = singleTag ? buildSingleTagSystemPrompt(singleTag) : buildSystemPrompt();
   let done = 0;
 
-  for (const programme of targets) {
+  await runConcurrent(targets, 5, async programme => {
     const matchedSignals = findMatchedSignals(programme);
     const userPrompt = buildUserPrompt(programme, matchedSignals);
 
@@ -421,9 +428,7 @@ async function runScoring(programmes, { tagFilter, programmeFilter }) {
         await new Promise(r => setTimeout(r, delay));
       }
     }
-
-    await new Promise(r => setTimeout(r, 1000));
-  }
+  });
 
   console.log(`Scoring complete: ${done}/${targets.length} sessions scored.`);
 }

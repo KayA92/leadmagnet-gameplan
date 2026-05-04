@@ -356,8 +356,14 @@ Return ONLY valid JSON with this single key (no markdown, no preamble):
 { "${tag.id}": { "score": 0.0, "reason": "..." } }`;
 }
 
-// Main scoring loop. Processes exhibitors sequentially (not in parallel) to stay
-// well within Anthropic's rate limits. 1-second delay between calls is intentional.
+// Concurrency pool: keeps N async tasks in flight simultaneously.
+function runConcurrent(items, concurrency, fn) {
+  const queue = [...items];
+  const worker = async () => { while (queue.length > 0) await fn(queue.shift()); };
+  return Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+}
+
+// Main scoring loop. Runs 5 concurrent Haiku calls (safe for all Anthropic tiers).
 // Retry logic handles transient 500/529 overload errors with a 3-second backoff.
 //
 // Options:
@@ -407,14 +413,13 @@ async function runScoring(exhibitors, { tagFilter = null, exhibitorFilter = null
     console.log('Prompt caching enabled — system prompt cached after first call.\n');
   }
 
-  let ok = 0, fail = 0;
+  let ok = 0, fail = 0, completed = 0;
 
-  for (let i = 0; i < targets.length; i++) {
-    const e     = targets[i];
-    const label = `[${String(i + 1).padStart(3)}/${targets.length}] ${e.company_name} (${e.stand_number})`;
+  await runConcurrent(targets, 5, async e => {
+    completed++;
+    const label = `[${String(completed).padStart(3)}/${targets.length}] ${e.company_name} (${e.stand_number})`;
 
     try {
-      // Layer 1: keyword matching — run before the API call
       const matchedSignals = findMatchedSignals(e);
 
       let response;
@@ -442,7 +447,6 @@ async function runScoring(exhibitors, { tagFilter = null, exhibitorFilter = null
         if (!e.pain_scores) e.pain_scores = {};
 
         if (singleTag) {
-          // --tag mode: merge only the targeted tag back into existing scores
           const entry = scores[singleTag.id];
           if (entry) {
             e.pain_scores[singleTag.id] = {
@@ -453,7 +457,6 @@ async function runScoring(exhibitors, { tagFilter = null, exhibitorFilter = null
             console.log(`  ✓ ${label} — ${singleTag.id}: ${entry.score.toFixed(2)} "${entry.reason}"`);
           }
         } else {
-          // Full re-score: replace all tags. matched_signals only written where hits found.
           for (const [id, entry] of Object.entries(scores)) {
             e.pain_scores[id] = {
               score:  entry.score,
@@ -474,9 +477,7 @@ async function runScoring(exhibitors, { tagFilter = null, exhibitorFilter = null
       console.error(`  ✗ ${label} — ${err.message}`);
       fail++;
     }
-
-    if (i < targets.length - 1) await new Promise(r => setTimeout(r, 1000));
-  }
+  });
 
   console.log(`\n${ok} scored, ${fail} failed`);
 }

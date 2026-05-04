@@ -493,7 +493,7 @@ function renderPlanPreview() {
         All ${sessionsTotal} sessions are ranked to you — activate plan for full access
       </div>
       <p class="hidden-alt-body">
-        You're seeing the top <strong>${topPickCount}</strong>. The other <strong>${otherSessions} sessions</strong> and all <strong>${boothsTotal} booths</strong> are ranked the same way, in your active plan.
+        You're seeing the top <strong>${topPickCount}</strong>. The other <strong>${otherSessions} sessions</strong> and all <strong>${boothsTotal} booths</strong> are ranked the same way, in your active plan. Every slot has ranked alternatives too — ready to swap.
       </p>
       <button class="hidden-alt-cta" type="button" onclick="document.getElementById('preview-save')?.click()">
         Activate my plan

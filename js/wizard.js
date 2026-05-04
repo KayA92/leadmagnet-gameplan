@@ -637,9 +637,6 @@ async function handleSaveSubmit(e) {
     );
     if (userErr) throw userErr;
 
-    // NOTE: firm_size / firm_mode / pains are intentionally NOT inserted yet,
-    // pending migration 20260504000000. Once it lands, add them back here so
-    // new signups capture full Stage-5b context.
     const { data: savedPlan, error: planErr } = await supabase.from('plans').insert({
       user_id:     userId,
       attend_mode: state.answers.attendMode,
@@ -647,6 +644,9 @@ async function handleSaveSubmit(e) {
       categories:  state.answers.categories,
       time_window: state.answers.time,
       role:        state.answers.role,
+      pains:       state.answers.pains     || [],
+      firm_size:   state.answers.firmSize  || null,
+      firm_mode:   state.answers.mode      || null,
       sessions:    enrichedSessions,
       booths:      enrichedBooths,
       ai_themes:   state.plan?.themes || [],

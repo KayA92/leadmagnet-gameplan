@@ -93,26 +93,17 @@ async function loadLatestPlan(userId) {
 }
 
 async function loadTeamData(teamId) {
-  // Try the full select first; if migration 20260504000000 hasn't been
-  // applied yet, fall back to the legacy column set so the page still loads.
-  const FULL_PLAN_SELECT   = 'id, user_id, attend_mode, problem, categories, role, firm_size, firm_mode, pains, sessions, booths, ai_themes';
-  const LEGACY_PLAN_SELECT = 'id, user_id, attend_mode, problem, categories, role, sessions, booths, ai_themes';
-
-  let teamPlans;
-  {
-    const r = await supabase.from('plans').select(FULL_PLAN_SELECT).eq('team_id', teamId);
-    if (r.error && /column.*does not exist/i.test(r.error.message || '')) {
-      const fallback = await supabase.from('plans').select(LEGACY_PLAN_SELECT).eq('team_id', teamId);
-      teamPlans = fallback.data || [];
-    } else {
-      teamPlans = r.data || [];
-    }
-  }
-
-  const [{ data: members }, { data: teamRow }] = await Promise.all([
+  // NOTE: firm_size / firm_mode / pains are intentionally NOT in this select
+  // until migration 20260504000000 lands. Once it does, add them back here so
+  // the team card can render firm size in the identity row.
+  const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
       .select('role, joined_at, users(id, first_name, last_name, company)')
+      .eq('team_id', teamId),
+    supabase
+      .from('plans')
+      .select('id, user_id, problem, categories, role, sessions, booths, ai_themes')
       .eq('team_id', teamId),
     supabase
       .from('teams')

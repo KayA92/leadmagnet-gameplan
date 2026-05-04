@@ -1428,20 +1428,29 @@ function renderTeamTab() {
 
     ${inviteHero}
 
-    ${renderTeamPreview()}
-
-    <div class="app-section team-pre-show">
-      <div class="team-section-eyebrow tone-purple">Team intel</div>
-      <h3 class="team-section-title team-section-title-xl">Your team's <em>onboarding answers.</em></h3>
-      <p class="team-section-lede">Most firms learn this in the cab home. <em>You'll have it before you arrive.</em></p>
-      <div class="team-section-count-row">
-        <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>
-      </div>
-      <div class="teammate-grid">
-        ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
-        ${placeholderCard}
-      </div>
-    </div>
+    ${(() => {
+      // Section order pivots on team size:
+      // · Solo (1 member, just the user): preview FIRST so the value
+      //   prop sells the invite. Onboarding section is empty-ish anyway.
+      // · 2+ members: onboarding answers FIRST (it's now real intel
+      //   the user came here to see). Preview drops below it as a
+      //   "still want more eyes" reminder.
+      const onboarding = `
+        <div class="app-section team-pre-show">
+          <div class="team-section-eyebrow tone-purple">Team intel</div>
+          <h3 class="team-section-title team-section-title-xl">Your team's <em>onboarding answers.</em></h3>
+          <p class="team-section-lede">Most firms learn this in the cab home. <em>You'll have it before you arrive.</em></p>
+          <div class="team-section-count-row">
+            <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>
+          </div>
+          <div class="teammate-grid">
+            ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+            ${placeholderCard}
+          </div>
+        </div>`;
+      const preview = renderTeamPreview();
+      return isSolo ? `${preview}${onboarding}` : `${onboarding}${preview}`;
+    })()}
   `;
 }
 

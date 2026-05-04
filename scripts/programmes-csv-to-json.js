@@ -22,6 +22,10 @@
 //   node scripts/programmes-csv-to-json.js --score --programme "MTD" --tag mtd-volume
 //       Pre-flight test: one session × one tag, ~$0.00.
 //
+//   node scripts/programmes-csv-to-json.js --csv
+//       Write data/programmes-pain-scores.csv from current programme.json (no API call).
+//       Can be combined with --score: node ... --score --csv
+//
 // API key: store in scripts/.env as ANTHROPIC_API_KEY=sk-ant-...
 //
 // Valid tag IDs: ai-start, ai-data-mess, mtd-volume, mtd-clients, margin,
@@ -519,6 +523,7 @@ const programmes = rows.slice(1)
 async function main() {
   const args = process.argv.slice(2);
   const doScore      = args.includes('--score');
+  const doCsv        = args.includes('--csv');
   const tagIdx       = args.indexOf('--tag');
   const progIdx      = args.indexOf('--programme');
   const tagFilter    = tagIdx  >= 0 ? args[tagIdx  + 1] : null;
@@ -526,6 +531,8 @@ async function main() {
 
   if (doScore) {
     await runScoring(programmes, { tagFilter, programmeFilter: progFilter });
+  }
+  if (doCsv) {
     writePainScoresCsv(programmes);
   }
 

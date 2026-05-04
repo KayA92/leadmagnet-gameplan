@@ -11,6 +11,10 @@
 //
 // --score requires ANTHROPIC_API_KEY in scripts/.env
 // Estimated cost: ~$0.70–$1.50 for ~300 exhibitors (prompt caching enabled)
+//
+//   node scripts/exhibitors-csv-to-json.js --csv
+//       Write data/exhibitors-pain-scores.csv from current exhibitors.json (no API call).
+//       Can be combined with --score: node ... --score --csv
 // ============================================================================
 
 'use strict';
@@ -566,6 +570,7 @@ const exhibitors = rows.slice(1)
 
 async function main() {
   const useScore = process.argv.includes('--score');
+  const useCsv   = process.argv.includes('--csv');
 
   // Parse optional partial-run filters
   const tagIdx        = process.argv.indexOf('--tag');
@@ -575,6 +580,8 @@ async function main() {
 
   if (useScore) {
     await runScoring(exhibitors, { tagFilter, exhibitorFilter });
+  }
+  if (useCsv) {
     writePainScoresCsv(exhibitors);
   }
 

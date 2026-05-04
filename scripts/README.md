@@ -95,6 +95,18 @@ You can combine `--exhibitor` and `--tag` to re-score a single tag for a single 
 node scripts/exhibitors-csv-to-json.js --score --exhibitor "Workiro" --tag ai-data-mess
 ```
 
+### 5. Generate the pain scores spreadsheet
+Run after any scoring run (or at any time) to produce a reviewable CSV matrix.
+
+```bash
+node scripts/exhibitors-csv-to-json.js --csv
+```
+
+- No API calls — reads `data/exhibitors.json` as-is
+- Writes `data/exhibitors-pain-scores.csv`
+- Columns: `company_name`, `stand_number`, one column per tag (score as 0.00), `top_tags`
+- Can be combined with a scoring run: `node scripts/exhibitors-csv-to-json.js --score --csv`
+
 ---
 
 ## Adding a new field to exhibitors.json
@@ -195,3 +207,14 @@ node scripts/programmes-csv-to-json.js
 Converts `programme.csv` → `data/programme.json`. Run whenever session data changes in
 the CSV. With `--score`, runs the same two-layer Haiku pain scoring pipeline as the
 exhibitor script — see the four run modes documented at the top of that script.
+
+To generate a reviewable CSV matrix of all session pain scores:
+
+```bash
+node scripts/programmes-csv-to-json.js --csv
+```
+
+- No API calls — reads `data/programme.json` as-is
+- Writes `data/programmes-pain-scores.csv`
+- Columns: `session_id`, `title`, `theatre`, one column per tag (score as 0.00), `top_tags`
+- Can be combined with a scoring run: `node scripts/programmes-csv-to-json.js --score --csv`

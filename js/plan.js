@@ -2131,9 +2131,9 @@ function renderDebriefTab() {
     </div>
 
     <div class="app-section debrief-summary-section">
-      <div class="team-section-eyebrow tone-pink">The summary</div>
-      <h3 class="team-section-title">Your Accountex, <em>distilled.</em></h3>
-      <p class="team-section-lede">A copy-ready debrief built from everything above. Edit before you send.</p>
+      <div class="team-section-eyebrow tone-pink">The whole event in one PDF</div>
+      <h3 class="team-section-title team-section-title-xl">Every rating, every note — <em>one click.</em></h3>
+      <p class="team-section-lede">Every session you rated, every booth you flagged, every note your team left — pulled into a <em>clean, ready-to-share debrief PDF.</em> No copy-paste. No formatting. Just done.</p>
       <details class="debrief-summary-details">
         <summary>
           <span>Preview the debrief</span>

@@ -11035,7 +11035,6 @@ button.app-pill.purple.clickable:hover {
   align-items: center;
   gap: 6px;
   color: rgba(255,108,144,0.95);
-  filter: drop-shadow(0 0 10px rgba(255,94,132,0.50));
   padding: 2px 0;
 }
 .debrief-avg-flame {
@@ -11045,19 +11044,24 @@ button.app-pill.purple.clickable:hover {
   overflow: visible;
 }
 .debrief-avg-flame:not(.lit) { opacity: 0.20; filter: none; }
+/* Subtle neon breathe — drop-shadow halo oscillates from a soft 6px
+   glow up to a punchy 18px glow and back. No size change, just light.
+   Each flame is offset 0.8s so the row reads as a soft wave rather
+   than a synchronised flicker. */
 .debrief-avg-flame.lit {
-  animation: debriefFlamePulse 2.4s ease-in-out infinite;
-  transform-origin: center bottom;
+  animation: debriefFlameGlow 3.2s ease-in-out infinite;
 }
-.debrief-avg-flame.lit:nth-child(2) { animation-delay: 0.25s; }
-.debrief-avg-flame.lit:nth-child(3) { animation-delay: 0.5s; }
-@keyframes debriefFlamePulse {
-  0%, 100% { transform: scale(1)    translateY(0); opacity: 1; }
-  45%      { transform: scale(1.10) translateY(-1px); opacity: 0.92; }
-  55%      { transform: scale(0.98) translateY(0);    opacity: 1; }
+.debrief-avg-flame.lit:nth-child(2) { animation-delay: 0.8s; }
+.debrief-avg-flame.lit:nth-child(3) { animation-delay: 1.6s; }
+@keyframes debriefFlameGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px  rgba(255,94,132,0.35)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(255,94,132,0.85)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .debrief-avg-flame.lit { animation: none; }
+  .debrief-avg-flame.lit {
+    animation: none;
+    filter: drop-shadow(0 0 10px rgba(255,94,132,0.50));
+  }
 }
 
 .debrief-avg-num {

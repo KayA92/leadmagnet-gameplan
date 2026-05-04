@@ -5067,18 +5067,18 @@ button.app-pill.purple.clickable:hover {
   justify-content: center;
   transition: all 0.15s;
   line-height: 1;
-  color: rgba(255,94,132,0.7);
+  color: rgba(255,108,144,0.92);
 }
 .row-fire-btn .flame-icon {
   transition: all 0.2s cubic-bezier(.4,0,.2,1);
   width: 16px;
   height: 16px;
-  filter: drop-shadow(0 0 3px rgba(255,94,132,0.25));
+  filter: drop-shadow(0 0 5px rgba(255,94,132,0.45));
 }
 .row-fire-btn .flame-icon path {
   fill: transparent;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 2.4;
 }
 .row-fire-btn:hover {
   color: var(--pink);
@@ -9896,6 +9896,108 @@ button.app-pill.purple.clickable:hover {
   .login-page-sub { font-size: 16px; }
   .login-page-input { font-size: 16px; padding: 16px 18px 16px 50px; }
   .login-page-divider { margin: 36px auto 24px; }
+}
+
+/* ── Team notes inline block on Checklist cards ───────────────────────
+   Caps at 2 visible rows; "+N more" link opens planShowTeamNotes
+   modal. Purple-tinted to match the booth identity since both share
+   the team-data colour family. */
+.team-notes-block {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(168,85,247,0.07);
+  border: 1px solid rgba(168,85,247,0.22);
+  border-radius: 8px;
+}
+.team-note-row {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0 0 5px;
+  line-height: 1.5;
+}
+.team-note-row:last-child { margin-bottom: 0; }
+.team-note-name {
+  color: var(--purple);
+  font-weight: 700;
+  margin-right: 4px;
+}
+.team-notes-more {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--purple);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(168,85,247,0.40);
+  transition: color 0.15s, border-color 0.15s;
+}
+.team-notes-more:hover {
+  color: #fff;
+  border-bottom-color: var(--purple);
+}
+
+/* Team-notes modal — variant of the confirm modal panel, scrollable
+   list inside, no destructive accent. */
+.team-notes-panel { max-width: 520px; }
+.team-notes-modal-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+.team-notes-modal-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin: 14px 0 18px;
+  padding-right: 4px;
+}
+.team-notes-modal-row {
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.team-notes-modal-row:last-child { margin-bottom: 0; }
+.team-notes-modal-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.team-notes-modal-name {
+  color: var(--purple);
+  font-weight: 700;
+  font-size: 13px;
+}
+.team-notes-modal-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint, rgba(255,255,255,0.40));
+}
+.team-notes-modal-text {
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.team-notes-modal-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 32px 0;
 }
 
 /* ── Mobile overrides for the recent Checklist additions ────────────── */

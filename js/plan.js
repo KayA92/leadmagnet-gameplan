@@ -626,6 +626,28 @@ function renderChecklistTab() {
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
   });
 
+  // Inline team-notes block on a card. Caps at 2 notes; if more exist,
+  // shows a "+N more · View all" link that opens a modal listing every
+  // teammate note for the item. Stops a single chatty teammate from
+  // pushing the card off-screen.
+  const TEAM_NOTES_INLINE_CAP = 2;
+  function renderTeamNotesBlock(teamNotes, noteKey, itemTitle) {
+    if (!teamNotes.length) return '';
+    const sorted = [...teamNotes].sort((a, b) =>
+      new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    const visible = sorted.slice(0, TEAM_NOTES_INLINE_CAP);
+    const overflow = Math.max(0, sorted.length - TEAM_NOTES_INLINE_CAP);
+    const noteRow = (n) => {
+      const author = _teamData?.members.find(m => m.users?.id === n.created_by);
+      const name = author ? author.users.first_name : 'Teammate';
+      return `<p class="team-note-row"><span class="team-note-name">${escHtml(name)}:</span> ${escHtml(n.note_text || '')}</p>`;
+    };
+    const moreLink = overflow > 0
+      ? `<button class="team-notes-more" type="button" data-title="${escHtml(itemTitle || '')}" onclick="planShowTeamNotes('${escHtml(noteKey)}', this.dataset.title)">+${overflow} more · View all team notes</button>`
+      : '';
+    return `<div class="team-notes-block">${visible.map(noteRow).join('')}${moreLink}</div>`;
+  }
+
   function renderSessionRow(item, i) {
     const noteKey      = `session:${item.session_id}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
@@ -662,14 +684,7 @@ function renderChecklistTab() {
         <span>${altCount} other <strong>${escHtml(bucketLabel(match.bucket).toUpperCase())}</strong> alternative${altCount === 1 ? '' : 's'} at this time</span>
       </button>` : '';
 
-    const teamNotesHtml = teamNotes.length ? `
-      <div style="margin-top:8px;padding:8px 10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px;">
-        ${teamNotes.map(n => {
-          const author = _teamData?.members.find(m => m.users?.id === n.created_by);
-          const name = author ? author.users.first_name : 'Teammate';
-          return `<p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><span style="color:var(--purple);font-weight:600;">${escHtml(name)}:</span> ${escHtml(n.note_text || '')}</p>`;
-        }).join('')}
-      </div>` : '';
+    const teamNotesHtml = renderTeamNotesBlock(teamNotes, noteKey, item.title || '');
 
     const noteItemId  = `session:${escHtml(item.session_id)}`;
     const notePanel   = existingNote
@@ -759,6 +774,7 @@ function renderChecklistTab() {
   function renderBoothRow(item, i, displayRank) {
     const noteKey      = `booth:${item.stand_number}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
+    const teamNotes    = teamNotesByItem[noteKey] || [];
     const desc         = item.company_description || '';
     const reason       = item.reason || '';
     const isWorkiro    = item.company_name === 'Workiro';
@@ -855,6 +871,7 @@ function renderChecklistTab() {
                 </div>
               </div>
             </div>
+            ${renderTeamNotesBlock(teamNotes, noteKey, item.company_name || '')}
           </div>
         </div>
         ${notePanel}
@@ -2868,6 +2885,58 @@ function planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }) 
   modal.querySelector('.plan-confirm-btn.confirm')?.focus();
 }
 
+// Modal listing every teammate note for a single item. Triggered from
+// the "+N more" link in the inline team-notes block when an item has
+// more notes than the inline cap.
+window.planShowTeamNotes = function(noteKey, itemTitle) {
+  const allNotes = (_teamData?.allNotes || []).filter(n => {
+    if (!n.created_by || n.created_by === _authUser?.id) return false;
+    const colon = noteKey.indexOf(':');
+    return n.item_type === noteKey.slice(0, colon) && String(n.item_id) === noteKey.slice(colon + 1);
+  });
+  const sorted = [...allNotes].sort((a, b) =>
+    new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const fmtDate = (d) => {
+    if (!d) return '';
+    try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
+  };
+  document.getElementById('planTeamNotesModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'planTeamNotesModal';
+  modal.className = 'plan-confirm-modal open';
+  modal.innerHTML = `
+    <div class="plan-confirm-backdrop" data-action="close"></div>
+    <div class="plan-confirm-panel team-notes-panel">
+      <div class="team-notes-modal-eyebrow">Team notes</div>
+      <h2 class="plan-confirm-title">${escHtml(itemTitle)}</h2>
+      <div class="team-notes-modal-list">
+        ${sorted.map(n => {
+          const author = _teamData?.members.find(m => m.users?.id === n.created_by);
+          const name = author ? `${author.users.first_name || ''} ${author.users.last_name || ''}`.trim() : 'Teammate';
+          return `
+            <div class="team-notes-modal-row">
+              <div class="team-notes-modal-row-head">
+                <span class="team-notes-modal-name">${escHtml(name)}</span>
+                ${n.created_at ? `<span class="team-notes-modal-time">${escHtml(fmtDate(n.created_at))}</span>` : ''}
+              </div>
+              <p class="team-notes-modal-text">${escHtml(n.note_text || '')}</p>
+            </div>`;
+        }).join('') || '<p class="team-notes-modal-empty">No team notes yet.</p>'}
+      </div>
+      <div class="plan-confirm-actions">
+        <button class="plan-confirm-btn cancel" type="button" data-action="close">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  const close = () => { document.removeEventListener('keydown', onKey); modal.remove(); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  modal.addEventListener('click', (e) => {
+    if (e.target.closest('[data-action="close"]')) close();
+  });
+};
+
 window.planConfirmRemoveBooth = function(standNumber, companyName) {
   const label = companyName
     ? `Remove <strong>${escHtml(companyName)}</strong> from your plan?`
@@ -3314,16 +3383,26 @@ async function initDemoMode() {
     // shows its full populated state (AI synthesis, who's-going-and-why,
     // etc.). Real users get a team auto-created on first sign-in; demo
     // skips auth, so we fake one here.
-    const teamPlanFor = (uid, problem, categories, role, sessIds) => ({
+    const teamPlanFor = (uid, problem, categories, role, sessIds, sessRatings = {}) => ({
       id: `demo-plan-${uid}`,
       user_id: uid,
       problem,
       categories,
       role,
-      sessions: (allSessions || []).filter(s => sessIds.includes(s.session_id)).slice(0, 6),
+      sessions: (allSessions || [])
+        .filter(s => sessIds.includes(s.session_id))
+        .slice(0, 6)
+        .map(s => ({ ...s, rating: sessRatings[s.session_id] || 0 })),
       booths: [],
       ai_themes: [],
     });
+    const sarahSessIds = (allSessions || []).slice(8, 14).map(s => s.session_id);
+    const jamesSessIds = (allSessions || []).slice(4, 10).map(s => s.session_id);
+    // Pick a few of the user's own plan items for cross-team notes —
+    // shows what other teammates left on items the user is also tracking.
+    const planSess = sessions;
+    const planBooths = booths;
+    const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString();
     _teamData = {
       teamId: 'demo-team',
       company: 'Demo Firm Ltd',
@@ -3342,15 +3421,87 @@ async function initDemoMode() {
           'Slow client onboarding, AML / KYC pressure, Document chaos',
           ['aml-onboarding', 'doc-mgmt', 'practice-mgmt'],
           'senior',
-          (allSessions || []).slice(8, 14).map(s => s.session_id)),
+          sarahSessIds,
+          // Sarah's own session ratings — show range across her plan
+          Object.fromEntries(sarahSessIds.slice(0, 4).map((id, i) => [id, [3, 2, 3, 1][i]]))),
         teamPlanFor('demo-james',
           'Margin squeeze, Charging for advice, Stuck in compliance',
           ['proposals', 'forecasting', 'practice-mgmt'],
           'partner',
-          (allSessions || []).slice(4, 10).map(s => s.session_id)),
+          jamesSessIds,
+          Object.fromEntries(jamesSessIds.slice(0, 3).map((id, i) => [id, [3, 2, 3][i]]))),
       ],
-      allNotes: [],
+      // Variety of team notes — chip-prefixed and free-form, on both
+      // sessions and booths, some with multiple notes per item so the
+      // "+N more · View all" overflow path actually triggers.
+      allNotes: [
+        // Session 1 — gets 3 notes from Sarah + James (overflow path)
+        planSess[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '🔥 Game-changer: speakers nailed the AML angle — exactly what we\'ve been wrestling with for our top-50 clients.',
+          created_by: 'demo-sarah', created_at: hoursAgo(28),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '📝 To do: pull the slide on workflow automation, share with the partner group on Friday.',
+          created_by: 'demo-james', created_at: hoursAgo(20),
+        },
+        planSess[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[0].session_id,
+          note_text: '💡 Idea: run a 30-min internal lunch-and-learn from this — could replace our Q3 training session entirely.',
+          created_by: 'demo-sarah', created_at: hoursAgo(6),
+        },
+        // Session 2 — single note from James
+        planSess[1] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'session', item_id: planSess[1].session_id,
+          note_text: '🧠 Made me think: are we overcomplicating our pricing model? Worth a partner conversation.',
+          created_by: 'demo-james', created_at: hoursAgo(4),
+        },
+        // Session 4 — Sarah, free-form
+        planSess[3] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'session', item_id: planSess[3].session_id,
+          note_text: 'Wasn\'t expecting this to land but the practical examples on data migration were spot on. Will recommend to the implementation team.',
+          created_by: 'demo-sarah', created_at: hoursAgo(2),
+        },
+        // Booth 1 — both teammates, overflow
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '🔥 Best in show: easily the slickest demo we saw. Their integration story with our practice mgmt stack is exactly what we need.',
+          created_by: 'demo-sarah', created_at: hoursAgo(30),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '🔍 Look into: pricing tier 3 + bulk client onboarding — they hinted at a partner programme worth exploring.',
+          created_by: 'demo-james', created_at: hoursAgo(18),
+        },
+        planBooths[0] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[0].stand_number),
+          note_text: '❤️ Love it: their CEO walked us through the roadmap — Q3 release lines up with our migration window.',
+          created_by: 'demo-sarah', created_at: hoursAgo(8),
+        },
+        // Booth 2 — single skip note from James
+        planBooths[1] && {
+          plan_id: `demo-plan-demo-james`, item_type: 'booth', item_id: String(planBooths[1].stand_number),
+          note_text: '👎 Skip: same playbook as last year. No real differentiation from incumbents.',
+          created_by: 'demo-james', created_at: hoursAgo(5),
+        },
+        // Booth 3 — Sarah maybe
+        planBooths[2] && {
+          plan_id: `demo-plan-demo-sarah`, item_type: 'booth', item_id: String(planBooths[2].stand_number),
+          note_text: '🤔 Maybe: tech is interesting but their UK support story isn\'t there yet. Re-evaluate next year.',
+          created_by: 'demo-sarah', created_at: hoursAgo(1),
+        },
+      ].filter(Boolean),
     };
+
+    // Demo ratings on the user's own plan items so the Debrief tab has
+    // hot sessions/booths to surface (rating the user gave plus team
+    // ratings inferred from teamPlans above).
+    if (planSess[0]) planSess[0].rating = 3;
+    if (planSess[2]) planSess[2].rating = 2;
+    if (planSess[5]) planSess[5].rating = 3;
+    if (planBooths[0]) planBooths[0].rating = 3;
+    if (planBooths[2]) planBooths[2].rating = 2;
 
     log('renderApp');
     showLoading(false);

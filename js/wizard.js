@@ -1,5 +1,4 @@
 import { selectSessions, selectBooths } from './selection.js';
-import { matchSessions } from './api.js';
 import { signInAnon, getUser, sendMagicLink } from './auth.js';
 import { supabase } from './supabase.js';
 
@@ -175,9 +174,8 @@ function stopTicker() {
 }
 
 // Asymptote-style progress: bar creeps toward 95% indefinitely so it
-// never fills before the API resolves. Caller jumps it to 100% via the
-// returned stop function once matchSessions returns. Avoids the "bar's
-// done but I'm still waiting — is this broken?" feel.
+// never appears done before scoring finishes. Avoids the "bar's done but
+// I'm still waiting — is this broken?" feel.
 let _progressId = null;
 function startProgress() {
   const bar = $('reveal-progress-fill');
@@ -195,50 +193,6 @@ function stopProgress() {
   if (bar) bar.style.width = '100%';
 }
 
-// Sessions guaranteed to appear when their trigger fires AND their time slot matches.
-// Injected after AI ranking so they cannot be dropped by the model.
-const PINNED_SESSIONS = [
-  {
-    sessionId: '36304',
-    reason: 'Essential for your MTD priorities — covers the impact on un-represented clients.',
-    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
-  },
-  {
-    sessionId: '36370',
-    reason: 'A must-see MTD session covering the real-world IT challenges firms face right now.',
-    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
-  },
-  {
-    titleMatch: 'MTD Therapy',
-    reason: 'Matched to your MTD priorities — a frank, practitioner-led discussion on what\'s working.',
-    detect: (a) => /\bmtd\b|making tax digital/i.test(a.problem) || a.categories.includes('tax-mtd'),
-  },
-  {
-    sessionId: '36375',
-    reason: 'Directly relevant to your margin and pricing challenges — a commercial thinking masterclass.',
-    detect: (a) => /margin|pricing|\bprofitab/i.test(a.problem),
-  },
-];
-
-const _TIME_FILTERS = {
-  'wed-am':   { days: ['Day 1'], startBefore: '13:00', startFrom: null },
-  'wed-pm':   { days: ['Day 1'], startBefore: null,    startFrom: '13:00' },
-  'wed-full': { days: ['Day 1'], startBefore: null,    startFrom: null },
-  'thu-am':   { days: ['Day 2'], startBefore: '13:00', startFrom: null },
-  'thu-pm':   { days: ['Day 2'], startBefore: null,    startFrom: '13:00' },
-  'thu-full': { days: ['Day 2'], startBefore: null,    startFrom: null },
-};
-
-function sessionMatchesTime(session, times) {
-  const slots = (Array.isArray(times) ? times : [times]).map(t => _TIME_FILTERS[t]).filter(Boolean);
-  if (slots.length === 0) return true;
-  return slots.some(tf => {
-    if (!tf.days.includes(session.day)) return false;
-    if (tf.startBefore && session.start_time >= tf.startBefore) return false;
-    if (tf.startFrom && session.start_time < tf.startFrom) return false;
-    return true;
-  });
-}
 
 // Builds the 11-session preview array:
 //   • Ranks 1–3 always shown (top matches)
@@ -308,14 +262,6 @@ function buildPreviewBooths(allRanked) {
   return display.map((e, i) => ({ ...e, rank: i + 1, match: { bucket: e._bucket || 'neutral', rank: i + 1 } }));
 }
 
-function buildFallbackPlan() {
-  return {
-    fallback: true,
-    sessions: buildPreviewSessions(state.filteredSessions),
-    booths: buildPreviewBooths(state.filteredExhibitors),
-    themes: [],
-  };
-}
 
 async function startReveal() {
   state.filteredSessions   = selectSessions(state.answers, state.allSessions);
@@ -329,7 +275,8 @@ async function startReveal() {
   stopStatusCycle();
   stopTicker();
 
-  const sessions = buildPreviewSessions(state.filteredSessions);
+  const deconflicted = deconflictSessions(state.filteredSessions, state.allSessions);
+  const sessions = buildPreviewSessions(deconflicted);
   const booths   = buildPreviewBooths(state.filteredExhibitors);
   state.plan = { sessions, booths, themes: [] };
 
@@ -346,11 +293,6 @@ const TICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 // heat bands (pink → coral → amber → cool-blue) so users decode without
 // a legend. NEUTRAL is browse-only; the user's plan only contains
 // top / high / medium picks per the spec.
-//
-// TODO: Replace dummy bucket label and ranking with real values from matcher.
-//   match.bucket: "top" | "high" | "medium" | "neutral"
-//   match.rank:   number  (global rank in matcher output)
-//   match.total:  number  (total session/booth pool count)
 const SESSION_PLAN_DUMMY = [
   { bucket: 'top',    rank: 3  },
   { bucket: 'top',    rank: 7  },
@@ -405,8 +347,8 @@ function renderMatchBadge({ bucket, rank, type, compact = false, hostStar = fals
     : '';
   const labelText = hostStar ? 'Host Platform' : bucketLabel(bucket);
   const rankLine  = hostStar
-    ? `<span class="match-rank">AI Ranked ★ of ${total}</span>`
-    : `<span class="match-rank">AI ranked #${rank} of ${total}</span>`;
+    ? `<span class="match-rank">Ranked ★ of ${total}</span>`
+    : `<span class="match-rank">Ranked #${rank} of ${total}</span>`;
   return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
     <span class="match-bucket">${sparkle}<span class="match-bucket-text">${labelText}</span></span>
     ${rankLine}
@@ -483,13 +425,6 @@ function renderPlanPreview() {
     .map((b, i) => renderBooth(b, i, sessionItems.length + i))
     .join('');
 
-  // TODO: Replace with real counts from matcher output.
-  //   topPickCount  = rankedSessions.length (user's shortlist)
-  //   sessionsTotal = full programme count for the event
-  //   boothsTotal   = full exhibitor count for the event
-  // The whole section is a transformation tease, not a feature list —
-  // honest depth (240 ranked, 90 booths) + transformation verb ("Activate")
-  // does the conversion work without overselling the live tool.
   const topPickCount  = rankedSessions.length;
   const sessionsTotal = state.allSessions?.length    || 240;
   const boothsTotal   = state.allExhibitors?.length  || 90;
@@ -692,8 +627,7 @@ async function handleSaveSubmit(e) {
 }
 
 // ── Pain tags + precision bar (Stage 1) ────────────────────────────────────────
-// Synthesises state.answers.problem from selected pain labels so the existing
-// matcher payload still receives semantic context without changing the API.
+// Synthesises state.answers.problem from selected pain labels into a readable string.
 const PAIN_LABELS = {
   // SCORCHING (8)
   'ai-start':'AI — where to even start','ai-data-mess':'Data mess blocking AI',

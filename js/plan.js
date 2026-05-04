@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 import { getUser, onAuthChange, sendMagicLink } from './auth.js';
+import { selectSessions, selectBooths } from './selection.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -13,6 +14,8 @@ function escHtml(s) {
 let _plan        = null;
 let _allSessions = [];
 let _allExhibitors = [];
+let _rankedSessions  = [];
+let _rankedBooths    = [];
 let _teamData    = null;
 let _authUser    = null;
 let _pendingInvites = null; // null = not yet loaded; [] = loaded empty; [...] = loaded
@@ -173,10 +176,8 @@ const FIRM_MODE_LABELS = {
 // Tier colour palette mirrors the Stage 1 onboarding heat bands so users
 // decode it without a legend (pink → coral → amber → cool-blue).
 //
-// TODO: Replace dummy bucket label and ranking with real values from matcher.
-//   match.bucket: "top" | "high" | "medium" | "neutral"
-//   match.rank:   number  (global rank in matcher output)
-//   match.total:  number  (total session/booth pool count)
+// Real scores come from _rankedSessions / _rankedBooths (computed via
+// selection.js on load). Dummy fallbacks cover legacy plans and edge cases.
 const SESSION_PLAN_DUMMY = [
   { bucket: 'top',    rank: 3  },
   { bucket: 'top',    rank: 7  },
@@ -202,6 +203,20 @@ const BOOTH_PLAN_DUMMY = [
 ];
 const FALLBACK_MATCH_TOTAL = { session: 240, booth: 90 };
 const BUCKET_RANK_FLOOR    = { top: 1, high: 8, medium: 30, neutral: 100 };
+
+// Scores all sessions and booths using plan answers so swap/fill-slot
+// modals show real relevance ranks rather than hash-based placeholders.
+function computeRankedLists() {
+  if (!_plan || !_allSessions.length) return;
+  const answers = {
+    pains:      _plan.pains      || [],
+    categories: _plan.categories || [],
+    role:       _plan.role       || null,
+    time:       ['wed-full', 'thu-full'],
+  };
+  _rankedSessions = selectSessions(answers, _allSessions);
+  _rankedBooths   = selectBooths(answers, _allExhibitors);
+}
 
 // In-plan items: by rank-in-plan (1-indexed). Sessions+booths that the
 // matcher put in the user's plan get top/high/medium per the spec.
@@ -258,14 +273,14 @@ function bucketLabel(bucket) {
 // Compact two-line badge — used everywhere a card needs to show its match.
 // Pass { bucket, rank, type } where type is 'session' | 'booth' (used to
 // pick the total). Optional `compact` for tight contexts (alts row, swap modal).
-function renderMatchBadge({ bucket, rank, type, compact = false }) {
-  const total   = matchTotal(type);
+function renderMatchBadge({ bucket, rank, type, total: overrideTotal, compact = false }) {
+  const total   = overrideTotal ?? matchTotal(type);
   const sparkle = bucket === 'top'
     ? '<svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>'
     : '';
   return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
     <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
-    <span class="match-rank">AI ranked #${rank} of ${total}</span>
+    <span class="match-rank">Ranked #${rank} of ${total}</span>
   </div>`;
 }
 
@@ -273,11 +288,18 @@ function renderMatchBadge({ bucket, rank, type, compact = false }) {
 // present, otherwise picks the right dummy strategy.
 function matchForSession(s, planRankIndex) {
   if (s?.match?.bucket && Number.isFinite(s?.match?.rank)) return s.match;
+  const scored = _rankedSessions.find(r => r.session_id === s?.session_id);
+  if (scored?._bucket && Number.isFinite(scored?._rank)) return { bucket: scored._bucket, rank: scored._rank };
   if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'session');
   return dummyMatchByHash(s?.session_id, 'session');
 }
 function matchForBooth(b, planRankIndex) {
   if (b?.match?.bucket && Number.isFinite(b?.match?.rank)) return b.match;
+  const scored = _rankedBooths.find(r => r.company_name === b?.company_name);
+  if (scored?._bucket) {
+    const rank = typeof scored._rank === 'number' ? scored._rank : 12;
+    return { bucket: scored._bucket, rank };
+  }
   if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'booth');
   return dummyMatchByHash(b?.stand_number || b?.company_name, 'booth');
 }
@@ -1324,7 +1346,7 @@ function renderTeamPreview() {
                   <svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
                   <span class="match-bucket-text">Top match</span>
                 </span>
-                <span class="match-rank">AI ranked #3 of 240</span>
+                <span class="match-rank">Ranked #3 of 240</span>
               </div>
               <div class="checklist-blurb-divider"></div>
               <p class="checklist-blurb">Three case studies from UK firms (10–250 staff) on rolling out AI across compliance, advisory, and bookkeeping. Including what didn't work and why.</p>
@@ -3250,6 +3272,7 @@ async function handleSignIn(authUser, teamToken) {
     _allExhibitors = allExhibitors;
     _teamData    = teamData;
     _authUser    = authUser;
+    computeRankedLists();
 
     // Guarantee Workiro always appears in the booths list
     if (!(_plan.booths || []).some(b => b.company_name === 'Workiro')) {
@@ -4005,6 +4028,17 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
     b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
+  // Reassign buckets and ranks relative to this slot's candidate pool so the
+  // modal always shows a high/medium/neutral distribution rather than all-neutral.
+  const slotTotal = scored.length;
+  scored.forEach((item, i) => {
+    const pct = (i + 1) / slotTotal;
+    item.match = {
+      bucket: pct <= 0.25 ? 'high' : pct <= 0.6 ? 'medium' : 'neutral',
+      rank: i + 1,
+      localTotal: slotTotal,
+    };
+  });
   const dayLabel = day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   const candidatesHtml = scored.length === 0
@@ -4020,7 +4054,7 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
-              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', total: m.localTotal, compact: true })}
               ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>
@@ -4043,7 +4077,7 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
       </button>
       <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(slotStart)}–${escHtml(slotEnd)}</div>
       <h2 class="login-modal-title">Pick a session <em>for this slot.</em></h2>
-      <p class="login-modal-sub">Free time — perfect for booth visits, or pick something below to fill it. Sessions ranked by AI match.</p>
+      <p class="login-modal-sub">Free time — perfect for booth visits, or pick something below to fill it. Sessions ranked by match score.</p>
       <div class="slot-swap-list">${candidatesHtml}</div>
     </div>`;
   document.body.appendChild(modal);
@@ -4072,6 +4106,17 @@ window.planOpenSlotSwap = function(currentId, ev) {
     b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
+  // Reassign buckets and ranks relative to this slot's candidate pool so the
+  // modal always shows a high/medium/neutral distribution rather than all-neutral.
+  const slotTotal = scored.length;
+  scored.forEach((item, i) => {
+    const pct = (i + 1) / slotTotal;
+    item.match = {
+      bucket: pct <= 0.25 ? 'high' : pct <= 0.6 ? 'medium' : 'neutral',
+      rank: i + 1,
+      localTotal: slotTotal,
+    };
+  });
   const dayLabel = current.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   // Free-time row sits at the top of the list — distinct purple tint
@@ -4100,7 +4145,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
-              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', total: m.localTotal, compact: true })}
               ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>
@@ -4289,12 +4334,14 @@ async function initDemoMode() {
       attend_mode: 'team-lead',
       problem: 'AI — where to even start, Margin squeeze, MTD volume problem',
       categories: ['practice-mgmt', 'tax-mtd', 'ai-automation'],
+      pains: ['ai-start', 'margin', 'mtd-volume'],
       role: 'founder',
       sessions,
       booths,
       ai_themes: [],
       notes: [],
     };
+    computeRankedLists();
 
     // Stub team with the demo user + 2 fake teammates so the Team tab
     // shows its full populated state (AI synthesis, who's-going-and-why,

@@ -1237,7 +1237,7 @@ function renderTeamPreview() {
       <!-- Mockup session card — uses real class names so it inherits
            every styling change made elsewhere on the Checklist. -->
       <div class="team-preview-card-wrap">
-        <span class="team-preview-card-tag">Preview</span>
+        <span class="team-preview-card-tag">Preview · Not live</span>
         <div class="checklist-row is-session" style="animation: none;">
           <div class="checklist-row-main">
             <div class="checklist-row-leftcol">
@@ -1250,7 +1250,7 @@ function renderTeamPreview() {
               </div>
             </div>
             <div class="checklist-main">
-              <div class="checklist-main-title">AI for accountants: practical use cases that actually drive results</div>
+              <div class="checklist-main-title">AI in practice: how three UK firms moved from pilot to firm-wide rollout</div>
               <div class="checklist-main-meta">Main Stage · <span class="type-pill session">Session</span></div>
               <div class="match-badge tier-top">
                 <span class="match-bucket">
@@ -1260,7 +1260,7 @@ function renderTeamPreview() {
                 <span class="match-rank">AI ranked #3 of 240</span>
               </div>
               <div class="checklist-blurb-divider"></div>
-              <p class="checklist-blurb">Speakers walk through three live AI rollouts at top-50 firms, including the workflow framework most firms get wrong.</p>
+              <p class="checklist-blurb">Three case studies from UK firms (10–250 staff) on rolling out AI across compliance, advisory, and bookkeeping. Including what didn't work and why.</p>
 
               <div class="checklist-row-actions">
                 <div class="row-rate-wrap">
@@ -1296,16 +1296,15 @@ function renderTeamPreview() {
                   <span class="team-rated-flames">
                     <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
                     <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
-                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
                   </span>
                 </span>
               </div>
 
               <div class="team-notes-block tone-mint">
-                <p class="team-note-row"><span class="team-note-name">Sarah:</span> 🔥 Game-changer: speakers nailed the AML angle — exactly what we've been wrestling with for our top-50 clients.</p>
-                <p class="team-note-row"><span class="team-note-name">James:</span> 📝 To do: pull the workflow automation slide, share with the partner group on Friday.</p>
+                <p class="team-note-row"><span class="team-note-name">Sarah:</span> 🔥 Game-changer: their pilot-to-rollout framework is exactly what we've been missing. Want to discuss with the partners next week.</p>
+                <p class="team-note-row"><span class="team-note-name">James:</span> 📝 To do: get the slide on their pilot-to-rollout framework. Share with the partner group on Friday.</p>
                 <p class="team-note-row"><span class="team-note-name">Sarah:</span> 💡 Idea: run a 30-min internal lunch-and-learn from this — could replace our Q3 training.</p>
-                <p class="team-note-row"><span class="team-note-name">James:</span> 🧠 Made me think: we're probably 6 months behind where the speaker said the leading firms are.</p>
+                <p class="team-note-row"><span class="team-note-name">James:</span> 🧠 Made me think: we're 6+ months behind on AI rollout. Need to fast-track the audit-side pilot we keep postponing.</p>
                 <span class="team-notes-more" style="cursor: default;">See all 8 →</span>
               </div>
             </div>

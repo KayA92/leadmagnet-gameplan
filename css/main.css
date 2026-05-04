@@ -2089,43 +2089,93 @@ button.app-pill.purple.clickable:hover {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 8px 8px 28px;
-  margin-bottom: 32px;
+  margin-bottom: 18px;
 }
+
+/* "Generated for {name · firm}" — sits above the card, mono caps,
+   matching the rest of the app's eyebrow language. */
+.cpd-generated-for {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin: -4px 4px 14px;
+  text-align: center;
+}
+.cpd-generated-for strong {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
 .cpd-list {
   display: flex;
   flex-direction: column;
 }
 .cpd-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 22px;
+  gap: 14px;
+  padding: 16px 18px 16px 22px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .cpd-row:last-child { border-bottom: none; }
+.cpd-row-main { min-width: 0; }
 .cpd-row-title {
   font-size: 15px;
   font-weight: 500;
   color: var(--text);
   line-height: 1.4;
-  flex: 1;
-  min-width: 0;
+  margin-bottom: 4px;
 }
+.cpd-row-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.4;
+}
+/* Hours in neon mint — reads as a metric, not a label. */
 .cpd-row-hours {
   font-family: 'JetBrains Mono', monospace;
   font-size: 14.5px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--mint);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(34,230,168,0.35);
 }
 .cpd-row-hours span {
   font-weight: 500;
+  color: rgba(34,230,168,0.55);
+  margin-left: 3px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-shadow: none;
+}
+.cpd-row-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: transparent;
   color: var(--text-muted);
-  margin-left: 2px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.cpd-row-remove:hover {
+  color: var(--pink);
+  border-color: rgba(255,94,132,0.45);
+  background: rgba(255,94,132,0.08);
 }
 .cpd-row-empty {
   padding: 40px 24px;
@@ -2134,27 +2184,31 @@ button.app-pill.purple.clickable:hover {
   font-size: 14px;
 }
 
-/* Total — big bold gradient number at the bottom of the card. */
+/* Total — elegant italic gradient number, NOT bold (read as a metric,
+   not a banner). The previous 700 weight + gradient combo looked
+   stocky; SOFT 90 + 500 + Fraunces italic is the same treatment used
+   on big numbers elsewhere in the app. */
 .cpd-total {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 28px 22px 8px;
+  gap: 6px;
+  padding: 32px 22px 10px;
   border-top: 1px solid rgba(255,255,255,0.10);
   margin-top: 4px;
 }
 .cpd-total-num {
   font-family: 'Fraunces', serif;
+  font-style: italic;
   font-size: clamp(64px, 9vw, 96px);
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-weight: 500;
+  letter-spacing: -0.035em;
   line-height: 1;
   background: var(--grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  font-variation-settings: 'SOFT' 60;
+  font-variation-settings: 'SOFT' 90;
 }
 .cpd-total-label {
   font-family: 'JetBrains Mono', monospace;
@@ -2163,6 +2217,101 @@ button.app-pill.purple.clickable:hover {
   text-transform: uppercase;
   font-weight: 700;
   color: var(--text-muted);
+}
+
+/* Disclaimer below the download button — small, italic, muted. */
+.cpd-disclaimer {
+  margin: 6px 4px 22px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Restore (re-add) section — collapsed by default. Appears only when
+   the user has removed sessions from the CPD log. The list inside
+   uses the same row anatomy but with a "Re-add" pill instead of an X. */
+.cpd-restore {
+  background: var(--ink-2);
+  border: 1px solid var(--ink-3);
+  border-radius: 12px;
+  margin-bottom: 32px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.cpd-restore[open] { border-color: rgba(255,255,255,0.16); }
+.cpd-restore > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.cpd-restore > summary::-webkit-details-marker { display: none; }
+.cpd-restore > summary:hover { background: rgba(255,255,255,0.02); color: var(--text); }
+.cpd-restore > summary strong { color: var(--text); }
+.cpd-restore-chevron { transition: transform 0.2s; }
+.cpd-restore[open] .cpd-restore-chevron { transform: rotate(180deg); }
+.cpd-restore-list {
+  border-top: 1px solid var(--ink-3);
+  display: flex;
+  flex-direction: column;
+}
+.cpd-restore-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.cpd-restore-row:last-child { border-bottom: none; }
+.cpd-restore-info { flex: 1; min-width: 0; }
+.cpd-restore-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 3px;
+}
+.cpd-restore-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+.cpd-restore-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(34,230,168,0.45);
+  background: rgba(34,230,168,0.08);
+  color: var(--mint);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.cpd-restore-btn:hover {
+  background: rgba(34,230,168,0.16);
+  border-color: var(--mint);
+  color: #fff;
 }
 
 .cpd-download-btn {
@@ -2194,10 +2343,18 @@ button.app-pill.purple.clickable:hover {
 
 @media (max-width: 640px) {
   .cpd-card { padding: 6px 6px 22px; }
-  .cpd-row { padding: 14px 16px; gap: 12px; }
+  .cpd-row { padding: 14px 14px 14px 16px; gap: 10px; }
   .cpd-row-title { font-size: 14px; }
-  .cpd-total { padding: 22px 16px 6px; }
-  .cpd-total-num { font-size: 56px; }
+  .cpd-row-meta { font-size: 10px; letter-spacing: 0.06em; }
+  .cpd-row-hours { font-size: 13.5px; }
+  .cpd-row-remove { width: 26px; height: 26px; }
+  .cpd-total { padding: 26px 16px 6px; }
+  .cpd-total-num { font-size: 60px; }
+  .cpd-generated-for { font-size: 10px; letter-spacing: 0.10em; }
+  .cpd-disclaimer { font-size: 12px; padding: 0 4px; }
+  .cpd-restore > summary { padding: 12px 14px; font-size: 11px; }
+  .cpd-restore-row { padding: 12px 14px; flex-wrap: wrap; }
+  .cpd-restore-btn { padding: 7px 12px; font-size: 10.5px; }
 }
 .app-section-header {
   display: flex;

@@ -1475,26 +1475,107 @@ function renderTeamTab() {
 
 // ── CPD stub ──────────────────────────────────────────────────────────────────
 
+// Per-plan localStorage key for CPD-excluded session IDs. Removing a
+// session from the CPD log is a CPD-only concept — it must NOT mutate
+// the Checklist plan.sessions, so this is held client-side per plan.
+const CPD_EXCLUDED_KEY = 'cpdExcluded:';
+function _cpdKey() {
+  const id = _plan?.id;
+  return id ? CPD_EXCLUDED_KEY + id : null;
+}
+function _cpdGetExcluded() {
+  try {
+    const k = _cpdKey();
+    if (!k) return new Set();
+    return new Set(JSON.parse(localStorage.getItem(k) || '[]'));
+  } catch { return new Set(); }
+}
+function _cpdSetExcluded(set) {
+  const k = _cpdKey();
+  if (!k) return;
+  localStorage.setItem(k, JSON.stringify([...set]));
+}
+
+// Format a session's date / time / theatre into a single human line:
+// "Wed 13 May · 10:20–11:00 · Masterclasses"
+function _cpdFormatSlot(s) {
+  let datePart = '';
+  if (s.date) {
+    const m = /^(\d{1,2})-([A-Za-z]+)-\d+$/.exec(s.date);
+    if (m) {
+      const dow = s.day === 'Day 1' ? 'Wed' : 'Thu';
+      datePart = `${dow} ${parseInt(m[1], 10)} ${m[2]}`;
+    }
+  }
+  if (!datePart) datePart = s.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+  const time = s.start_time && s.end_time
+    ? `${s.start_time}–${s.end_time}`
+    : (s.start_time || '');
+  return [datePart, time, s.theatre].filter(Boolean).join(' · ');
+}
+
 function renderCpdTab() {
-  const sessions = _plan?.sessions || [];
+  const allSessions = _plan?.sessions || [];
+  const excluded = _cpdGetExcluded();
+  const included = allSessions.filter(s => !excluded.has(String(s.session_id)));
+  const removed  = allSessions.filter(s =>  excluded.has(String(s.session_id)));
+
   // 40-minute Accountex sessions → 0.67 CPD hours each. Per-row rounded
   // to 1 decimal for clean reading; total summed from the unrounded
   // raw value so totals don't drift due to per-row rounding.
   const HOURS_PER_SESSION = 40 / 60;
-  const totalHours = (sessions.length * HOURS_PER_SESSION).toFixed(1);
-  const sortedSessions = [...sessions].sort((a, b) => {
+  const totalHours = (included.length * HOURS_PER_SESSION).toFixed(1);
+
+  const byDayThenTime = (a, b) => {
     const da = a.day === 'Day 1' ? 1 : 2;
     const db = b.day === 'Day 1' ? 1 : 2;
     return da - db || (a.start_time || '').localeCompare(b.start_time || '');
-  });
-  const rowsHtml = sortedSessions.length
-    ? sortedSessions.map(s => `
+  };
+  const sortedIncluded = [...included].sort(byDayThenTime);
+  const sortedRemoved  = [...removed].sort(byDayThenTime);
+
+  const userName = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ');
+  const userCo   = _userProfile?.company || '';
+  const generatedFor = [userName, userCo].filter(Boolean).join(' · ');
+
+  const rowsHtml = sortedIncluded.length
+    ? sortedIncluded.map(s => {
+        const id = String(s.session_id || '');
+        const titleAttr = (s.title || 'Session').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `
         <div class="cpd-row">
-          <div class="cpd-row-title">${escHtml(s.title || s.session_id || 'Session')}</div>
+          <div class="cpd-row-main">
+            <div class="cpd-row-title">${escHtml(s.title || s.session_id || 'Session')}</div>
+            <div class="cpd-row-meta">${escHtml(_cpdFormatSlot(s))}</div>
+          </div>
           <div class="cpd-row-hours">${HOURS_PER_SESSION.toFixed(1)} <span>hrs</span></div>
-        </div>
-      `).join('')
+          <button class="cpd-row-remove" type="button" aria-label="Remove from CPD log"
+                  onclick="planConfirmRemoveCpd('${escHtml(id)}', '${escHtml(titleAttr)}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`;
+      }).join('')
     : `<div class="cpd-row-empty">No sessions in your plan yet. Add some on the Checklist tab.</div>`;
+
+  const restoreHtml = sortedRemoved.length ? `
+    <details class="cpd-restore">
+      <summary>
+        <span><strong>${sortedRemoved.length}</strong> removed from log</span>
+        <svg class="cpd-restore-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="cpd-restore-list">
+        ${sortedRemoved.map(s => `
+          <div class="cpd-restore-row">
+            <div class="cpd-restore-info">
+              <div class="cpd-restore-title">${escHtml(s.title || 'Session')}</div>
+              <div class="cpd-restore-meta">${escHtml(_cpdFormatSlot(s))}</div>
+            </div>
+            <button class="cpd-restore-btn" type="button"
+                    onclick="planRestoreCpd('${escHtml(String(s.session_id || ''))}')">Re-add</button>
+          </div>
+        `).join('')}
+      </div>
+    </details>` : '';
 
   return `
     <div class="app-header">
@@ -1502,60 +1583,123 @@ function renderCpdTab() {
       <p class="app-sub">Every session in your plan counts. Download anytime.</p>
     </div>
 
+    ${generatedFor ? `<div class="cpd-generated-for">Generated for <strong>${escHtml(generatedFor)}</strong></div>` : ''}
+
     <div class="cpd-card">
       <div class="cpd-list">${rowsHtml}</div>
       <div class="cpd-total">
         <div class="cpd-total-num">${totalHours}</div>
         <div class="cpd-total-label">Total CPD hours</div>
       </div>
-      ${sortedSessions.length ? `
+      ${sortedIncluded.length ? `
         <button class="cpd-download-btn" type="button" onclick="planDownloadCpd()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download CPD log
         </button>` : ''}
     </div>
+
+    <p class="cpd-disclaimer">
+      This log reflects sessions in your plan. Check with your professional body (ICAEW, ACCA, AAT, CTA) for how to count event attendance toward your annual CPD requirement.
+    </p>
+
+    ${restoreHtml}
   `;
 }
 
-window.planDownloadCpd = function() {
-  const sessions = [...(_plan?.sessions || [])].sort((a, b) => {
-    const da = a.day === 'Day 1' ? 1 : 2;
-    const db = b.day === 'Day 1' ? 1 : 2;
-    return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+window.planConfirmRemoveCpd = function(sessionId, title) {
+  planShowConfirm({
+    title: 'Remove from CPD log?',
+    body: `<strong>${escHtml(title)}</strong> won't count toward your CPD hours. It stays on your Checklist — re-add it any time from the <em>Removed from log</em> list at the bottom of this tab.`,
+    confirmLabel: 'Remove',
+    confirmTone: 'danger',
+    onConfirm: () => {
+      const ex = _cpdGetExcluded();
+      ex.add(String(sessionId));
+      _cpdSetExcluded(ex);
+      renderApp();
+    },
   });
+};
+
+window.planRestoreCpd = function(sessionId) {
+  const ex = _cpdGetExcluded();
+  ex.delete(String(sessionId));
+  _cpdSetExcluded(ex);
+  renderApp();
+};
+
+window.planDownloadCpd = function() {
+  const allSessions = _plan?.sessions || [];
+  const excluded = _cpdGetExcluded();
+  const sessions = [...allSessions]
+    .filter(s => !excluded.has(String(s.session_id)))
+    .sort((a, b) => {
+      const da = a.day === 'Day 1' ? 1 : 2;
+      const db = b.day === 'Day 1' ? 1 : 2;
+      return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+    });
   if (!sessions.length) return;
+
   const HOURS_PER_SESSION = 40 / 60;
   const total = (sessions.length * HOURS_PER_SESSION).toFixed(1);
   const userName  = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ') || '';
   const userCo    = _userProfile?.company || '';
   const meta = [userName, userCo].filter(Boolean).join(' · ') || 'Accountex 2026';
+
+  const esc = (str) => String(str || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // First-sentence summary for the PDF — caps at ~240 chars to keep
+  // each row visually compact; longer descriptions stay on autoevent.io.
+  const firstSentence = (text) => {
+    if (!text) return '';
+    const trimmed = String(text).trim();
+    const m = /^[\s\S]+?[.!?](?=\s|$)/.exec(trimmed);
+    return (m ? m[0] : trimmed).slice(0, 240);
+  };
+
   const rows = sessions.map(s => {
-    const day = s.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
-    const time = s.start_time ? `${day} · ${s.start_time}` : day;
-    const title = (s.title || s.session_id || 'Session').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    return `<tr><td>${title}</td><td class="meta">${time}</td><td class="hrs">${HOURS_PER_SESSION.toFixed(1)}</td></tr>`;
+    const slot   = _cpdFormatSlot(s);
+    const title  = esc(s.title || s.session_id || 'Session');
+    const speaker = (s.speakers && s.speakers[0]?.name) ? esc(s.speakers[0].name) : '';
+    const desc   = esc(firstSentence(s.description || ''));
+    const subParts = [speaker && `<span class="speaker">${speaker}</span>`, desc].filter(Boolean);
+    const sub = subParts.length ? `<div class="sub">${subParts.join(' — ')}</div>` : '';
+    return `<tr>
+      <td>
+        <div class="title">${title}</div>
+        ${sub}
+      </td>
+      <td class="meta">${esc(slot)}</td>
+      <td class="hrs">${HOURS_PER_SESSION.toFixed(1)}</td>
+    </tr>`;
   }).join('');
+
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
     <title>CPD log — Accountex 2026</title>
     <style>
-      body { font-family: Georgia, serif; font-size: 12pt; color: #111; margin: 2cm 2.5cm; }
+      body { font-family: Georgia, serif; font-size: 11.5pt; color: #111; margin: 2cm 2.5cm; }
       h1 { font-size: 22pt; margin: 0 0 4px; }
       .meta-line { font-size: 10pt; color: #666; margin-bottom: 28px; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
       table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
+      th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
       th { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.08em; color: #666; font-weight: 600; }
-      td.meta { color: #666; font-size: 10pt; white-space: nowrap; width: 130px; }
+      td .title { font-weight: 600; }
+      td .sub { font-size: 9.8pt; color: #555; margin-top: 4px; line-height: 1.45; }
+      td .sub .speaker { font-weight: 600; color: #333; }
+      td.meta { color: #666; font-size: 9.8pt; white-space: nowrap; width: 150px; }
       td.hrs, th.hrs { text-align: right; width: 70px; font-variant-numeric: tabular-nums; }
       tr.total td { border-top: 2px solid #111; border-bottom: none; padding-top: 14px; font-size: 14pt; font-weight: 700; }
+      .disclaimer { margin-top: 28px; font-size: 9.5pt; color: #666; font-style: italic; line-height: 1.5; border-top: 1px solid #eee; padding-top: 14px; }
       @media print { body { margin: 1.5cm 2cm; } }
     </style>
     </head><body>
     <h1>CPD log — Accountex 2026</h1>
-    <div class="meta-line">${meta}</div>
+    <div class="meta-line">Generated for ${esc(meta)}</div>
     <table>
       <thead><tr><th>Session</th><th>When</th><th class="hrs">CPD hrs</th></tr></thead>
       <tbody>${rows}<tr class="total"><td colspan="2">Total</td><td class="hrs">${total}</td></tr></tbody>
     </table>
+    <p class="disclaimer">This log reflects sessions in your plan. Check with your professional body (ICAEW, ACCA, AAT, CTA) for how to count event attendance toward your annual CPD requirement.</p>
     <script>window.onload = function() { window.print(); };</script>
     </body></html>`;
   const blob = new Blob([html], { type: 'text/html' });

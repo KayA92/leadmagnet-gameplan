@@ -1765,7 +1765,6 @@ function renderDebriefTab() {
   const lastName    = _userProfile?.last_name  || '';
   const company     = _userProfile?.company    || '';
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || (_authUser?.email || 'You');
-  const fromLine    = [displayName, company].filter(Boolean).join(' · ');
 
   const summaryText     = buildSummaryText();
   const heatRanked      = buildHeatRanked();
@@ -1774,60 +1773,90 @@ function renderDebriefTab() {
   const allNotes = _allNotesNow();
   const members  = _teamData?.members || [];
 
-  function memberFor(createdBy) {
-    return members.find(m => m.users?.id === createdBy);
-  }
-
   function notesFor(itemType, itemId) {
     const id = String(itemId);
-    return allNotes.filter(n => n.item_type === itemType && String(n.item_id) === id && n.note_text?.trim());
+    return allNotes
+      .filter(n => n.item_type === itemType && String(n.item_id) === id && n.note_text?.trim())
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }
 
-  function initials(u) {
-    return `${u?.first_name?.[0] || ''}${u?.last_name?.[0] || ''}`.toUpperCase() || '?';
+  // Per-rater list for an item — walks teamPlans (or the lone _plan if
+  // solo) and pulls each rater's name + rating. Powers the team-rated
+  // pill row on each debrief card so users see WHO rated WHAT.
+  function ratersFor(itemType, itemId) {
+    const plans = _teamData?.teamPlans?.length
+      ? _teamData.teamPlans
+      : (_plan ? [_plan] : []);
+    const idStr = String(itemId);
+    const out = [];
+    for (const p of plans) {
+      const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
+      const it = list.find(x => itemType === 'booth'
+        ? String(x.stand_number) === idStr
+        : String(x.session_id) === idStr);
+      if (!it || !it.rating) continue;
+      const isMe = p.user_id === _authUser?.id;
+      const member = isMe ? null : members.find(m => m.users?.id === p.user_id);
+      const name = isMe
+        ? (firstName || 'You')
+        : (member?.users?.first_name || 'Teammate');
+      out.push({ name, rating: it.rating, isMe });
+    }
+    // Self first, then alphabetical for the rest
+    out.sort((a, b) => (a.isMe ? -1 : b.isMe ? 1 : a.name.localeCompare(b.name)));
+    return out;
   }
 
-  function renderDebriefFlames(avg) {
-    const rounded = Math.round(avg);
+  // Inline 3 small flame icons — N lit, 3-N unlit. Used inside team-
+  // rated pills (10px) and the big average block (28px) via sizing
+  // overrides on the wrapping span.
+  function debriefFlames(rating, klass = '') {
     return [1, 2, 3].map(n =>
-      `<span class="flame-btn ${n <= rounded ? 'lit' : ''}" style="pointer-events:none;">${flameSvg()}</span>`
+      `<svg class="${klass} ${n <= rating ? 'lit' : ''}" viewBox="0 0 24 24" fill="${n <= rating ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>`
     ).join('');
   }
 
-  function renderHotCard(rank, title, meta, avgRating, raterCount, itemType, itemId) {
+  function renderHotCard(rank, title, meta, avgRating, raterCount, itemType, itemId, tone) {
     const notes = notesFor(itemType, itemId);
-    const noteHtml = notes.length ? `
-      <div class="debrief-hot-notes">
+    const raters = ratersFor(itemType, itemId);
+    const ratedRowHtml = raters.length ? `
+      <div class="team-rated-row tone-${tone}">
+        <span class="team-rated-caption">Team rated</span>
+        ${raters.map(r => `
+          <span class="team-rated-pill">
+            <span class="team-rated-name">${escHtml(r.name)}${r.isMe ? ' (you)' : ''}</span>
+            <span class="team-rated-flames">${debriefFlames(r.rating, 'team-rated-flame-icon')}</span>
+          </span>
+        `).join('')}
+      </div>` : '';
+    const avgHtml = raterCount > 0 ? `
+      <div class="debrief-avg tone-${tone}">
+        <div class="debrief-avg-flames">${debriefFlames(Math.round(avgRating), 'debrief-avg-flame')}</div>
+        <div class="debrief-avg-num">${avgRating.toFixed(1)}</div>
+        <div class="debrief-avg-label">Average · ${raterCount} rating${raterCount === 1 ? '' : 's'}</div>
+      </div>` : '';
+    const notesHtml = notes.length ? `
+      <div class="team-notes-block tone-${tone}">
         ${notes.map(n => {
-          const m    = memberFor(n.created_by);
-          const u    = m?.users;
-          const name = u?.first_name ? `${u.first_name} ${u.last_name || ''}`.trim() : 'Teammate';
-          const ini  = initials(u);
-          return `
-            <div class="debrief-hot-note">
-              <div class="mini-av" style="flex-shrink:0;">${escHtml(ini)}</div>
-              <div class="debrief-hot-note-body">
-                <div class="debrief-hot-note-head"><strong>${escHtml(name)}</strong></div>
-                <div class="debrief-hot-note-text">${escHtml(n.note_text)}</div>
-              </div>
-            </div>`;
+          const m = members.find(mm => mm.users?.id === n.created_by);
+          const name = m?.users?.first_name
+            || (n.created_by === _authUser?.id ? (firstName || 'You') : 'Teammate');
+          return `<p class="team-note-row"><span class="team-note-name">${escHtml(name)}:</span> ${escHtml(n.note_text)}</p>`;
         }).join('')}
       </div>` : '';
     return `
-      <div class="debrief-hot-card">
-        <div class="debrief-hot-card-head">
-          <div class="debrief-hot-rank">#${rank}</div>
-          <div class="debrief-hot-main">
-            <div class="debrief-hot-title">${escHtml(title)}</div>
-            <div class="debrief-hot-meta">${escHtml(meta)}</div>
-          </div>
-          <div class="debrief-hot-rating">
-            ${raterCount > 0 ? renderDebriefFlames(avgRating) : ''}
-            <div class="debrief-hot-count">${raterCount > 0 ? `${raterCount} rated` : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}</div>
+      <article class="debrief-card tone-${tone}">
+        <div class="debrief-card-head">
+          <div class="debrief-card-rank">#${rank}</div>
+          <div class="debrief-card-main">
+            <h4 class="debrief-card-title">${escHtml(title)}</h4>
+            <div class="debrief-card-meta">${escHtml(meta)}</div>
           </div>
         </div>
-        ${noteHtml}
-      </div>`;
+        ${ratedRowHtml}
+        ${avgHtml}
+        ${notesHtml}
+      </article>`;
   }
 
   const sessionCards = heatRanked.map(({ session: s, avgRating, raterCount }, i) => {
@@ -1836,72 +1865,65 @@ function renderDebriefTab() {
       s.theatre || '',
       s.start_time || '',
     ].filter(Boolean).join(' · ');
-    return renderHotCard(i + 1, s.title, meta, avgRating, raterCount, 'session', s.session_id);
+    return renderHotCard(i + 1, s.title, meta, avgRating, raterCount, 'session', s.session_id, 'mint');
   }).join('');
 
   const boothCards = boothHeatRanked.map(({ booth: b, avgRating, raterCount }, i) => {
     const meta = `Stand ${b.stand_number}`;
-    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number);
+    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number, 'purple');
   }).join('');
 
-  const isTeam = !!(_plan?.team_id);
   return `
-    ${inviteNudgeHtml('debrief', isTeam)}
     <div class="app-section">
-      <div class="team-section-eyebrow tone-pink">The summary</div>
-      <h3 class="team-section-title">Your Accountex, <em>distilled.</em></h3>
-      <p class="team-section-lede">Action items first. Copy, email, or save as PDF.</p>
-      <div class="email-draft">
-        <div class="email-draft-header">
-          <div class="email-draft-row">
-            <div class="email-draft-label">From</div>
-            <div class="email-draft-value">${escHtml(fromLine)}</div>
-          </div>
-          <div class="email-draft-row">
-            <div class="email-draft-label">For</div>
-            <div class="email-draft-value">Share with partners, the team, or keep for yourself</div>
-          </div>
-        </div>
-        <textarea class="email-draft-body" id="debrief-textarea" spellcheck="false">${escHtml(summaryText)}</textarea>
-      </div>
-      <div class="debrief-actions">
-        <button class="debrief-btn secondary" onclick="planCopyDebrief(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Copy to clipboard
-        </button>
-        <button class="debrief-btn secondary" onclick="planEmailDebrief()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-          Email this
-        </button>
-        <button class="debrief-btn primary" onclick="planDownloadDebrief()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download as PDF
-        </button>
-      </div>
-    </div>
-
-    <div class="app-section">
-      <div class="team-section-eyebrow tone-pink">
+      <div class="team-section-eyebrow tone-mint">
         ${flameSvg()}
         Hot sessions
       </div>
-      <h3 class="team-section-title">Top-rated <em>by you and your team.</em></h3>
+      <h3 class="team-section-title team-section-title-xl">Top-rated <em>sessions</em> by you and your team.</h3>
+      <p class="team-section-lede">Every session your team rated, ranked by average heat — with each teammate's flames and full notes underneath.</p>
       ${heatRanked.length
         ? `<div class="debrief-hot-list">${sessionCards}</div>`
         : `<div class="debrief-empty">Sessions appear here once you rate them during the show.</div>`}
     </div>
 
     <div class="app-section">
-      <div class="team-section-eyebrow tone-pink">
+      <div class="team-section-eyebrow tone-purple">
         ${flameSvg()}
         Hot booths
       </div>
-      <h3 class="team-section-title">Vendors <em>worth a follow-up.</em></h3>
+      <h3 class="team-section-title team-section-title-xl">Top-rated <em>booths</em> by you and your team.</h3>
+      <p class="team-section-lede">Vendors worth a follow-up — ranked by team rating, with everyone's flames and notes side by side.</p>
       ${boothHeatRanked.length
         ? `<div class="debrief-hot-list">${boothCards}</div>`
         : `<div class="debrief-empty">Booths appear here once you rate them during the show.</div>`}
     </div>
 
+    <div class="app-section debrief-summary-section">
+      <div class="team-section-eyebrow tone-pink">The summary</div>
+      <h3 class="team-section-title">Your Accountex, <em>distilled.</em></h3>
+      <p class="team-section-lede">A copy-ready debrief built from everything above. Edit before you send.</p>
+      <details class="debrief-summary-details">
+        <summary>
+          <span>Preview the debrief</span>
+          <svg class="debrief-summary-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <textarea class="email-draft-body" id="debrief-textarea" spellcheck="false">${escHtml(summaryText)}</textarea>
+      </details>
+      <div class="debrief-actions">
+        <button class="debrief-btn primary" onclick="planDownloadDebrief()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+        <button class="debrief-btn secondary" onclick="planEmailDebrief()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Email
+        </button>
+        <button class="debrief-btn secondary" onclick="planCopyDebrief(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
   `;
 }
 

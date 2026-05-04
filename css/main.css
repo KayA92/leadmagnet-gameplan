@@ -10724,4 +10724,229 @@ button.app-pill.purple.clickable:hover {
   .plan-confirm-title { font-size: 20px; }
   .plan-confirm-body { font-size: 13.5px; margin-bottom: 18px; }
   .plan-confirm-btn { padding: 11px 16px; font-size: 13px; flex: 1; }
+
+  /* ── Debrief rebuild — mobile ─────────────────────────────────────── */
+  .debrief-card { padding: 18px 16px; border-radius: 14px; }
+  .debrief-card-head { gap: 10px; }
+  .debrief-card-rank { font-size: 38px; min-width: 44px; }
+  .debrief-card-title { font-size: 17px; }
+  .debrief-card-meta { font-size: 11.5px; }
+  .debrief-avg { padding: 18px 14px; gap: 8px; }
+  .debrief-avg-flame { width: 22px; height: 22px; }
+  .debrief-avg-num { font-size: 44px; }
+  .debrief-avg-label { font-size: 10.5px; }
+  .debrief-summary-details summary { padding: 14px 16px; font-size: 13px; }
+  .debrief-summary-details textarea { min-height: 280px; padding: 16px; font-size: 13.5px; }
+  .debrief-actions { gap: 8px; }
+  .debrief-btn { flex: 1 0 calc(50% - 4px); justify-content: center; padding: 12px 14px; font-size: 13px; }
+  .debrief-btn.primary { flex-basis: 100%; }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   DEBRIEF REBUILD — bigger, bolder cards
+   ────────────────────────────────────────────────────────────────────
+   New per-rank card replaces .debrief-hot-card. Each card carries a
+   tone (mint for sessions, purple for booths) that flows to:
+     • The rank number gradient (kept brand pink→purple — reads as "rated")
+     • The card border and ambient glow on hover
+     • The big average flame block underneath
+   The team-rated row + team-notes-block reuse the Checklist classes
+   defined further up, so the visual language matches across tabs. */
+
+.debrief-card {
+  position: relative;
+  padding: 22px 22px 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.debrief-card.tone-mint {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(34,230,168,0.06), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  border-color: rgba(34,230,168,0.18);
+}
+.debrief-card.tone-purple {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(168,85,247,0.07), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  border-color: rgba(168,85,247,0.22);
+}
+.debrief-card.tone-mint:hover   { border-color: rgba(34,230,168,0.36); }
+.debrief-card.tone-purple:hover { border-color: rgba(168,85,247,0.42); }
+
+.debrief-hot-list { display: flex; flex-direction: column; gap: 14px; }
+
+/* Card header — big italic rank + title block */
+.debrief-card-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.debrief-card-rank {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(44px, 6vw, 60px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variation-settings: 'SOFT' 90;
+  background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  min-width: 64px;
+  text-align: center;
+}
+.debrief-card.tone-mint .debrief-card-rank {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.debrief-card-main { min-width: 0; }
+.debrief-card-title {
+  margin: 0 0 6px;
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2.4vw, 24px);
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--text);
+}
+.debrief-card-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Big average block — tone-tinted background, huge gradient number */
+.debrief-avg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 20px 22px;
+  border-radius: 14px;
+  border: 1px solid;
+  text-align: center;
+}
+.debrief-avg.tone-mint {
+  background: linear-gradient(180deg, rgba(34,230,168,0.08), rgba(34,230,168,0.02));
+  border-color: rgba(34,230,168,0.24);
+}
+.debrief-avg.tone-purple {
+  background: linear-gradient(180deg, rgba(168,85,247,0.10), rgba(168,85,247,0.025));
+  border-color: rgba(168,85,247,0.28);
+}
+.debrief-avg-flames {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255,108,144,0.95);
+  filter: drop-shadow(0 0 8px rgba(255,94,132,0.45));
+}
+.debrief-avg-flame { width: 26px; height: 26px; display: block; }
+.debrief-avg-flame:not(.lit) { opacity: 0.22; filter: none; }
+.debrief-avg-num {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(48px, 6.2vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variation-settings: 'SOFT' 90;
+  background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.debrief-avg.tone-mint .debrief-avg-num {
+  background: linear-gradient(135deg, var(--mint) 0%, #fff 65%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.debrief-avg-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* Override the flame size when used inside the team-rated pills on the
+   debrief card. The Checklist tab gives them ~10px, but the debrief
+   cards have more room — bump to 12px so they read at-a-glance. */
+.debrief-card .team-rated-flame-icon { width: 12px; height: 12px; }
+.debrief-card .team-rated-name {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+.debrief-card.tone-mint   .team-rated-row .team-rated-name { color: var(--mint); }
+.debrief-card.tone-purple .team-rated-row .team-rated-name { color: var(--purple); }
+.debrief-card .team-rated-row { margin-top: 0; padding-top: 14px; }
+.debrief-card .team-notes-block { margin-top: 0; padding: 14px 16px; }
+.debrief-card .team-note-row { font-size: 13.5px; line-height: 1.55; }
+
+/* ── Summary section at the bottom — collapsed by default ──────────── */
+.debrief-summary-section { margin-top: 12px; }
+.debrief-summary-details {
+  background: var(--ink-2);
+  border: 1px solid var(--ink-3);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  transition: border-color 0.2s;
+}
+.debrief-summary-details[open] { border-color: rgba(255,255,255,0.18); }
+.debrief-summary-details > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text);
+  transition: background 0.15s;
+}
+.debrief-summary-details > summary::-webkit-details-marker { display: none; }
+.debrief-summary-details > summary:hover { background: rgba(255,255,255,0.02); }
+.debrief-summary-chevron {
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+.debrief-summary-details[open] .debrief-summary-chevron { transform: rotate(180deg); }
+.debrief-summary-details textarea {
+  display: block;
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--ink-3);
+  background: transparent;
+  padding: 20px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+.debrief-summary-details textarea:focus { background: rgba(255,94,132,0.02); }

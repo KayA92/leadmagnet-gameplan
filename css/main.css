@@ -5298,6 +5298,57 @@ button.app-pill.purple.clickable:hover {
   background: rgba(34,230,168,0.05);
 }
 
+/* Chip row above the textarea — emoji + label pills. Tap stamps the
+   chip's "${emoji} ${label}: " into the textarea. Visual is mint outline,
+   matching the rest of the utility palette. Three flash states:
+   .used (mint flood, ~500ms confirmation), .already (faint mint flicker
+   when the chip is already present), .full (pink flicker when the 280
+   cap would be exceeded). */
+.note-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.note-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid rgba(34,230,168,0.40);
+  color: var(--mint);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+.note-chip:hover {
+  background: rgba(34,230,168,0.08);
+  border-color: var(--mint);
+}
+.note-chip:active { transform: scale(0.96); }
+.note-chip-emoji { font-size: 13px; line-height: 1; }
+.note-chip-label { line-height: 1; }
+.note-chip.used {
+  background: rgba(34,230,168,0.20);
+  border-color: var(--mint);
+  color: #fff;
+}
+.note-chip.already {
+  background: rgba(34,230,168,0.06);
+  border-color: rgba(34,230,168,0.28);
+}
+.note-chip.full {
+  background: rgba(255,94,132,0.10);
+  border-color: rgba(255,94,132,0.50);
+  color: var(--pink);
+}
+
 .rate-panel-note {
   width: 100%;
   min-height: 64px;

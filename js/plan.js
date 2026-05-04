@@ -537,10 +537,29 @@ function renderGapCard(day, startTime, endTime, _gapIndex) {
     </div>`;
 }
 
+// Note chips — emoji + label pairs that stamp into the textarea on tap.
+// Same data model both ways: chips insert "${emoji} ${label}: " then the
+// user types context. Saved note is just text — no parallel chip array,
+// no schema change. AI debrief later groups by emoji prefix.
+const NOTE_CHIPS_SESSION = [
+  { emoji: '⚡', label: 'Action item' },
+  { emoji: '💡', label: 'New idea' },
+  { emoji: '📤', label: 'Worth sharing' },
+  { emoji: '❗', label: 'Surprised me' },
+  { emoji: '✅', label: 'Reinforced' },
+  { emoji: '👎', label: 'Disappointing' },
+];
+const NOTE_CHIPS_BOOTH = [
+  { emoji: '🎯', label: 'Pursue' },
+  { emoji: '🤔', label: 'Maybe' },
+  { emoji: '❌', label: 'Pass' },
+  { emoji: '💰', label: 'Need pricing' },
+  { emoji: '📅', label: 'Need demo' },
+  { emoji: '👤', label: 'Send to partner' },
+];
+const NOTE_HINT = 'Notes and ratings visible across teammates you add';
+
 function _renderNotePanel(panel, noteId, savedText) {
-  const hintText = noteId.startsWith('booth:')
-    ? 'Pricing · Demo scheduled · Decision blocker'
-    : 'What stood out · Who to follow up with';
   if (savedText) {
     panel.className = 'checklist-note-panel saved';
     panel.innerHTML = `
@@ -562,7 +581,7 @@ function _renderNotePanel(panel, noteId, savedText) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add a note
       </button>
-      <div class="note-add-hint">${escHtml(hintText)}</div>`;
+      <div class="note-add-hint">${escHtml(NOTE_HINT)}</div>`;
   }
 }
 
@@ -672,7 +691,7 @@ function renderChecklistTab() {
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
              Add a note
            </button>
-           <div class="note-add-hint">What stood out · Who to follow up with</div>
+           <div class="note-add-hint">${escHtml(NOTE_HINT)}</div>
          </div>`;
 
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
@@ -770,7 +789,7 @@ function renderChecklistTab() {
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
              Add a note
            </button>
-           <div class="note-add-hint">Pricing · Demo scheduled · Decision blocker</div>
+           <div class="note-add-hint">${escHtml(NOTE_HINT)}</div>
          </div>`;
 
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
@@ -2889,11 +2908,17 @@ window.planOpenNote = function(noteId) {
   const panel = document.querySelector(`.checklist-note-panel[data-note-id="${CSS.escape(noteId)}"]`);
   if (!panel) return;
   const savedText = panel.dataset.savedText || '';
+  const chips = noteId.startsWith('booth:') ? NOTE_CHIPS_BOOTH : NOTE_CHIPS_SESSION;
+  const chipsHtml = chips.map((c, i) => `
+    <button class="note-chip" type="button" data-chip-idx="${i}"
+      onclick="planInsertChip('${escHtml(noteId)}', ${i}, this)">
+      <span class="note-chip-emoji">${c.emoji}</span><span class="note-chip-label">${escHtml(c.label)}</span>
+    </button>`).join('');
   panel.className = 'checklist-note-panel editing';
   panel.innerHTML = `
     <div class="note-edit-head"><span class="note-edit-label">Your note</span></div>
+    <div class="note-chip-row">${chipsHtml}</div>
     <textarea class="rate-panel-note" id="noteDraft-${escHtml(noteId)}"
-      placeholder="What stood out · Who to follow up with"
       maxlength="280">${escHtml(savedText)}</textarea>
     <div class="note-edit-actions">
       <div class="note-edit-count"><span id="noteCount-${escHtml(noteId)}">${savedText.length}</span> / 280</div>
@@ -2910,6 +2935,46 @@ window.planOpenNote = function(noteId) {
     });
     ta.focus();
   }
+};
+
+// Chip insertion — stamps "${emoji} ${label}: " into the textarea per
+// the rules: prepend if empty, append on a new line if not, no-op if
+// the chip's label is already present, soft-block at the 280 cap.
+// Brief mint flash on the chip confirms the action.
+window.planInsertChip = function(noteId, chipIdx, btn) {
+  const ta = document.getElementById(`noteDraft-${noteId}`);
+  if (!ta) return;
+  const list = noteId.startsWith('booth:') ? NOTE_CHIPS_BOOTH : NOTE_CHIPS_SESSION;
+  const c = list[chipIdx];
+  if (!c) return;
+  const stamp = `${c.emoji} ${c.label}: `;
+  const flash = (cls) => {
+    if (!btn) return;
+    btn.classList.add(cls);
+    setTimeout(() => btn.classList.remove(cls), 500);
+  };
+  // Already used in this note? No-op + subtle "already there" flash.
+  if (ta.value.includes(`${c.emoji} ${c.label}:`)) {
+    flash('already');
+    return;
+  }
+  const current   = ta.value;
+  const insertion = current.length === 0 ? stamp : current.endsWith('\n') ? stamp : `\n${stamp}`;
+  // Soft-block when the insertion would push past 280 chars.
+  if (current.length + insertion.length > 280) {
+    flash('full');
+    return;
+  }
+  ta.value = current + insertion;
+  flash('used');
+  // Move cursor to the end (right after the newly inserted colon-space)
+  const pos = ta.value.length;
+  ta.focus();
+  ta.setSelectionRange(pos, pos);
+  // Update counter manually since programmatic .value changes don't fire
+  // an 'input' event automatically across all browsers.
+  const counter = document.getElementById(`noteCount-${noteId}`);
+  if (counter) counter.textContent = ta.value.length;
 };
 
 window.planCancelNote = function(noteId) {

@@ -2,3 +2,9 @@ supabase/.temp/
 node_modules/
 .env
 scripts/.env
+
+# macOS Finder metadata
+.DS_Store
+
+# Local design references — not part of the app
+Style/

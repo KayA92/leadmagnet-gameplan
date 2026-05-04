@@ -4539,6 +4539,21 @@ async function initDemoMode() {
 export async function initPlan() {
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const qpParams   = new URLSearchParams(window.location.search);
+
+  // magic-link-confirm stores the token in sessionStorage rather than forwarding
+  // it in the URL. This prevents the Supabase JS client from auto-processing
+  // ?token_hash= during createClient() init (which consumes the OTP before our
+  // explicit verifyOtp call and causes "link already used" for new users).
+  if (!qpParams.has('token_hash')) {
+    const ssHash = sessionStorage.getItem('ml_token_hash');
+    if (ssHash) {
+      qpParams.set('token_hash', ssHash);
+      qpParams.set('type', sessionStorage.getItem('ml_type') || 'magiclink');
+      sessionStorage.removeItem('ml_token_hash');
+      sessionStorage.removeItem('ml_type');
+    }
+  }
+
   const errCode    = hashParams.get('error_code') || qpParams.get('error_code');
   const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
   const teamToken  = qpParams.get('team') || localStorage.getItem('pendingTeamToken') || null;

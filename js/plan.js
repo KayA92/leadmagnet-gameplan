@@ -728,7 +728,10 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.title || item.session_id)}</div>
             <div class="checklist-main-meta">${item.theatre ? escHtml(item.theatre) + ' · ' : ''}<span class="type-pill session">Session</span></div>
             ${whyHtml}
-            ${item.description ? `<div class="checklist-blurb-divider"></div><p class="checklist-blurb">${escHtml(truncateBoothDesc(item.description))}</p>` : ''}
+            ${(() => {
+              const blurb = item.description ? truncateBoothDesc(item.description).trim() : '';
+              return blurb ? `<div class="checklist-blurb-divider"></div><p class="checklist-blurb">${escHtml(blurb)}</p>` : '';
+            })()}
             ${altsHtml}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
@@ -835,7 +838,7 @@ function renderChecklistTab() {
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
             <div class="checklist-main-meta booth-meta">Booth · Stand ${escHtml(item.stand_number || '')}</div>
             ${renderMatchBadge({ bucket: boothMatch.bucket, rank: boothMatch.rank, type: 'booth' })}
-            ${truncatedDesc ? `<div class="checklist-blurb-divider tone-purple"></div><p class="checklist-blurb">${escHtml(truncatedDesc)}</p>` : ''}
+            ${(truncatedDesc && truncatedDesc.trim()) ? `<div class="checklist-blurb-divider tone-purple"></div><p class="checklist-blurb">${escHtml(truncatedDesc)}</p>` : ''}
             <div class="checklist-row-actions">
               <div class="row-rate-wrap">
                 <div class="row-rate-caption">${ratingLabel}</div>
@@ -1806,6 +1809,11 @@ window.openPlanEditor = function(mode) {
   // CSS .plan-editor-overlay[data-mode="booths"] selectors.
   overlay.dataset.mode = mode;
   overlay.classList.add('open');
+  // Reset scroll on reopen so the floating bar doesn't flash visible
+  // from a previous session, and the user starts at the filters again.
+  overlay.scrollTop = 0;
+  const bar = document.getElementById('planEditorFloatingBar');
+  if (bar) bar.classList.remove('visible');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
@@ -2821,6 +2829,10 @@ window.planRemoveBooth = function(standNumber) {
 // pass a body string + onConfirm callback. Tone "danger" turns the
 // confirm button pink to signal a destructive action.
 function planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }) {
+  // If a previous confirm is still open (rapid re-invocation), clean
+  // up its keydown listener before stomping the DOM — otherwise stale
+  // Esc/Enter handlers leak onto document.
+  if (planShowConfirm._cleanup) planShowConfirm._cleanup();
   document.getElementById('planConfirmModal')?.remove();
   const modal = document.createElement('div');
   modal.id = 'planConfirmModal';
@@ -2839,12 +2851,14 @@ function planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }) 
   const close = () => {
     document.removeEventListener('keydown', onKey);
     modal.remove();
+    if (planShowConfirm._cleanup === close) planShowConfirm._cleanup = null;
   };
   const onKey = (e) => {
     if (e.key === 'Escape') close();
     else if (e.key === 'Enter') { onConfirm?.(); close(); }
   };
   document.addEventListener('keydown', onKey);
+  planShowConfirm._cleanup = close;
   modal.addEventListener('click', (e) => {
     const action = e.target.closest('[data-action]')?.dataset?.action;
     if (action === 'cancel') close();

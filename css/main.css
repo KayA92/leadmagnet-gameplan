@@ -9897,3 +9897,29 @@ button.app-pill.purple.clickable:hover {
   .login-page-input { font-size: 16px; padding: 16px 18px 16px 50px; }
   .login-page-divider { margin: 36px auto 24px; }
 }
+
+/* ── Mobile overrides for the recent Checklist additions ────────────── */
+@media (max-width: 640px) {
+  /* Blurb sits a touch tighter on mobile, divider a hair thinner */
+  .checklist-blurb { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+  .checklist-blurb-divider { margin: 12px 0 8px; }
+  /* Alts teaser line keeps its dashed-pill look but slightly more compact */
+  .checklist-alternatives-link {
+    font-size: 11.5px;
+    padding: 6px 10px 6px 8px;
+  }
+  /* Note chips — bigger tap targets, slightly tighter row gap */
+  .note-chip-row { gap: 5px; margin-bottom: 8px; }
+  .note-chip { padding: 7px 11px; font-size: 12px; }
+  .note-chip-emoji { font-size: 14px; }
+  /* Confirm modal — full-width with breathing padding on phones */
+  .plan-confirm-modal { padding: 18px; }
+  .plan-confirm-panel {
+    max-width: none;
+    padding: 22px 22px 18px;
+    border-radius: 14px;
+  }
+  .plan-confirm-title { font-size: 20px; }
+  .plan-confirm-body { font-size: 13.5px; margin-bottom: 18px; }
+  .plan-confirm-btn { padding: 11px 16px; font-size: 13px; flex: 1; }
+}

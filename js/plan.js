@@ -1321,7 +1321,7 @@ function renderTeamPreview() {
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const MAX_TEAM_MEMBERS = 10;
+  const MAX_TEAM_MEMBERS = 12;
   const memberCount = _teamData.members.length;
   const isSolo      = memberCount < 2;
   const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
@@ -1425,7 +1425,7 @@ function renderTeamTab() {
 
     ${inviteHero}
 
-    ${isSolo ? renderTeamPreview() : ''}
+    ${renderTeamPreview()}
 
     <div class="app-section team-pre-show">
       <div class="team-section-eyebrow tone-purple">✦ Pre-show team intel</div>
@@ -2345,17 +2345,58 @@ function _matchSponsorRelevance(sponsorKey, plan) {
   const matchedCats = userCats.filter(c => sp.categories.includes(c));
   return { pains: matchedPains, cats: matchedCats };
 }
+
+// "Also felt by" — for a given sponsor, lists OTHER teammates whose
+// onboarding answers also overlap with the sponsor's solve list.
+// Only computed when the team has 2+ members. Returns user objects
+// from _teamData.members so we can render avatar + first name.
+function _sponsorFeltBy(sponsorKey) {
+  if (!_teamData) return [];
+  if ((_teamData.members?.length ?? 0) < 2) return [];
+  const sp = SPONSOR_SOLVES[sponsorKey];
+  if (!sp) return [];
+  const lc = (s) => (s || '').toLowerCase();
+  const wantPains = new Set(sp.painLabels.map(lc));
+  const wantCats  = new Set(sp.categories);
+  const out = [];
+  for (const tp of (_teamData.teamPlans || [])) {
+    if (tp.user_id === _authUser?.id) continue;
+    const member = _teamData.members.find(m => m.users?.id === tp.user_id);
+    if (!member?.users) continue;
+    const tpPains = (tp.problem || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
+    const overlap = tpPains.some(p => wantPains.has(lc(p)))
+                 || (tp.categories || []).some(c => wantCats.has(c));
+    if (overlap) out.push(member.users);
+  }
+  return out;
+}
+
 function _renderSponsorPainsBlock(sponsorKey, plan) {
   const { pains, cats } = _matchSponsorRelevance(sponsorKey, plan);
   if (!pains.length && !cats.length) return '';
   const painPills = pains.map(p =>
-    `<span class="sponsor-pain-pill">${escHtml(p)}</span>`).join('');
+    `<span class="sponsor-help-pill pain">${escHtml(p)}</span>`).join('');
   const catPills = cats.map(c =>
-    `<span class="sponsor-stack-pill">${escHtml(CATEGORY_LABELS[c] || c)}</span>`).join('');
+    `<span class="sponsor-help-pill cat">${escHtml(CATEGORY_LABELS[c] || c)}</span>`).join('');
+  const feltBy = _sponsorFeltBy(sponsorKey);
+  const feltByHtml = feltBy.length ? `
+    <div class="sponsor-card-felt-by">
+      <span class="sponsor-felt-label">Also felt by</span>
+      <div class="sponsor-felt-list">
+        ${feltBy.map((u, i) => `
+          <span class="sponsor-felt-pill">
+            <span class="mini-av t${(i % 4) + 1}">${escHtml((u.first_name?.[0] || '?').toUpperCase())}</span>
+            <span class="sponsor-felt-name">${escHtml(u.first_name || 'Teammate')}</span>
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
   return `
     <div class="sponsor-card-relevance">
-      <div class="sponsor-card-relevance-label">Pains we solve</div>
+      <div class="sponsor-card-relevance-label">What we can help with</div>
       <div class="sponsor-card-relevance-pills">${painPills}${catPills}</div>
+      ${feltByHtml}
     </div>
   `;
 }
@@ -2363,7 +2404,7 @@ function _renderSponsorPainsBlock(sponsorKey, plan) {
 function sponsorsFooterHtml(plan = _plan) {
   return `
     <section class="sponsors-footer" style="max-width:760px;">
-      <h2 class="sponsors-footer-heading">This <em>free Accountex 2026 Planner</em> is brought to you by</h2>
+      <h2 class="sponsors-footer-heading">This free Accountex 2026 Planner <em>is brought to you by:</em></h2>
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
@@ -2375,7 +2416,7 @@ function sponsorsFooterHtml(plan = _plan) {
           </p>
           ${_renderSponsorPainsBlock('workiro', plan)}
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com
+            Visit workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
@@ -2389,23 +2430,23 @@ function sponsorsFooterHtml(plan = _plan) {
           </p>
           ${_renderSponsorPainsBlock('xu', plan)}
           <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
+            Visit xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
       </div>
     </section>
 
-    <section class="autoevent-cta">
-      <div class="autoevent-cta-eyebrow">Powered by</div>
-      <img class="autoevent-cta-logo" src="/images/AutoEvent.svg" alt="AutoEvent">
-      <h3 class="autoevent-cta-headline">Want an AI-matched event app like this for <em>your next event?</em></h3>
-      <a class="autoevent-cta-btn" href="/" target="_blank" rel="noopener">
-        About AutoEvent
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <div class="autoevent-cta-built">Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></div>
-    </section>
+    <div class="autoevent-foot">
+      <div class="autoevent-foot-line">
+        <span class="autoevent-foot-label">Powered by</span>
+        <img class="autoevent-foot-logo" src="/images/AutoEvent.svg" alt="AutoEvent">
+        <span class="autoevent-foot-built">— a free tool by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></span>
+      </div>
+      <div class="autoevent-foot-cta">
+        Want one of these for your next event? <a href="/" target="_blank" rel="noopener">About AutoEvent →</a>
+      </div>
+    </div>
 
     <div class="hero-page-footer">
       Free · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
@@ -2743,7 +2784,7 @@ async function handleSignIn(authUser, teamToken) {
             lead_user_id: authUser.id,
             company:      userRow?.company || null,
             invite_token: crypto.randomUUID(),
-            max_members:  10,
+            max_members:  12,
           })
           .select('id, invite_token')
           .single();

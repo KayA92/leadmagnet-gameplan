@@ -404,7 +404,7 @@ function renderMatchBadge({ bucket, rank, type, compact = false }) {
     : '';
   return `<div class="match-badge tier-${bucket}${compact ? ' compact' : ''}">
     <span class="match-bucket">${sparkle}<span class="match-bucket-text">${bucketLabel(bucket)}</span></span>
-    <span class="match-rank">#${rank} of ${total}</span>
+    <span class="match-rank">AI ranked #${rank} of ${total}</span>
   </div>`;
 }
 

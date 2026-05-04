@@ -4043,10 +4043,25 @@ button.app-pill.purple.clickable:hover {
   margin: 4px 0 12px;
 }
 
+/* Booth cards get a subtle purple tint so they stand apart from session
+   cards as the user scrolls past the day's sessions into the booths
+   block — purple = booths everywhere in the app (type pill, etc.). */
+.checklist-row.is-booth {
+  position: relative;
+  background: linear-gradient(135deg, rgba(168,85,247,0.045) 0%, rgba(168,85,247,0.020) 100%);
+  border-color: rgba(168,85,247,0.22);
+}
+.checklist-row.is-booth:hover { border-color: rgba(168,85,247,0.40); }
+/* Attended/rated states keep their mint accents but layered over purple
+   bg so the tint still reads as a booth even when ticked. */
+.checklist-row.is-booth.attended {
+  background: linear-gradient(135deg, rgba(168,85,247,0.04) 0%, rgba(34,230,168,0.05) 100%);
+  border-color: rgba(34,230,168,0.30);
+}
+
 /* Booth quiet remove — small × in the top-right corner of the card,
    only visible on hover. Sits above the host strip if there is one.
    Tapping fires planConfirmRemoveBooth (native confirm dialog). */
-.checklist-row.is-booth { position: relative; }
 .booth-quiet-remove {
   position: absolute;
   top: 8px;

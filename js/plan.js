@@ -1780,7 +1780,13 @@ function _allNotesNow() {
 
 function buildHeatRanked() {
   const teamPlans = _teamData?.teamPlans || [];
-  const allPlans  = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
+  // Always use the live _plan for the current user — it holds the latest
+  // in-memory ratings and avoids the stale-teamPlans blind spot that occurs
+  // when the user rates sessions on the Checklist tab before visiting Debrief.
+  const planMap = {};
+  for (const p of teamPlans) planMap[p.id] = p;
+  if (_plan) planMap[_plan.id] = _plan;
+  const allPlans = Object.keys(planMap).length ? Object.values(planMap) : [_plan].filter(Boolean);
 
   const scoreMap      = {};
   const sessionMetaMap = {};
@@ -1814,7 +1820,10 @@ function buildHeatRanked() {
 
 function buildBoothHeatRanked() {
   const teamPlans = _teamData?.teamPlans || [];
-  const allPlans  = teamPlans.length ? teamPlans : [_plan].filter(Boolean);
+  const planMap = {};
+  for (const p of teamPlans) planMap[p.id] = p;
+  if (_plan) planMap[_plan.id] = _plan;
+  const allPlans = Object.keys(planMap).length ? Object.values(planMap) : [_plan].filter(Boolean);
 
   const scoreMap    = {};
   const boothMetaMap = {};

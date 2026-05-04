@@ -1743,7 +1743,9 @@ function buildHeatRanked() {
       avgRating:  scoreMap[key].total / scoreMap[key].count,
       raterCount: scoreMap[key].count,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating);
+    // Tie-break: when two items share the same average (e.g. both 3.0),
+    // the one with more raters ranks higher — more signal beats less.
+    .sort((a, b) => (b.avgRating - a.avgRating) || (b.raterCount - a.raterCount));
 }
 
 function buildBoothHeatRanked() {
@@ -1775,7 +1777,9 @@ function buildBoothHeatRanked() {
       avgRating:  scoreMap[key].total / scoreMap[key].count,
       raterCount: scoreMap[key].count,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating);
+    // Tie-break: when two items share the same average (e.g. both 3.0),
+    // the one with more raters ranks higher — more signal beats less.
+    .sort((a, b) => (b.avgRating - a.avgRating) || (b.raterCount - a.raterCount));
 }
 
 function buildSummaryText() {
@@ -2023,7 +2027,7 @@ function renderDebriefTab() {
         ${flameSvg()}
         Hot sessions
       </div>
-      <h3 class="team-section-title team-section-title-xl">Top-rated <em>sessions</em> by you and your team.</h3>
+      <h3 class="team-section-title team-section-title-xl">Top-rated <em class="tone-mint">sessions</em> by you and your team.</h3>
       <p class="team-section-lede">Every session your team rated, ranked by average heat — with each teammate's flames and full notes underneath.</p>
       ${heatRanked.length
         ? `<div class="debrief-hot-list">${sessionCards}</div>`

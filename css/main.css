@@ -6989,6 +6989,19 @@ button.app-pill.purple.clickable:hover {
   background-clip: text;
   color: transparent;
 }
+/* Tone variants — mint sessions, purple booths. The neon mint grad
+   uses mint→mint-deep so the descender end stays vivid rather than
+   washing into the page background. */
+.team-section-title em.tone-mint {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.team-section-title em.tone-purple {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 .team-section-lede {
   font-size: 14.5px;
   line-height: 1.6;
@@ -7013,9 +7026,10 @@ button.app-pill.purple.clickable:hover {
    as the central value moment of the page, not a sibling block. */
 .team-section-title-xl {
   font-size: clamp(34px, 5vw, 52px);
-  line-height: 1.1;
+  line-height: 1.18;
   letter-spacing: -0.02em;
   margin: 0 0 16px;
+  padding-bottom: 4px;
 }
 .team-section-lede-xl {
   font-size: 16px;
@@ -10951,20 +10965,30 @@ button.app-pill.purple.clickable:hover {
   font-style: italic;
   font-weight: 500;
   font-size: clamp(44px, 6vw, 60px);
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: -0.04em;
   font-variation-settings: 'SOFT' 90;
-  background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   min-width: 64px;
+  padding: 4px 0;
   text-align: center;
 }
+/* Sessions = neon mint. Pure mint→mint-deep grad with a soft mint
+   text-shadow underneath so the gradient edges don't wash out. */
 .debrief-card.tone-mint .debrief-card-rank {
-  background: linear-gradient(135deg, var(--mint) 0%, var(--purple) 100%);
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
   -webkit-background-clip: text;
   background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(34,230,168,0.50));
+}
+.debrief-card.tone-purple .debrief-card-rank {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(168,85,247,0.40));
 }
 .debrief-card-main { min-width: 0; }
 .debrief-card-title {
@@ -10973,8 +10997,9 @@ button.app-pill.purple.clickable:hover {
   font-weight: 500;
   font-size: clamp(20px, 2.4vw, 24px);
   letter-spacing: -0.015em;
-  line-height: 1.25;
+  line-height: 1.32;
   color: var(--text);
+  padding-bottom: 2px;
 }
 .debrief-card-meta {
   font-family: 'JetBrains Mono', monospace;
@@ -11008,29 +11033,55 @@ button.app-pill.purple.clickable:hover {
 .debrief-avg-flames {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: rgba(255,108,144,0.95);
-  filter: drop-shadow(0 0 8px rgba(255,94,132,0.45));
+  filter: drop-shadow(0 0 10px rgba(255,94,132,0.50));
+  padding: 2px 0;
 }
-.debrief-avg-flame { width: 26px; height: 26px; display: block; }
-.debrief-avg-flame:not(.lit) { opacity: 0.22; filter: none; }
+.debrief-avg-flame {
+  width: 28px;
+  height: 28px;
+  display: block;
+  overflow: visible;
+}
+.debrief-avg-flame:not(.lit) { opacity: 0.20; filter: none; }
+.debrief-avg-flame.lit {
+  animation: debriefFlamePulse 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.debrief-avg-flame.lit:nth-child(2) { animation-delay: 0.25s; }
+.debrief-avg-flame.lit:nth-child(3) { animation-delay: 0.5s; }
+@keyframes debriefFlamePulse {
+  0%, 100% { transform: scale(1)    translateY(0); opacity: 1; }
+  45%      { transform: scale(1.10) translateY(-1px); opacity: 0.92; }
+  55%      { transform: scale(0.98) translateY(0);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .debrief-avg-flame.lit { animation: none; }
+}
+
 .debrief-avg-num {
   font-family: 'Fraunces', serif;
   font-style: italic;
-  font-weight: 500;
-  font-size: clamp(48px, 6.2vw, 64px);
+  font-weight: 600;
+  font-size: clamp(52px, 6.6vw, 70px);
   line-height: 1;
   letter-spacing: -0.03em;
   font-variation-settings: 'SOFT' 90;
-  background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 0 16px rgba(168,85,247,0.40));
+  padding: 4px 0;
 }
+/* Neon mint — solid mint→mint-deep with a punchy text-glow so the
+   number reads as the page's headline metric, not a faded wash. */
 .debrief-avg.tone-mint .debrief-avg-num {
-  background: linear-gradient(135deg, var(--mint) 0%, #fff 65%, var(--purple) 100%);
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
   -webkit-background-clip: text;
   background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(34,230,168,0.55));
 }
 .debrief-avg-label {
   font-family: 'JetBrains Mono', monospace;

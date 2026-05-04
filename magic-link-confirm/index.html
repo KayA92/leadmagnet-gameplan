@@ -99,10 +99,9 @@
       // to this tab's browsing context, so whichever browser opened the email
       // link stores and reads the token — no dependency on the wizard browser.
       var tokenHash = params.get('token_hash');
-      var type = params.get('type');
       if (tokenHash) {
         sessionStorage.setItem('ml_token_hash', tokenHash);
-        sessionStorage.setItem('ml_type', type || 'magiclink');
+        sessionStorage.setItem('ml_type', 'email');
       }
       var team = params.get('team');
       var planUrl = '/plan/' + (team ? '?team=' + encodeURIComponent(team) : '');

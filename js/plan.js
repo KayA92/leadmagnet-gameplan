@@ -4618,7 +4618,7 @@ export async function initPlan() {
       verifyResult = await Promise.race([
         supabase.auth.verifyOtp({
           token_hash: tokenHash,
-          type: qpParams.get('type') || 'magiclink',
+          type: 'email',
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('verify_timeout')), 8000)),
       ]);

@@ -2852,7 +2852,7 @@ function sponsorsFooterHtml(plan = _plan) {
         <span class="autoevent-foot-built">— a free tool by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></span>
       </div>
       <div class="autoevent-foot-cta">
-        Want one of these for your next event? <a href="/" target="_blank" rel="noopener">About AutoEvent →</a>
+        Want one of these for your next event? <a href="/about/" target="_blank" rel="noopener">About AutoEvent →</a>
       </div>
     </div>
 

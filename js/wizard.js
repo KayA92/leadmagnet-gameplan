@@ -747,22 +747,22 @@ function computePainProgress() {
   const percent = Math.min(100, (n / PAIN_BAR_MAX) * 100);
   let label, zone;
   if (n === 0) {
-    label = 'Tap your problems · 3+ to unlock matches';
+    label = 'Tap 3+ to start matching';
     zone  = 'empty';
   } else if (n < PAIN_UNLOCK) {
-    label = `Tap ${PAIN_UNLOCK - n} more to unlock matches`;
+    label = `${PAIN_UNLOCK - n} more to start matching`;
     zone  = 'pre-unlock';
   } else if (n < PAIN_SHARP_LO) {
-    label = 'Matches unlocked · tap a few more for sharper picks';
+    label = 'Unlocked · keep tapping to hit the sweet spot';
     zone  = 'unlocked';
   } else if (n <= PAIN_SHARP_HI) {
-    label = '✦ Sharp zone · the AI’s read is at its best';
+    label = '✦ You’re in the sweet spot';
     zone  = 'sharp';
   } else if (n < PAIN_BAR_MAX) {
-    label = 'Strong list · the AI’s still focused';
+    label = 'Still in the sweet spot';
     zone  = 'post-sharp';
   } else {
-    label = 'Picking a lot — try focusing on your real top problems';
+    label = 'Too many — stick to your real top problems';
     zone  = 'too-many';
   }
   return { percent, label, zone, n };

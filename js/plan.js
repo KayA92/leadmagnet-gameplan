@@ -925,7 +925,7 @@ function renderChecklistTab() {
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
-            <button class="checklist-time-swap variant-booth" onclick="openPlanEditor('booths')" type="button" aria-label="Edit booths">
+            <button class="checklist-time-swap variant-booth" onclick="planOpenBoothSwap('${escHtml(String(item.stand_number))}', event)" type="button" aria-label="Swap booth">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
               Swap
             </button>
@@ -4182,6 +4182,99 @@ window.planMakeSlotFreeTime = function(sessionId) {
   if (!s) return;
   _plan.sessions = (_plan.sessions || []).filter(x => x.session_id !== sessionId);
   savePlanSessions();
+  renderApp();
+};
+
+window.planOpenBoothSwap = function(currentStandNumber, ev) {
+  if (ev) ev.stopPropagation();
+  const current = (_allExhibitors || []).find(e => String(e.stand_number) === String(currentStandNumber))
+    || (_plan?.booths || []).find(e => String(e.stand_number) === String(currentStandNumber));
+  if (!current) return;
+
+  const planStands  = new Set((_plan?.booths || []).map(b => String(b.stand_number)));
+  const currentCats = new Set(current.canonical_categories || []);
+
+  // Filter _rankedBooths to exhibitors in the same canonical_category space as the
+  // booth being swapped — gives contextually relevant alternatives (swapping a tax
+  // tool shows other tax tools) and a naturally limited list. Falls back to
+  // top/high/medium from the full scored list if no category overlap exists.
+  const baseFilter = e =>
+    String(e.stand_number) !== String(currentStandNumber) &&
+    e._rank !== 'host' &&
+    !e.is_host &&
+    !planStands.has(String(e.stand_number));
+
+  let candidates = (_rankedBooths || [])
+    .filter(e => baseFilter(e) && (e.canonical_categories || []).some(c => currentCats.has(c)))
+    .sort((a, b) => (a._rank || 0) - (b._rank || 0));
+
+  if (candidates.length === 0) {
+    candidates = (_rankedBooths || [])
+      .filter(e => baseFilter(e) && (e._bucket === 'top' || e._bucket === 'high' || e._bucket === 'medium'))
+      .sort((a, b) => (a._rank || 0) - (b._rank || 0));
+  }
+
+  const boothTotal = candidates.length;
+  // Assign local buckets relative to this candidate pool — mirrors session swap
+  // behaviour. Global _bucket is useless here (a #1 in tax could be globally
+  // 'medium' because AI-category booths outscored it across the full set).
+  const scored = candidates.map((e, i) => {
+    const pct = (i + 1) / boothTotal;
+    return {
+      booth: e,
+      match: {
+        bucket: pct <= 0.25 ? 'high' : pct <= 0.6 ? 'medium' : 'neutral',
+        rank: i + 1,
+        localTotal: boothTotal,
+      },
+    };
+  });
+
+  const candidatesHtml = scored.length === 0
+    ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other booths available to swap.</div>'
+    : scored.map(({ booth: b, match: m }) => {
+        const desc = (b.company_description || '').slice(0, 100).trim();
+        const truncDesc = desc.length < (b.company_description || '').length ? desc + '…' : desc;
+        return `
+          <div class="slot-swap-row">
+            <div class="slot-swap-row-main">
+              <div class="slot-swap-row-title">${escHtml(b.company_name || '')}</div>
+              <div class="slot-swap-row-meta">Stand ${escHtml(String(b.stand_number || ''))}</div>
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', total: m.localTotal, compact: true })}
+              ${truncDesc ? `<div class="slot-swap-row-desc">${escHtml(truncDesc)}</div>` : ''}
+            </div>
+            <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentStandNumber))}','${escHtml(String(b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap
+            </button>
+          </div>`;
+      }).join('');
+
+  let modal = document.getElementById('planSlotSwapModal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'planSlotSwapModal';
+  modal.className = 'login-modal slot-swap-modal open';
+  modal.innerHTML = `
+    <div class="login-modal-backdrop" onclick="document.getElementById('planSlotSwapModal')?.remove()"></div>
+    <div class="login-modal-panel slot-swap-panel">
+      <button class="login-modal-close" onclick="document.getElementById('planSlotSwapModal')?.remove()" aria-label="Close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="login-modal-eyebrow">Booths · Stand ${escHtml(String(currentStandNumber))}</div>
+      <h2 class="login-modal-title">Swap this <em>booth.</em></h2>
+      <p class="login-modal-sub">Currently: <strong style="color:var(--text);">${escHtml(current.company_name || '')}</strong>. Swap for another exhibitor.</p>
+      <div class="slot-swap-list">${candidatesHtml}</div>
+    </div>`;
+  document.body.appendChild(modal);
+};
+
+window.planSwapBooth = function(currentStandNumber, newStandNumber) {
+  if (!_plan) return;
+  const newBooth = (_allExhibitors || []).find(e => String(e.stand_number) === String(newStandNumber));
+  if (!newBooth) return;
+  _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(currentStandNumber));
+  _plan.booths.push(newBooth);
+  supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
 };
 

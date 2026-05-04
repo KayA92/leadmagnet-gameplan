@@ -2028,7 +2028,7 @@ function renderDebriefTab() {
         Hot sessions
       </div>
       <h3 class="team-section-title team-section-title-xl">Top-rated <em class="tone-mint">sessions</em> by you and your team.</h3>
-      <p class="team-section-lede">Every session your team rated, ranked by average heat — with each teammate's flames and full notes underneath.</p>
+      <p class="team-section-lede">Every session your team rated, ranked by average heat — with each teammate's full notes.</p>
       ${heatRanked.length
         ? `<div class="debrief-hot-list">${sessionCards}</div>`
         : `<div class="debrief-empty">Sessions appear here once you rate them during the show.</div>`}
@@ -2040,7 +2040,7 @@ function renderDebriefTab() {
         Hot booths
       </div>
       <h3 class="team-section-title team-section-title-xl">Top-rated <em>booths</em> by you and your team.</h3>
-      <p class="team-section-lede">Vendors worth a follow-up — ranked by team rating, with everyone's flames and notes side by side.</p>
+      <p class="team-section-lede">Every booth your team rated, ranked by average heat — with each teammate's full notes.</p>
       ${boothHeatRanked.length
         ? `<div class="debrief-hot-list">${boothCards}</div>`
         : `<div class="debrief-empty">Booths appear here once you rate them during the show.</div>`}

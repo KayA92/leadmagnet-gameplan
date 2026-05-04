@@ -2079,6 +2079,126 @@ button.app-pill.purple.clickable:hover {
 .app-section {
   margin-bottom: 56px;
 }
+
+/* ── CPD log ─────────────────────────────────────────────────────────
+   Single card with a clean session list, a big gradient total at the
+   bottom, and a download button. No claims about associations or
+   acceptance — just the plan, the hours, the total. */
+.cpd-card {
+  background: var(--ink-2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 8px 8px 28px;
+  margin-bottom: 32px;
+}
+.cpd-list {
+  display: flex;
+  flex-direction: column;
+}
+.cpd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.cpd-row:last-child { border-bottom: none; }
+.cpd-row-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+.cpd-row-hours {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.cpd-row-hours span {
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 2px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.cpd-row-empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Total — big bold gradient number at the bottom of the card. */
+.cpd-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px 22px 8px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  margin-top: 4px;
+}
+.cpd-total-num {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(64px, 9vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variation-settings: 'SOFT' 60;
+}
+.cpd-total-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.cpd-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 22px auto 0;
+  padding: 12px 22px;
+  background: var(--grad);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(255,94,132,0.30);
+}
+.cpd-download-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(255,94,132,0.42);
+}
+.cpd-download-btn:active { transform: scale(0.98); }
+/* Centre the download button without overriding the card's padding. */
+.cpd-card { display: flex; flex-direction: column; align-items: stretch; }
+.cpd-card .cpd-download-btn { align-self: center; }
+
+@media (max-width: 640px) {
+  .cpd-card { padding: 6px 6px 22px; }
+  .cpd-row { padding: 14px 16px; gap: 12px; }
+  .cpd-row-title { font-size: 14px; }
+  .cpd-total { padding: 22px 16px 6px; }
+  .cpd-total-num { font-size: 56px; }
+}
 .app-section-header {
   display: flex;
   align-items: baseline;

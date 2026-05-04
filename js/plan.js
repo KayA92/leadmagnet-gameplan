@@ -1477,24 +1477,92 @@ function renderTeamTab() {
 
 function renderCpdTab() {
   const sessions = _plan?.sessions || [];
-  // CPD shows the full hours from the user's plan from the start —
-  // they shouldn't have to "earn" their own CPD by ticking sessions
-  // off; that's not our call to police.
-  const cpdHours = (sessions.length * 40 / 60).toFixed(1);
-  const isTeam   = !!(_plan?.team_id);
+  // 40-minute Accountex sessions → 0.67 CPD hours each. Per-row rounded
+  // to 1 decimal for clean reading; total summed from the unrounded
+  // raw value so totals don't drift due to per-row rounding.
+  const HOURS_PER_SESSION = 40 / 60;
+  const totalHours = (sessions.length * HOURS_PER_SESSION).toFixed(1);
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const da = a.day === 'Day 1' ? 1 : 2;
+    const db = b.day === 'Day 1' ? 1 : 2;
+    return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+  });
+  const rowsHtml = sortedSessions.length
+    ? sortedSessions.map(s => `
+        <div class="cpd-row">
+          <div class="cpd-row-title">${escHtml(s.title || s.session_id || 'Session')}</div>
+          <div class="cpd-row-hours">${HOURS_PER_SESSION.toFixed(1)} <span>hrs</span></div>
+        </div>
+      `).join('')
+    : `<div class="cpd-row-empty">No sessions in your plan yet. Add some on the Checklist tab.</div>`;
+
   return `
     <div class="app-header">
-      <h2 class="app-title">CPD <em>log.</em></h2>
-      <p class="app-sub">Your continuing professional development hours, tracked as you go.</p>
-      ${inviteNudgeHtml('cpd', isTeam)}
+      <h2 class="app-title">Your CPD log, <em>one click away.</em></h2>
+      <p class="app-sub">Every session in your plan counts. Download anytime.</p>
     </div>
-    <div style="padding:32px 0;text-align:center;color:var(--text-muted);">
-      <div style="font-family:'Fraunces',serif;font-size:56px;font-weight:500;color:var(--mint);">${cpdHours}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px;">CPD hours logged</div>
-      <p style="margin-top:20px;font-size:14px;">Mark sessions as attended on the Checklist tab to add hours here.</p>
+
+    <div class="cpd-card">
+      <div class="cpd-list">${rowsHtml}</div>
+      <div class="cpd-total">
+        <div class="cpd-total-num">${totalHours}</div>
+        <div class="cpd-total-label">Total CPD hours</div>
+      </div>
+      ${sortedSessions.length ? `
+        <button class="cpd-download-btn" type="button" onclick="planDownloadCpd()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CPD log
+        </button>` : ''}
     </div>
   `;
 }
+
+window.planDownloadCpd = function() {
+  const sessions = [...(_plan?.sessions || [])].sort((a, b) => {
+    const da = a.day === 'Day 1' ? 1 : 2;
+    const db = b.day === 'Day 1' ? 1 : 2;
+    return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+  });
+  if (!sessions.length) return;
+  const HOURS_PER_SESSION = 40 / 60;
+  const total = (sessions.length * HOURS_PER_SESSION).toFixed(1);
+  const userName  = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ') || '';
+  const userCo    = _userProfile?.company || '';
+  const meta = [userName, userCo].filter(Boolean).join(' · ') || 'Accountex 2026';
+  const rows = sessions.map(s => {
+    const day = s.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+    const time = s.start_time ? `${day} · ${s.start_time}` : day;
+    const title = (s.title || s.session_id || 'Session').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    return `<tr><td>${title}</td><td class="meta">${time}</td><td class="hrs">${HOURS_PER_SESSION.toFixed(1)}</td></tr>`;
+  }).join('');
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
+    <title>CPD log — Accountex 2026</title>
+    <style>
+      body { font-family: Georgia, serif; font-size: 12pt; color: #111; margin: 2cm 2.5cm; }
+      h1 { font-size: 22pt; margin: 0 0 4px; }
+      .meta-line { font-size: 10pt; color: #666; margin-bottom: 28px; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
+      th { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.08em; color: #666; font-weight: 600; }
+      td.meta { color: #666; font-size: 10pt; white-space: nowrap; width: 130px; }
+      td.hrs, th.hrs { text-align: right; width: 70px; font-variant-numeric: tabular-nums; }
+      tr.total td { border-top: 2px solid #111; border-bottom: none; padding-top: 14px; font-size: 14pt; font-weight: 700; }
+      @media print { body { margin: 1.5cm 2cm; } }
+    </style>
+    </head><body>
+    <h1>CPD log — Accountex 2026</h1>
+    <div class="meta-line">${meta}</div>
+    <table>
+      <thead><tr><th>Session</th><th>When</th><th class="hrs">CPD hrs</th></tr></thead>
+      <tbody>${rows}<tr class="total"><td colspan="2">Total</td><td class="hrs">${total}</td></tr></tbody>
+    </table>
+    <script>window.onload = function() { window.print(); };</script>
+    </body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (win) win.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+};
 
 // ── Debrief helpers ───────────────────────────────────────────────────────────
 

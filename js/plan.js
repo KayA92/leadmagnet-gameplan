@@ -2850,13 +2850,55 @@ window.planRemoveBooth = function(standNumber) {
   renderApp();
 };
 
-// Confirm-wrapped remove for the in-card subtle × button. Native confirm
-// is enough — booth removal is reversible (re-add via the editor).
+// In-app confirm modal — replaces native window.confirm() so the
+// experience reads as part of the app, not the browser. Reusable:
+// pass a body string + onConfirm callback. Tone "danger" turns the
+// confirm button pink to signal a destructive action.
+function planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }) {
+  document.getElementById('planConfirmModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'planConfirmModal';
+  modal.className = 'plan-confirm-modal open';
+  modal.innerHTML = `
+    <div class="plan-confirm-backdrop" data-action="cancel"></div>
+    <div class="plan-confirm-panel">
+      <h2 class="plan-confirm-title">${escHtml(title)}</h2>
+      <p class="plan-confirm-body">${body}</p>
+      <div class="plan-confirm-actions">
+        <button class="plan-confirm-btn cancel" type="button" data-action="cancel">Cancel</button>
+        <button class="plan-confirm-btn confirm tone-${confirmTone || 'mint'}" type="button" data-action="confirm">${escHtml(confirmLabel || 'Confirm')}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  const close = () => {
+    document.removeEventListener('keydown', onKey);
+    modal.remove();
+  };
+  const onKey = (e) => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'Enter') { onConfirm?.(); close(); }
+  };
+  document.addEventListener('keydown', onKey);
+  modal.addEventListener('click', (e) => {
+    const action = e.target.closest('[data-action]')?.dataset?.action;
+    if (action === 'cancel') close();
+    else if (action === 'confirm') { onConfirm?.(); close(); }
+  });
+  // Auto-focus the confirm button so Enter works straight away.
+  modal.querySelector('.plan-confirm-btn.confirm')?.focus();
+}
+
 window.planConfirmRemoveBooth = function(standNumber, companyName) {
-  const label = companyName ? `"${companyName}"` : 'this booth';
-  if (window.confirm(`Remove ${label} from your plan?`)) {
-    window.planRemoveBooth(standNumber);
-  }
+  const label = companyName
+    ? `Remove <strong>${escHtml(companyName)}</strong> from your plan?`
+    : 'Remove this booth from your plan?';
+  planShowConfirm({
+    title: 'Remove booth',
+    body: `${label} You can re-add it any time from <strong>Edit booths</strong>.`,
+    confirmLabel: 'Remove',
+    confirmTone: 'danger',
+    onConfirm: () => window.planRemoveBooth(standNumber),
+  });
 };
 
 // Toggle a booth's visited state from the in-card Visited button. Mirrors

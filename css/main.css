@@ -8338,6 +8338,98 @@ button.app-pill.purple.clickable:hover {
 }
 
 /* Log-back-in modal */
+/* In-app confirm modal — replaces native window.confirm() so destructive
+   actions feel like part of the app, not the browser. Reusable via
+   planShowConfirm({ title, body, confirmLabel, confirmTone, onConfirm }). */
+.plan-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 350;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: modal-fade-in 0.18s ease-out;
+}
+.plan-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,18,0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.plan-confirm-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 26px 28px 22px;
+  background: linear-gradient(135deg, rgba(20,20,28,0.98) 0%, rgba(28,22,40,0.98) 100%);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 40px rgba(255,94,132,0.08);
+  animation: modal-pop-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes modal-pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.plan-confirm-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+.plan-confirm-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 22px;
+}
+.plan-confirm-body strong { color: var(--text); font-weight: 600; }
+.plan-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.plan-confirm-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.plan-confirm-btn:active { transform: scale(0.98); }
+.plan-confirm-btn.cancel {
+  background: transparent;
+  border-color: rgba(255,255,255,0.18);
+  color: var(--text-muted);
+}
+.plan-confirm-btn.cancel:hover {
+  border-color: rgba(255,255,255,0.32);
+  color: var(--text);
+}
+.plan-confirm-btn.confirm.tone-mint {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #0a1a12;
+}
+.plan-confirm-btn.confirm.tone-danger {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,94,132,0.30);
+}
+.plan-confirm-btn.confirm.tone-danger:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(255,94,132,0.42);
+}
+
 .login-modal {
   position: fixed;
   inset: 0;

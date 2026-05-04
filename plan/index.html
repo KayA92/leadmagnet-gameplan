@@ -54,10 +54,11 @@
   text-transform: uppercase; color: var(--text-muted);
 }
 #loading-step {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--text-faint, rgba(255,255,255,0.35));
-  min-height: 12px; margin-top: -10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.65);
+  min-height: 14px; margin-top: -8px; transition: color 0.3s;
 }
+#loading-step.error { color: #ff5e84; text-transform: none; letter-spacing: 0.04em; }
 #loading-stuck {
   display: none; margin-top: 18px; text-align: center;
   font-size: 13px; color: var(--text-muted);
@@ -237,14 +238,51 @@
 </div>
 
 <script>
-  // After 7s of loading, show a self-rescue link. Cleared if the loader hides.
-  setTimeout(function() {
-    var stuck = document.getElementById('loading-stuck');
-    var loading = document.getElementById('plan-loading');
-    if (stuck && loading && loading.style.display !== 'none') {
-      stuck.style.display = 'block';
-    }
-  }, 7000);
+  // Synchronous probe — runs immediately on parse (before the module
+  // import below). Shows "Loading scripts…" right away so the user can
+  // see something happening; if the module never loads (CDN blocked,
+  // import error) the step text upgrades to an error after 5s.
+  (function () {
+    var step = document.getElementById('loading-step');
+    if (step) step.textContent = 'Loading scripts…';
+
+    // Catch any unhandled errors / promise rejections and surface them
+    // in the step label so the user can read them without DevTools.
+    window.addEventListener('error', function (e) {
+      var s = document.getElementById('loading-step');
+      if (s) {
+        s.textContent = 'JS error · ' + (e.message || e.error?.message || 'unknown');
+        s.classList.add('error');
+      }
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var s = document.getElementById('loading-step');
+      if (s) {
+        var msg = e.reason?.message || e.reason || 'unknown';
+        s.textContent = 'Promise · ' + (typeof msg === 'string' ? msg : 'unknown');
+        s.classList.add('error');
+      }
+    });
+
+    // Module-load watchdog: if after 6s the step is still "Loading
+    // scripts…", the JS module never finished importing.
+    setTimeout(function () {
+      var s = document.getElementById('loading-step');
+      if (s && s.textContent === 'Loading scripts…') {
+        s.textContent = 'Scripts not loading — check connection · try ?reset=1';
+        s.classList.add('error');
+      }
+    }, 6000);
+
+    // Stuck-recovery link, unchanged.
+    setTimeout(function () {
+      var stuck = document.getElementById('loading-stuck');
+      var loading = document.getElementById('plan-loading');
+      if (stuck && loading && loading.style.display !== 'none') {
+        stuck.style.display = 'block';
+      }
+    }, 7000);
+  })();
 </script>
 
 <p id="plan-error"></p>

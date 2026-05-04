@@ -3283,6 +3283,10 @@ export async function initPlan() {
   // hangs if something goes wrong. Each step logs as `[plan] STEP — detail`.
   const log = (step, detail) => console.log(`[plan] ${step}` + (detail ? ` — ${detail}` : ''));
   log('init', `pathname=${window.location.pathname} search=${window.location.search}`);
+  // Confirms the JS module loaded + initPlan() actually ran. If you see
+  // this on the loader, the script is alive — any subsequent hang is in
+  // a downstream Supabase call.
+  setLoadingStep('initPlan running…');
 
   // Reset escape hatch: /plan/?reset=1 clears local state + signs out so a
   // user can recover from a borked session. Useful when a stale anon

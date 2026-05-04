@@ -1044,64 +1044,140 @@ function renderTeammateCard(m, index) {
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const inviteFormHtml = `
+  const MAX_TEAM_MEMBERS = 5;
+  const memberCount = _teamData.members.length;
+  const isSolo      = memberCount < 2;
+  const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
+  const isFull      = memberCount >= MAX_TEAM_MEMBERS;
+  const pillTone    = isFull ? 'full' : (memberCount > 1 ? 'team' : 'solo');
+
+  const capacityPill = `
+    <div class="team-capacity-pill ${pillTone}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span><strong>${memberCount}</strong> of ${MAX_TEAM_MEMBERS}</span>
+    </div>
+  `;
+
+  const inviteForm = `
+    <div class="team-invite-form" id="team-invite-form">
+      <div class="team-invite-input-row">
+        <input type="email" class="team-invite-email-input" id="team-invite-email"
+          placeholder="colleague@firm.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
+        <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
+          Send invite
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="team-invite-status" id="team-invite-status"></div>
+    </div>
+  `;
+
+  const focusInviteEmail = "document.getElementById('team-invite-email')?.focus();";
+
+  const placeholderCard = !isFull ? `
+    <div class="teammate teammate-placeholder" onclick="${focusInviteEmail}">
+      <div class="teammate-placeholder-inner">
+        <div class="teammate-placeholder-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        </div>
+        <div class="teammate-placeholder-text">
+          Each teammate's brief lands here.<br>
+          <strong>Tap to invite by email.</strong>
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  const heroTitle = isFull
+    ? `Your <em>${MAX_TEAM_MEMBERS}-strong</em> team is locked in.`
+    : (isSolo
+        ? `Invite up to <em>${MAX_TEAM_MEMBERS} teammates.</em>`
+        : `Bring more colleagues. <em>${MAX_TEAM_MEMBERS} seats total.</em>`);
+
+  const heroSub = isFull
+    ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
+    : (isSolo
+        ? `Send each colleague an email invite. They get their own AI-matched plan in this workspace — with their notes, ratings, and CPD hours flowing into a shared debrief.`
+        : `Each colleague who joins unlocks <strong>their sessions on your map</strong>, <strong>their notes attributed in real time</strong>, <strong>their booth ratings</strong>, and a <strong>shared debrief</strong>.`);
+
+  const eyebrowLabel = isFull ? 'Workspace at capacity' : 'Workspace invite';
+
+  const inviteHero = `
     <div class="team-invite-hero">
       <div class="team-invite-hero-inner">
-        <div class="team-invite-hero-label">Invite a colleague</div>
-        <div class="team-invite-hero-title">You're in <em>${escHtml(_teamData.company || 'the team')}.</em></div>
-        <div class="team-invite-hero-sub">Your plan, your notes, your CPD hours — all attributed to you but visible to the team. Invite more colleagues below.</div>
-        <div class="team-invite-form" id="team-invite-form">
-          <div class="team-invite-input-row">
-            <input type="email" class="team-invite-email-input" id="team-invite-email"
-              placeholder="colleague@firm.com" autocomplete="email"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
-            <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
-              Send invite
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-          </div>
-          <div class="team-invite-status" id="team-invite-status"></div>
+        <div class="team-capacity-row">
+          <div class="team-section-eyebrow tone-pink">${eyebrowLabel}</div>
+          ${capacityPill}
         </div>
+        <div class="team-invite-hero-title">${heroTitle}</div>
+        <div class="team-invite-hero-sub">${heroSub}</div>
+        ${isFull ? '' : inviteForm}
       </div>
     </div>
   `;
 
-  const memberCount = _teamData.members.length;
+  const pageTitle = isSolo
+    ? `Bring your team to <em>Accountex.</em>`
+    : `Your firm at <em>Accountex.</em>`;
+
+  const pageSub = isSolo
+    ? `Email a colleague to join your workspace — they'll get their own AI-matched plan, their notes flow into yours.`
+    : `Who's covering what, whose notes are flowing in live, and what the team has actually decided.`;
+
+  const aiBlock = isSolo ? `
+    <div class="team-synthesis ai-insights-locked">
+      <div class="team-section-eyebrow tone-mint">AI insights · waiting</div>
+      <h3 class="team-section-title">Patterns across <em>your team.</em></h3>
+      <p class="team-section-lede">
+        Where you're scouting in common, where you'd duplicate, what nobody's covering. Surfaces once a second teammate joins.
+      </p>
+      <div class="ai-insights-locked-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Needs at least <strong>2 teammates</strong> to generate insights.</span>
+      </div>
+    </div>
+  ` : `
+    <div class="team-synthesis">
+      <div class="team-section-eyebrow tone-mint">AI synthesis</div>
+      <h3 class="team-section-title">What the AI sees <em>across the team.</em></h3>
+      <p class="team-section-lede">Patterns nobody flagged on their own. Disagreements worth a 5-minute call. Blind spots in your collective coverage. Attributed by name — never averaged.</p>
+      <div class="intel-grid">
+        ${buildIntelBlocks()}
+      </div>
+    </div>
+  `;
 
   return `
     <div class="app-header">
       <div class="app-header-top">
         <div>
-          <h2 class="app-title">Your team, <em>already aligned.</em></h2>
-          <p class="app-sub">What everyone's scouting, who's covering what, and where the team's real problems are.</p>
+          <h2 class="app-title">${pageTitle}</h2>
+          <p class="app-sub" style="margin-top:6px;">${pageSub}</p>
         </div>
       </div>
     </div>
 
-    ${inviteFormHtml}
-
-    <div class="team-synthesis">
-      <div class="team-synthesis-label">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/></svg>
-        AI team intel
-      </div>
-      <div class="team-synthesis-title">The brief your team <em>hasn't written yet.</em></div>
-      <p class="team-synthesis-lede">We read every teammate's stated problem and priority pick. Here's what jumps out — attributed, not averaged.</p>
-      <div class="intel-grid">
-        ${buildIntelBlocks()}
-      </div>
-    </div>
+    ${inviteHero}
 
     <div class="app-section">
-      <div class="app-section-header">
-        <div class="app-section-title">Who's going &amp; why <span class="app-section-count">${memberCount} ${memberCount === 1 ? 'mission' : 'missions'}</span></div>
+      <div class="team-section-eyebrow tone-purple">Pre-show intel</div>
+      <h3 class="team-section-title">Who's going &amp; <em>why.</em></h3>
+      <p class="team-section-lede">
+        Each teammate's onboarding answers, side by side. Top problem, role, software they're evaluating.
+      </p>
+      <div class="team-section-count-row">
+        <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} so far</span>
       </div>
       <div class="teammate-grid">
         ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+        ${placeholderCard}
       </div>
     </div>
 
-    <div class="taxready-cta-v2">
+    ${aiBlock}
+
+    ${isSolo ? '' : `<div class="taxready-cta-v2">
       <div class="taxready-cta-v2-eyebrow">
         <span class="taxready-cta-v2-dot"></span>
         Bonus · Stand 1144
@@ -1193,7 +1269,7 @@ function renderTeamTab() {
       <div class="taxready-cta-v2-foot">
         Or drop by <strong>stand 1144</strong> for a hand · <a href="https://xumagazine.com" target="_blank" rel="noopener">As featured in XU Magazine</a>
       </div>
-    </div>
+    </div>`}
   `;
 }
 

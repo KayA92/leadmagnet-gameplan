@@ -6127,6 +6127,145 @@ button.app-pill.purple.clickable:hover {
 }
 .team-section-lede strong { color: var(--text); font-weight: 600; }
 
+/* Team capacity row + pill (sits to right of "Workspace invite" eyebrow) */
+.team-capacity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.team-capacity-row .team-section-eyebrow {
+  margin-bottom: 0;
+}
+.team-capacity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  background: rgba(34, 230, 168, 0.08);
+  border: 1px solid rgba(34, 230, 168, 0.32);
+  color: var(--mint);
+  white-space: nowrap;
+}
+.team-capacity-pill strong {
+  color: var(--mint);
+  font-weight: 700;
+}
+.team-capacity-pill svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+.team-capacity-pill.full {
+  background: rgba(255, 94, 132, 0.08);
+  border-color: rgba(255, 94, 132, 0.32);
+  color: var(--pink);
+}
+.team-capacity-pill.full strong { color: var(--pink); }
+
+/* Count row that sits between section lede and the teammate grid */
+.team-section-count-row {
+  margin: -6px 0 14px;
+}
+.team-section-count-label {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Placeholder teammate card — invites the user to email a colleague */
+.teammate.teammate-placeholder {
+  background: rgba(34, 230, 168, 0.04);
+  border: 1.5px dashed rgba(34, 230, 168, 0.4);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+.teammate.teammate-placeholder:hover {
+  background: rgba(34, 230, 168, 0.08);
+  border-color: rgba(34, 230, 168, 0.6);
+  transform: translateY(-1px);
+}
+.teammate-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 20px 16px;
+}
+.teammate-placeholder-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 230, 168, 0.12);
+  color: var(--mint);
+  border: 1.5px solid rgba(34, 230, 168, 0.4);
+}
+.teammate-placeholder-icon svg { width: 22px; height: 22px; }
+.teammate-placeholder-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.teammate-placeholder-text strong {
+  color: var(--mint);
+  font-weight: 600;
+}
+
+/* Locked AI insights block (solo state) */
+.team-synthesis.ai-insights-locked {
+  opacity: 0.85;
+  position: relative;
+}
+.team-synthesis.ai-insights-locked::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+.ai-insights-locked-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  font-size: 13.5px;
+  margin-top: 6px;
+}
+.ai-insights-locked-note strong { color: var(--text); font-weight: 600; }
+.ai-insights-locked-note svg {
+  width: 16px;
+  height: 16px;
+  color: var(--mint);
+  flex-shrink: 0;
+}
+
 /* Email drafter */
 .email-draft {
   background: var(--ink-2);

@@ -3002,28 +3002,30 @@ button.app-pill.purple.clickable:hover {
 }
 
 /* ── Floating bottom bar — appears once user scrolls past 480px inside
-   the editor modal. Quick "Back to top" + "Close" affordances so they
-   don't have to scroll all the way back up. ────────────────────────── */
+   the editor modal. Lives as a sibling of <body>, NOT inside the
+   overlay — the overlay's backdrop-filter creates a new containing
+   block which would break position: fixed for descendants.
+   Subtle white pills, smooth slide-in, no coloured fills. */
 .plan-editor-floating-bar {
   position: fixed;
-  bottom: 18px;
+  bottom: 20px;
   left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  z-index: 240;
+  transform: translateX(-50%) translateY(24px);
+  z-index: 320;
   display: flex;
-  gap: 10px;
-  padding: 8px;
-  background: rgba(15,15,22,0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--ink-3);
+  gap: 8px;
+  padding: 7px;
+  background: rgba(20,20,28,0.85);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  box-shadow: 0 14px 38px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.30);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.plan-editor-overlay.scrolled .plan-editor-floating-bar {
+.plan-editor-floating-bar.visible {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
@@ -3032,42 +3034,25 @@ button.app-pill.purple.clickable:hover {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 9px 16px;
-  border-radius: 10px;
-  background: rgba(34,230,168,0.10);
-  border: 1px solid rgba(34,230,168,0.40);
-  color: var(--mint);
+  padding: 9px 14px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.85);
   font-family: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
 }
 .plan-editor-floating-btn:hover {
-  background: rgba(34,230,168,0.20);
-  border-color: var(--mint);
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.30);
+  color: #fff;
 }
-.plan-editor-floating-btn.close {
-  background: rgba(255,94,132,0.10);
-  border-color: rgba(255,94,132,0.40);
-  color: var(--pink);
-}
-.plan-editor-floating-btn.close:hover {
-  background: rgba(255,94,132,0.20);
-  border-color: var(--pink);
-}
-/* Booth-mode: Back-to-top button picks up the purple too */
-.plan-editor-overlay[data-mode="booths"] .plan-editor-floating-btn:not(.close) {
-  background: rgba(168,85,247,0.12);
-  border-color: rgba(168,85,247,0.45);
-  color: var(--purple);
-}
-.plan-editor-overlay[data-mode="booths"] .plan-editor-floating-btn:not(.close):hover {
-  background: rgba(168,85,247,0.22);
-  border-color: var(--purple);
-}
+.plan-editor-floating-btn svg { flex-shrink: 0; opacity: 0.85; }
 @media (max-width: 640px) {
-  .plan-editor-floating-bar { bottom: 12px; padding: 6px; gap: 8px; }
+  .plan-editor-floating-bar { bottom: 14px; padding: 6px; gap: 6px; }
   .plan-editor-floating-btn { padding: 8px 12px; font-size: 12px; }
 }
 

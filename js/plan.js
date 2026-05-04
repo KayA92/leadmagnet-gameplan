@@ -1730,8 +1730,8 @@ function renderDebriefTab() {
 
 function _ensurePlanEditorOverlay() {
   if (document.getElementById('planEditorOverlay')) return;
-  const el = document.createElement('div');
-  el.innerHTML = `
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
     <div class="search-overlay plan-editor-overlay" id="planEditorOverlay">
       <div class="search-overlay-inner" style="max-width:980px;">
         <div class="search-overlay-header">
@@ -1751,23 +1751,36 @@ function _ensurePlanEditorOverlay() {
         </div>
         <div class="plan-editor-results" id="planEditorResults"></div>
       </div>
-      <div class="plan-editor-floating-bar" id="planEditorFloatingBar">
-        <button class="plan-editor-floating-btn" onclick="planEditorScrollTop()" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-          Back to top
-        </button>
-        <button class="plan-editor-floating-btn close" onclick="closePlanEditor()" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Close
-        </button>
-      </div>
     </div>`;
-  const overlay = el.firstElementChild;
+  const overlay = wrap.firstElementChild;
   document.body.appendChild(overlay);
-  // Reveal the floating bar once the user has scrolled past 480px inside
-  // the modal. The overlay is the scroll container — listen there.
+
+  // The floating bar must live OUTSIDE the overlay — the overlay has
+  // backdrop-filter, which creates a new containing block and breaks
+  // position: fixed for descendants. Sibling-of-body keeps it pinned
+  // to the viewport.
+  const bar = document.createElement('div');
+  bar.id = 'planEditorFloatingBar';
+  bar.className = 'plan-editor-floating-bar';
+  bar.innerHTML = `
+    <button class="plan-editor-floating-btn" onclick="planEditorScrollTop()" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      Back to top
+    </button>
+    <button class="plan-editor-floating-btn" onclick="closePlanEditor()" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Close
+    </button>`;
+  document.body.appendChild(bar);
+
+  // Show the bar once the editor has scrolled past 480px. The overlay is
+  // the scroll container (overflow-y: auto). Reveal class lives on the
+  // bar itself so closePlanEditor can hide it cleanly without coupling
+  // to overlay state.
   overlay.addEventListener('scroll', () => {
-    overlay.classList.toggle('scrolled', overlay.scrollTop > 480);
+    if (overlay.classList.contains('open')) {
+      bar.classList.toggle('visible', overlay.scrollTop > 480);
+    }
   }, { passive: true });
 }
 
@@ -1848,6 +1861,8 @@ window.openPlanEditorWithProblem = function(cat) {
 window.closePlanEditor = function() {
   const overlay = document.getElementById('planEditorOverlay');
   if (overlay) overlay.classList.remove('open');
+  const bar = document.getElementById('planEditorFloatingBar');
+  if (bar) bar.classList.remove('visible');
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
   window.scrollTo({ top: 0, behavior: 'instant' });

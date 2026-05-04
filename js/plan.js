@@ -4138,8 +4138,9 @@ window.planConfirmRemoveTeamMember = function(userId, name) {
 window.planRemoveTeamMember = async function(userId) {
   const { data, error } = await supabase.rpc('remove_team_member', { p_user_id: userId });
   if (error || data?.error) {
+    const detail = error?.message || error?.details || data?.error || 'unknown';
     console.error('remove_team_member error:', error || data?.error);
-    showError('Could not remove team member. Please try again.');
+    showError(`Could not remove team member: ${detail}`);
     return;
   }
   if (_teamData) {

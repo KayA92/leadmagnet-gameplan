@@ -3188,6 +3188,58 @@ window.planSendInvite = async function() {
   setTimeout(() => { if (status) status.textContent = ''; }, 5000);
 };
 
+// ── Demo mode (no auth, no DB) ────────────────────────────────────────────────
+async function initDemoMode() {
+  try {
+    showLoading(true);
+    const [allSessions, allExhibitors] = await Promise.all([
+      fetch('/data/programme.json').then(r => r.json()).catch(() => []),
+      fetch('/data/exhibitors.json').then(r => r.json()).catch(() => []),
+    ]);
+
+    // Pick the first 11 sessions across both days (chronological), and the
+    // first 8 booths. Matches the dummy ranking arrays so the bucket badges
+    // line up with the SESSION_PLAN_DUMMY / BOOTH_PLAN_DUMMY positions.
+    const sessions = [...(allSessions || [])]
+      .filter(s => s.title && s.day && s.start_time)
+      .sort((a, b) => {
+        const da = a.day === 'Day 1' ? 1 : 2;
+        const db = b.day === 'Day 1' ? 1 : 2;
+        return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+      })
+      .slice(0, 11)
+      .map((s, i) => ({ ...s, rank: i + 1 }));
+    const booths = [...(allExhibitors || [])]
+      .filter(e => e.company_name)
+      .slice(0, 8)
+      .map((b, i) => ({ ...b, rank: i + 1 }));
+
+    _authUser    = { id: 'demo-user', email: 'demo@autoevent.io', is_anonymous: false };
+    _userProfile = { first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' };
+    _allSessions = allSessions || [];
+    _allExhibitors = allExhibitors || [];
+    _plan = {
+      id: 'demo-plan',
+      user_id: 'demo-user',
+      team_id: null,
+      attend_mode: 'team-lead',
+      problem: 'AI — where to even start, Margin squeeze, MTD volume problem',
+      categories: ['practice-mgmt', 'tax-mtd', 'ai-automation'],
+      role: 'founder',
+      sessions,
+      booths,
+      ai_themes: [],
+      notes: [],
+    };
+    _teamData = null;
+
+    showLoading(false);
+    renderApp();
+  } catch (err) {
+    showError(`Demo mode failed: ${err?.message || err}`);
+  }
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export async function initPlan() {
@@ -3196,6 +3248,15 @@ export async function initPlan() {
   const errCode    = hashParams.get('error_code') || qpParams.get('error_code');
   const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
   const teamToken  = qpParams.get('team') || localStorage.getItem('pendingTeamToken') || null;
+
+  // Demo mode: /plan/?demo=1 — bypasses auth + DB and renders the live app
+  // with a stubbed plan built from the static programme + exhibitor data.
+  // Lets devs (and Matty) eyeball UI changes without going through wizard +
+  // magic-link auth on every browser session.
+  if (qpParams.get('demo') === '1') {
+    await initDemoMode();
+    return;
+  }
 
   if (errCode) {
     const headline = errCode === 'otp_expired'
@@ -3210,14 +3271,16 @@ export async function initPlan() {
   // Belt-and-braces: any time the page is still empty + spinner-only after
   // 12s, fall back to the re-auth form. Catches verifyOtp hangs, network
   // stalls, and silent auth failures without leaving the user staring at
-  // a spinner forever.
-  const stuckTimer = setTimeout(() => {
+  // a spinner forever. The callback itself checks whether plan-root has
+  // already rendered — if it has, this is a no-op. So we never need to
+  // explicitly clear the timer; it self-cancels on success.
+  setTimeout(() => {
     const root = $('plan-root');
     if (root && root.innerHTML.trim() === '') {
+      showLoading(false);
       showReauthForm('Taking too long. Enter your email below to get a fresh link.');
     }
   }, 12000);
-  const clearStuckTimer = () => clearTimeout(stuckTimer);
 
   const tokenHash = qpParams.get('token_hash');
   if (tokenHash) {
@@ -3249,7 +3312,6 @@ export async function initPlan() {
     }
 
     if (!resolvedUser) {
-      clearStuckTimer();
       showReauthForm('Your link has expired or was already used. Enter your email below to get a fresh one.');
       return;
     }
@@ -3260,7 +3322,6 @@ export async function initPlan() {
     cleanUrl.searchParams.delete('type');
     history.replaceState(null, '', cleanUrl.toString());
     showLoading(false);
-    clearStuckTimer();
     await handleSignIn(resolvedUser, teamToken);
     return;
   }
@@ -3270,7 +3331,6 @@ export async function initPlan() {
   if (user && !user.is_anonymous) {
     // Fully authenticated — load immediately and we're done.
     showLoading(false);
-    clearStuckTimer();
     await handleSignIn(user, teamToken);
     return;
   }
@@ -3282,7 +3342,6 @@ export async function initPlan() {
     if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
       showLoading(false);
-      clearStuckTimer();
       await handleSignIn(authUser, teamToken);
     }
   });
@@ -3291,7 +3350,6 @@ export async function initPlan() {
     // Show the anonymous user's plan right away (team tab won't show until
     // they authenticate, but the checklist is visible immediately).
     showLoading(false);
-    clearStuckTimer();
     await handleSignIn(user, teamToken);
   }
 }

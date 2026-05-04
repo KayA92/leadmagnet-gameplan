@@ -14,18 +14,36 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-/* ── Loading state ── */
+/* ── Loading state — branded AutoEvent loader ── */
+/* Mirrors the AutoEvent logo: rounded gradient frame + 4 inner squares
+   that light up sequentially clockwise (top-left → top-right →
+   bottom-right → bottom-left → repeat). 2s cycle, 0.5s stagger. */
 #plan-loading {
   position: fixed; inset: 0; z-index: 200;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 20px; background: var(--ink);
+  gap: 22px; background: var(--ink);
 }
-.loading-spinner {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: 3px solid var(--ink-3); border-top-color: var(--pink);
-  animation: spin 0.8s linear infinite;
+.autoevent-loader { width: 64px; height: 64px; }
+.autoevent-loader .ae-frame {
+  fill: none;
+  stroke: url(#aeLoaderGrad);
+  stroke-width: 6;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+.autoevent-loader .ae-sq-base { fill: #5A3F65; }
+.autoevent-loader .ae-sq-lit  {
+  fill: url(#aeLoaderGrad);
+  opacity: 0;
+  animation: aeLoaderFlash 2s ease-in-out infinite;
+}
+.autoevent-loader .ae-sq-lit.s1 { animation-delay: 0s;    }
+.autoevent-loader .ae-sq-lit.s2 { animation-delay: 0.5s;  }
+.autoevent-loader .ae-sq-lit.s3 { animation-delay: 1s;    }
+.autoevent-loader .ae-sq-lit.s4 { animation-delay: 1.5s;  }
+@keyframes aeLoaderFlash {
+  0%, 100% { opacity: 0; }
+  10%      { opacity: 1; }
+  35%      { opacity: 0; }
+}
 .loading-label {
   font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--text-muted);
@@ -165,7 +183,27 @@
 <div class="ambient-glow g3"></div>
 
 <div id="plan-loading">
-  <div class="loading-spinner"></div>
+  <svg class="autoevent-loader" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="aeLoaderGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"   stop-color="#FF5E84"/>
+        <stop offset="100%" stop-color="#A855F7"/>
+      </linearGradient>
+    </defs>
+    <rect class="ae-frame" x="3" y="3" width="94" height="94" rx="22"/>
+    <!-- Top-left -->
+    <rect class="ae-sq-base" x="14" y="14" width="33" height="33" rx="6"/>
+    <rect class="ae-sq-lit s1" x="14" y="14" width="33" height="33" rx="6"/>
+    <!-- Top-right -->
+    <rect class="ae-sq-base" x="53" y="14" width="33" height="33" rx="6"/>
+    <rect class="ae-sq-lit s2" x="53" y="14" width="33" height="33" rx="6"/>
+    <!-- Bottom-right -->
+    <rect class="ae-sq-base" x="53" y="53" width="33" height="33" rx="6"/>
+    <rect class="ae-sq-lit s3" x="53" y="53" width="33" height="33" rx="6"/>
+    <!-- Bottom-left -->
+    <rect class="ae-sq-base" x="14" y="53" width="33" height="33" rx="6"/>
+    <rect class="ae-sq-lit s4" x="14" y="53" width="33" height="33" rx="6"/>
+  </svg>
   <span class="loading-label">Loading your plan…</span>
 </div>
 

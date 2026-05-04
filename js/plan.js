@@ -3207,23 +3207,61 @@ export async function initPlan() {
 
   showLoading(true);
 
+  // Belt-and-braces: any time the page is still empty + spinner-only after
+  // 12s, fall back to the re-auth form. Catches verifyOtp hangs, network
+  // stalls, and silent auth failures without leaving the user staring at
+  // a spinner forever.
+  const stuckTimer = setTimeout(() => {
+    const root = $('plan-root');
+    if (root && root.innerHTML.trim() === '') {
+      showReauthForm('Taking too long. Enter your email below to get a fresh link.');
+    }
+  }, 12000);
+  const clearStuckTimer = () => clearTimeout(stuckTimer);
+
   const tokenHash = qpParams.get('token_hash');
   if (tokenHash) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      token_hash: tokenHash,
-      type: qpParams.get('type') || 'magiclink',
-    });
-    if (error || !data?.user) {
-      showReauthForm('Your link has expired. Enter your email below to get a new one.');
+    // Race verifyOtp against an 8s timeout so a hung Supabase call can't
+    // pin the spinner. Also handles the case where the token was already
+    // consumed (email pre-scanner / second click) — fall through to a
+    // session-existence check before bailing.
+    let verifyResult;
+    try {
+      verifyResult = await Promise.race([
+        supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: qpParams.get('type') || 'magiclink',
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('verify_timeout')), 8000)),
+      ]);
+    } catch (e) {
+      console.warn('verifyOtp failed/timeout:', e?.message);
+      verifyResult = { data: null, error: e };
+    }
+
+    let resolvedUser = verifyResult?.data?.user || null;
+    // Fallback: maybe Supabase already auto-detected the session from a
+    // URL fragment (older flow), or the user is bouncing between tabs and
+    // already has a live session. Use it before showing the re-auth screen.
+    if (!resolvedUser) {
+      const existing = await getUser();
+      if (existing && !existing.is_anonymous) resolvedUser = existing;
+    }
+
+    if (!resolvedUser) {
+      clearStuckTimer();
+      showReauthForm('Your link has expired or was already used. Enter your email below to get a fresh one.');
       return;
     }
+
     // Remove token from URL so it doesn't sit in browser history
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete('token_hash');
     cleanUrl.searchParams.delete('type');
     history.replaceState(null, '', cleanUrl.toString());
     showLoading(false);
-    await handleSignIn(data.user, teamToken);
+    clearStuckTimer();
+    await handleSignIn(resolvedUser, teamToken);
     return;
   }
 
@@ -3232,6 +3270,7 @@ export async function initPlan() {
   if (user && !user.is_anonymous) {
     // Fully authenticated — load immediately and we're done.
     showLoading(false);
+    clearStuckTimer();
     await handleSignIn(user, teamToken);
     return;
   }
@@ -3243,6 +3282,7 @@ export async function initPlan() {
     if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
       showLoading(false);
+      clearStuckTimer();
       await handleSignIn(authUser, teamToken);
     }
   });
@@ -3251,13 +3291,7 @@ export async function initPlan() {
     // Show the anonymous user's plan right away (team tab won't show until
     // they authenticate, but the checklist is visible immediately).
     showLoading(false);
+    clearStuckTimer();
     await handleSignIn(user, teamToken);
   }
-
-  setTimeout(() => {
-    const root = $('plan-root');
-    if (root && root.innerHTML.trim() === '') {
-      showReauthForm();
-    }
-  }, 8000);
 }

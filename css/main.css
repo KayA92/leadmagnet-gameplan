@@ -7716,15 +7716,17 @@ button.app-pill.purple.clickable:hover {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--grad);
-  color: white;
+  background: rgba(34,230,168,0.14);
+  border: 1.5px solid var(--mint);
+  color: var(--mint);
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 12px rgba(255,94,132,0.3);
+  box-shadow: 0 0 14px rgba(34,230,168,0.40), inset 0 0 8px rgba(34,230,168,0.15);
+  text-shadow: 0 0 8px rgba(34,230,168,0.6);
 }
 .magic-action-step-body { flex: 1; min-width: 0; padding-top: 3px; }
 .magic-action-step-head {

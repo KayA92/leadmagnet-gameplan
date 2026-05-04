@@ -2907,6 +2907,18 @@ function renderApp() {
 
   root.innerHTML = renderInstallStrip() + renderTabNav() + `<div class="plan-tab-content">${renderCurrentTab()}</div>`;
 
+  // Restore the tab row's horizontal scroll so the active tab stays visible
+  // after any re-render (note saves, rating changes, data refreshes, etc.
+  // all call renderApp and would otherwise reset the row back to scroll:0).
+  const activeTab = root.querySelector('.app-tab.active');
+  const tabsRow   = root.querySelector('.app-tabs-row');
+  if (activeTab && tabsRow) {
+    const tabRect = activeTab.getBoundingClientRect();
+    const rowRect = tabsRow.getBoundingClientRect();
+    const scrollBy = tabRect.left - rowRect.left - (rowRect.width / 2) + (tabRect.width / 2);
+    tabsRow.scrollBy({ left: scrollBy, behavior: 'instant' });
+  }
+
   if (_currentTab === 'checklist') {
     attachPlanListeners(_plan.id, _plan.sessions, _plan.booths);
   }
@@ -3610,7 +3622,14 @@ window.planSwitchTab = function(tabId) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (tabId === 'debrief') refreshDebriefNotes();
   setTimeout(() => {
-    document.querySelector('.app-tab.active')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    const activeTab = document.querySelector('.app-tab.active');
+    const tabsRow   = document.querySelector('.app-tabs-row');
+    if (activeTab && tabsRow) {
+      const tabRect = activeTab.getBoundingClientRect();
+      const rowRect = tabsRow.getBoundingClientRect();
+      const scrollBy = tabRect.left - rowRect.left - (rowRect.width / 2) + (tabRect.width / 2);
+      tabsRow.scrollBy({ left: scrollBy, behavior: 'smooth' });
+    }
   }, 0);
 };
 

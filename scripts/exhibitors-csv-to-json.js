@@ -517,9 +517,21 @@ const H = {
   cats:        idx('Categories'),
   target:      idx('Products & Services Target'),
   desc:        idx('Company Description'),
-  profileUrl:  idx('Profile URL'),
-  logoUrl:     idx('Logo URL'),
+  profileUrl:   idx('Profile URL'),
+  logoUrl:      idx('Logo URL'),
+  size:         idx('Size'),
+  manualBoost:  idx('Mannual Ranking Bump'),
 };
+
+// Convert raw employee count → size tier used by the ranking algorithm.
+// Thresholds: ≤50 small (boutique/startup), 51–500 mid (established SME), 500+ large (enterprise).
+// Distribution across current exhibitors.csv: ~51% small, ~34% mid, ~16% large.
+function sizeToTier(n) {
+  if (n === null || n === undefined || isNaN(n)) return null;
+  if (n <= 50)  return 'small';
+  if (n <= 500) return 'mid';
+  return 'large';
+}
 
 // Load any existing pain_scores from the current exhibitors.json.
 // These are merged back into the array below so a plain Phase 1 run (no --score)
@@ -546,6 +558,8 @@ const exhibitors = rows.slice(1)
     rawCats.forEach(c => (CAT_MAP[c] || []).forEach(k => canonicalSet.add(k)));
 
     const name = get(H.name);
+    const rawSize = parseInt(r[H.size], 10);
+    const employeeCount = isNaN(rawSize) ? null : rawSize;
     return {
       show:                  get(H.show),
       company_name:          name,
@@ -562,6 +576,9 @@ const exhibitors = rows.slice(1)
       company_description:   get(H.desc),
       profile_url:           get(H.profileUrl),
       logo_url:              get(H.logoUrl),
+      employee_count:        employeeCount,
+      company_size:          sizeToTier(employeeCount),
+      manual_boost:          (() => { const v = (r[H.manualBoost] || '').trim().toUpperCase(); if (v === 'TRUE') return 1; const n = parseFloat(v); return isNaN(n) ? 0 : n; })(),
       is_host:               name.toLowerCase().includes('workiro'),
       // pain_scores: { [tag_id]: { score, reason, matched_signals? } }
       // Restored from existing JSON here; written/updated by --score runs.

@@ -468,11 +468,11 @@ function renderTabNav() {
         </a>
         <div class="app-tabs-credits" aria-label="Made by">
           <span class="app-tabs-credits-label">Made by</span>
-          <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-          </a>
           <a href="https://workiro.com" target="_blank" rel="noopener" aria-label="Workiro">
             <img src="/images/workiro-logo.svg" alt="Workiro">
+          </a>
+          <a href="https://xumagazine.com" target="_blank" rel="noopener" aria-label="XU Magazine">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </a>
         </div>
       </div>
@@ -960,53 +960,9 @@ function renderChecklistTab() {
       </div>
     </div>
 
-    ${(() => {
-      const userCats = (plan.categories || []).filter(c => _EDITOR_CATEGORY_LABELS[c] && c !== 'other');
-      if (!userCats.length) return '';
-      const boxes = userCats.map(cat => {
-        const label     = _EDITOR_CATEGORY_LABELS[cat] || cat;
-        const sessCount = (_allSessions  || []).filter(s => (s.canonical_categories  || []).includes(cat)).length;
-        const boothCount= (_allExhibitors|| []).filter(e => (e.canonical_categories  || []).includes(cat)).length;
-        return `
-          <button class="theme-box" onclick="openPlanEditorWithProblem('${escHtml(cat)}')" type="button">
-            <div class="theme-box-head">
-              <div class="theme-box-label">${escHtml(label)}</div>
-              <svg class="theme-box-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </div>
-            <div class="theme-box-stats">
-              <span><strong>${sessCount}</strong> session${sessCount === 1 ? '' : 's'}</span>
-              <span class="theme-box-dot">·</span>
-              <span><strong>${boothCount}</strong> booth${boothCount === 1 ? '' : 's'}</span>
-            </div>
-          </button>`;
-      }).join('');
-      return `
-        <div class="theme-browse">
-          <div class="theme-browse-head">
-            <div class="theme-browse-eyebrow">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg>
-              AI-matched to your answers
-            </div>
-            <div class="theme-browse-label">Browse by your <em>top problems.</em></div>
-            <div class="theme-browse-sub">The AI pulled these from what you told us in onboarding. Tap one to see every session and booth that matches.</div>
-          </div>
-          <div class="theme-browse-grid">${boxes}</div>
-        </div>`;
-    })()}
-
     <section class="sponsors-footer" style="max-width:760px;">
       <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
       <div class="sponsors-grid">
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-          </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
             <img src="/images/workiro-logo.svg" alt="Workiro">
@@ -1014,6 +970,16 @@ function renderChecklistTab() {
           <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals.</p>
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
             workiro.com
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="sponsor-card">
+          <div class="sponsor-card-logo">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+          </div>
+          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+            xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
@@ -2244,21 +2210,21 @@ function sponsorsFooterHtml() {
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-          </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
             <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
           <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come say hi at stand <strong>1144</strong>.</p>
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
             workiro.com
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="sponsor-card">
+          <div class="sponsor-card-logo">
+            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
+          </div>
+          <p class="sponsor-card-desc">The independent news source for accounting app users.</p>
+          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
+            xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
@@ -2364,8 +2330,8 @@ const _teamFooterHtml = `
     <div class="sponsors-footer" style="border-top:none;">
       <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
       <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
         <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
+        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
       </div>
     </div>
   `;

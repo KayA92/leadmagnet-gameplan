@@ -121,7 +121,7 @@ Single breakpoint: `@media (max-width: 640px)`. All mobile rules are in one bloc
 | `public.users` | `id`, `first_name`, `last_name`, `company`, `email` |
 | `public.plans` | `id`, `user_id`, `team_id`, `sessions jsonb`, `booths jsonb`, `ai_themes[]` |
 | `public.notes` | `plan_id`, `item_type`, `item_id`, `note_text`, `created_by` |
-| `public.teams` | `id`, `lead_user_id`, `invite_token`, `max_members` (8, cosmetic — not enforced server-side) |
+| `public.teams` | `id`, `lead_user_id`, `invite_token`, `max_members` (12, cosmetic — not enforced server-side) |
 | `public.team_members` | `team_id`, `user_id`, `role` ('lead'/'member') |
 
 RPCs (all `SECURITY DEFINER`, grant to `authenticated`):

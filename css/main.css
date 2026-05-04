@@ -2079,6 +2079,283 @@ button.app-pill.purple.clickable:hover {
 .app-section {
   margin-bottom: 56px;
 }
+
+/* ── CPD log ─────────────────────────────────────────────────────────
+   Single card with a clean session list, a big gradient total at the
+   bottom, and a download button. No claims about associations or
+   acceptance — just the plan, the hours, the total. */
+.cpd-card {
+  background: var(--ink-2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 8px 8px 28px;
+  margin-bottom: 18px;
+}
+
+/* "Generated for {name · firm}" — sits above the card, mono caps,
+   matching the rest of the app's eyebrow language. */
+.cpd-generated-for {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin: -4px 4px 14px;
+  text-align: center;
+}
+.cpd-generated-for strong {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.cpd-list {
+  display: flex;
+  flex-direction: column;
+}
+.cpd-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px 16px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.cpd-row:last-child { border-bottom: none; }
+.cpd-row-main { min-width: 0; }
+.cpd-row-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.cpd-row-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.4;
+}
+/* Hours in neon mint — reads as a metric, not a label. */
+.cpd-row-hours {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--mint);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(34,230,168,0.35);
+}
+.cpd-row-hours span {
+  font-weight: 500;
+  color: rgba(34,230,168,0.55);
+  margin-left: 3px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-shadow: none;
+}
+.cpd-row-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.cpd-row-remove:hover {
+  color: var(--pink);
+  border-color: rgba(255,94,132,0.45);
+  background: rgba(255,94,132,0.08);
+}
+.cpd-row-empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Total — elegant italic gradient number, NOT bold (read as a metric,
+   not a banner). The previous 700 weight + gradient combo looked
+   stocky; SOFT 90 + 500 + Fraunces italic is the same treatment used
+   on big numbers elsewhere in the app. */
+.cpd-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 22px 10px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  margin-top: 4px;
+}
+.cpd-total-num {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: clamp(64px, 9vw, 96px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variation-settings: 'SOFT' 90;
+}
+.cpd-total-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* Disclaimer below the download button — small, italic, muted. */
+.cpd-disclaimer {
+  margin: 6px 4px 22px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Restore (re-add) section — collapsed by default. Appears only when
+   the user has removed sessions from the CPD log. The list inside
+   uses the same row anatomy but with a "Re-add" pill instead of an X. */
+.cpd-restore {
+  background: var(--ink-2);
+  border: 1px solid var(--ink-3);
+  border-radius: 12px;
+  margin-bottom: 32px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.cpd-restore[open] { border-color: rgba(255,255,255,0.16); }
+.cpd-restore > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.cpd-restore > summary::-webkit-details-marker { display: none; }
+.cpd-restore > summary:hover { background: rgba(255,255,255,0.02); color: var(--text); }
+.cpd-restore > summary strong { color: var(--text); }
+.cpd-restore-chevron { transition: transform 0.2s; }
+.cpd-restore[open] .cpd-restore-chevron { transform: rotate(180deg); }
+.cpd-restore-list {
+  border-top: 1px solid var(--ink-3);
+  display: flex;
+  flex-direction: column;
+}
+.cpd-restore-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.cpd-restore-row:last-child { border-bottom: none; }
+.cpd-restore-info { flex: 1; min-width: 0; }
+.cpd-restore-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 3px;
+}
+.cpd-restore-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+.cpd-restore-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(34,230,168,0.45);
+  background: rgba(34,230,168,0.08);
+  color: var(--mint);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.cpd-restore-btn:hover {
+  background: rgba(34,230,168,0.16);
+  border-color: var(--mint);
+  color: #fff;
+}
+
+.cpd-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 22px auto 0;
+  padding: 12px 22px;
+  background: var(--grad);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(255,94,132,0.30);
+}
+.cpd-download-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(255,94,132,0.42);
+}
+.cpd-download-btn:active { transform: scale(0.98); }
+/* Centre the download button without overriding the card's padding. */
+.cpd-card { display: flex; flex-direction: column; align-items: stretch; }
+.cpd-card .cpd-download-btn { align-self: center; }
+
+@media (max-width: 640px) {
+  .cpd-card { padding: 6px 6px 22px; }
+  .cpd-row { padding: 14px 14px 14px 16px; gap: 10px; }
+  .cpd-row-title { font-size: 14px; }
+  .cpd-row-meta { font-size: 10px; letter-spacing: 0.06em; }
+  .cpd-row-hours { font-size: 13.5px; }
+  .cpd-row-remove { width: 26px; height: 26px; }
+  .cpd-total { padding: 26px 16px 6px; }
+  .cpd-total-num { font-size: 60px; }
+  .cpd-generated-for { font-size: 10px; letter-spacing: 0.10em; }
+  .cpd-disclaimer { font-size: 12px; padding: 0 4px; }
+  .cpd-restore > summary { padding: 12px 14px; font-size: 11px; }
+  .cpd-restore-row { padding: 12px 14px; flex-wrap: wrap; }
+  .cpd-restore-btn { padding: 7px 12px; font-size: 10.5px; }
+}
 .app-section-header {
   display: flex;
   align-items: baseline;
@@ -3925,22 +4202,36 @@ button.app-pill.purple.clickable:hover {
   color: var(--text-faint);
   text-align: right;
 }
-.teammate-remove-btn {
-  display: flex; align-items: center; gap: 5px;
-  width: 100%; justify-content: center;
-  margin-top: 4px;
-  padding: 6px 10px;
-  background: transparent;
-  border: 1px solid rgba(239,68,68,0.2);
+/* Quiet × in the top-right corner of a teammate card. Hover-reveal so
+   it doesn't sit there shouting on every card. Click opens the
+   in-app confirm modal — same pattern as the booth-card × on Checklist. */
+.teammate { position: relative; }
+.teammate-quiet-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 6px;
-  color: var(--text-faint);
-  font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
-  cursor: pointer; transition: all 0.15s;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
 }
-.teammate-remove-btn:hover {
-  border-color: rgba(239,68,68,0.6);
-  color: #ef4444;
-  background: rgba(239,68,68,0.06);
+.teammate:hover .teammate-quiet-remove,
+.teammate-quiet-remove:focus-visible {
+  opacity: 1;
+}
+.teammate-quiet-remove:hover {
+  color: var(--pink);
+  background: rgba(255,94,132,0.15);
+  border-color: rgba(255,94,132,0.50);
 }
 
 /* Overlap warning banner */
@@ -6704,7 +6995,24 @@ button.app-pill.purple.clickable:hover {
 }
 .team-section-title em {
   font-style: italic;
-  color: var(--text);
+  font-variation-settings: 'SOFT' 80;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Tone variants — mint sessions, purple booths. The neon mint grad
+   uses mint→mint-deep so the descender end stays vivid rather than
+   washing into the page background. */
+.team-section-title em.tone-mint {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.team-section-title em.tone-purple {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 .team-section-lede {
   font-size: 14.5px;
@@ -6714,6 +7022,152 @@ button.app-pill.purple.clickable:hover {
   max-width: 640px;
 }
 .team-section-lede strong { color: var(--text); font-weight: 600; }
+/* Italic em on the standard section subtitle picks up the brand
+   gradient — used to give a key phrase pop without bumping the
+   subtitle to a heading-level treatment. */
+.team-section-lede em {
+  font-style: italic;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+/* Hormozi-scale value heading variant — used on Pre-show team intel.
+   Larger than the standard team-section-title so the section reads
+   as the central value moment of the page, not a sibling block. */
+.team-section-title-xl {
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  padding-bottom: 4px;
+}
+.team-section-lede-xl {
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 720px;
+  margin: 0 0 22px;
+}
+.team-section-lede-xl em {
+  font-style: italic;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Team-mode preview ("show, don't tell") ─────────────────────────
+   Sits between the workspace invite and the pre-show intel section
+   when the user is solo. Soft purple/pink glass-frame around a
+   non-interactive checklist-row mockup so users can see what their
+   plan looks like once teammates have joined, rated, and taken notes. */
+.team-preview {
+  margin: 12px 0 56px;
+  padding: 36px 32px 32px;
+  background: linear-gradient(180deg, rgba(168,85,247,0.06) 0%, rgba(34,230,168,0.04) 100%);
+  border: 1px solid rgba(168,85,247,0.30);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.team-preview::before {
+  content: '';
+  position: absolute;
+  top: -30%; right: -10%;
+  width: 50%; height: 160%;
+  background: radial-gradient(circle, rgba(168,85,247,0.10) 0%, transparent 60%);
+  pointer-events: none;
+}
+.team-preview > * { position: relative; z-index: 1; }
+.team-preview-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--purple);
+  margin-bottom: 14px;
+}
+.team-preview-eyebrow svg {
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 6px rgba(168,85,247,0.55));
+}
+.team-preview-headline {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(34px, 5vw, 52px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+  margin: 0 0 14px;
+  font-variation-settings: 'SOFT' 50;
+}
+.team-preview-headline em {
+  font-style: italic;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variation-settings: 'SOFT' 80;
+}
+.team-preview-sub {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0 0 28px;
+  max-width: 640px;
+}
+/* Wrap that holds the mockup card — adds the "Preview" tag in the
+   corner and disables interactivity on the card itself. */
+.team-preview-card-wrap {
+  position: relative;
+}
+.team-preview-card-tag {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.95), rgba(255,94,132,0.95));
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  box-shadow: 0 4px 12px rgba(168,85,247,0.35);
+}
+.team-preview-card-wrap .checklist-row {
+  pointer-events: none;
+  user-select: none;
+}
+.team-preview-card-wrap .checklist-row * {
+  cursor: default !important;
+}
+.team-preview-foot {
+  margin: 24px 0 0;
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  text-align: center;
+}
+.team-preview-foot strong {
+  color: var(--text);
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  .team-preview { padding: 28px 18px 24px; margin: 10px 0 40px; }
+  .team-preview-headline { font-size: 26px; }
+  .team-preview-sub { font-size: 14px; }
+  .team-section-title-xl { font-size: 30px; }
+  .team-section-lede-xl { font-size: 14.5px; }
+}
 
 /* Team capacity row + pill (sits to right of "Workspace invite" eyebrow) */
 .team-capacity-row {
@@ -6726,36 +7180,43 @@ button.app-pill.purple.clickable:hover {
 .team-capacity-row .team-section-eyebrow {
   margin-bottom: 0;
 }
+/* Scarcity-toned capacity pill — mint user+plus icon next to a
+   "N of 12 spots left" line. The big "X/N" count was redundant with
+   the spots-left text, so it's gone — the pill now communicates "your
+   team has X spots open" in one read. Flips pink at full. */
 .team-capacity-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  font-weight: 600;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 100px;
   background: rgba(34, 230, 168, 0.08);
   border: 1px solid rgba(34, 230, 168, 0.32);
-  color: var(--mint);
   white-space: nowrap;
-}
-.team-capacity-pill strong {
   color: var(--mint);
-  font-weight: 700;
 }
-.team-capacity-pill svg {
-  width: 13px;
-  height: 13px;
+.team-capacity-icon {
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(34,230,168,0.45));
+}
+.team-capacity-scarce {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 1;
 }
 .team-capacity-pill.full {
-  background: rgba(255, 94, 132, 0.08);
-  border-color: rgba(255, 94, 132, 0.32);
+  background: rgba(255, 94, 132, 0.10);
+  border-color: rgba(255, 94, 132, 0.40);
   color: var(--pink);
 }
-.team-capacity-pill.full strong { color: var(--pink); }
+.team-capacity-pill.full .team-capacity-icon {
+  filter: drop-shadow(0 0 4px rgba(255,94,132,0.50));
+}
 
 /* Count row that sits between section lede and the teammate grid */
 .team-section-count-row {
@@ -8596,11 +9057,12 @@ button.app-pill.purple.clickable:hover {
 }
 .team-invite-hero-title {
   font-family: 'Fraunces', serif;
-  font-size: clamp(22px, 2.8vw, 28px);
+  font-size: clamp(28px, 4vw, 40px);
   font-weight: 500;
-  letter-spacing: -0.01em;
-  margin-bottom: 6px;
-  font-variation-settings: 'SOFT' 40;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  font-variation-settings: 'SOFT' 50;
 }
 .team-invite-hero-title em {
   font-style: italic;
@@ -8610,61 +9072,88 @@ button.app-pill.purple.clickable:hover {
   color: transparent;
 }
 .team-invite-hero-sub {
-  font-size: 13.5px;
-  color: var(--text-muted);
-  line-height: 1.55;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  font-weight: 500;
   margin-bottom: 14px;
   max-width: 600px;
 }
-/* Email invite form — input is the hero, button sits inline-right on desktop */
-.team-invite-form { margin-top: 22px; }
-.team-invite-input-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  align-items: stretch;
+.team-invite-hero-sub em {
+  font-style: italic;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
 }
-.team-invite-email-input {
+.team-invite-hero-sub strong { color: var(--text); font-weight: 700; }
+/* Email invite form — input is the hero, button is attached inside the
+   right edge on desktop, stacks below on mobile. The "shell" wrapper
+   gives the input + button a single visually-unified pill while keeping
+   them separate elements. */
+.team-invite-form { margin-top: 22px; }
+.team-invite-input-shell {
+  position: relative;
   background: rgba(0,0,0,0.45);
   border: 1.5px solid rgba(255,255,255,0.18);
-  border-radius: 12px;
-  padding: 18px 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: stretch;
+  padding: 5px;
+  gap: 0;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.team-invite-input-shell:focus-within {
+  border-color: var(--pink);
+  background: rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
+}
+.team-invite-email-input {
+  background: transparent;
+  border: none;
+  padding: 14px 14px 14px 16px;
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--text);
   width: 100%;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  flex: 1;
+  min-width: 0;
+  outline: none;
 }
 .team-invite-email-input::placeholder {
   color: var(--text-muted);
   font-weight: 400;
 }
-.team-invite-email-input:focus {
-  outline: none;
-  border-color: var(--pink);
-  background: rgba(0,0,0,0.6);
-  box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
-}
 .team-invite-send-btn {
-  padding: 0 20px;
+  flex-shrink: 0;
+  padding: 0 22px;
   background: var(--grad);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-family: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  transition: all 0.15s;
   white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(255,94,132,0.3);
+  box-shadow: 0 3px 14px rgba(255,94,132,0.32);
+  transition: filter 0.15s, box-shadow 0.15s, transform 0.1s;
+  min-height: 44px;
 }
-.team-invite-send-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,94,132,0.4); }
-.team-invite-send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.team-invite-send-btn:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 6px 22px rgba(255,94,132,0.42);
+}
+.team-invite-send-btn:active { transform: scale(0.98); }
+.team-invite-send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.team-invite-send-btn.sending { opacity: 0.85; cursor: progress; }
+.team-invite-send-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .team-invite-status {
   margin-top: 10px;
   font-size: 13px;
@@ -8672,6 +9161,121 @@ button.app-pill.purple.clickable:hover {
 }
 .team-invite-status.success { color: var(--mint); }
 .team-invite-status.error   { color: var(--pink); }
+
+/* ── Pending invites — UX-only memory of recently-sent emails ──────── */
+.team-invite-pending {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+.team-invite-pending-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+/* Each row gets a status-driven tint (amber while pending, mint once
+   the invitee has joined the team). Status icon on the left, email +
+   time stack in the middle, actions on the right. */
+.team-invite-pending-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  border: 1px solid;
+  transition: background 0.2s, border-color 0.2s;
+}
+.team-invite-pending-row:last-child { margin-bottom: 0; }
+.team-invite-pending-row.status-pending {
+  background: rgba(251,191,36,0.06);
+  border-color: rgba(251,191,36,0.30);
+}
+.team-invite-pending-row.status-accepted {
+  background: rgba(34,230,168,0.06);
+  border-color: rgba(34,230,168,0.30);
+}
+.team-invite-pending-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.team-invite-pending-icon svg { width: 22px; height: 22px; }
+.team-invite-pending-row.status-pending .team-invite-pending-icon {
+  color: var(--amber);
+  filter: drop-shadow(0 0 4px rgba(251,191,36,0.40));
+}
+.team-invite-pending-row.status-accepted .team-invite-pending-icon {
+  color: var(--mint);
+  filter: drop-shadow(0 0 5px rgba(34,230,168,0.50));
+}
+.team-invite-pending-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.team-invite-pending-email {
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.team-invite-pending-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+}
+.team-invite-pending-row.status-pending  .team-invite-pending-time { color: var(--amber); }
+.team-invite-pending-row.status-accepted .team-invite-pending-time { color: var(--mint);  }
+.team-invite-pending-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.team-invite-pending-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.team-invite-pending-btn.resend:hover {
+  border-color: var(--mint);
+  color: var(--mint);
+  background: rgba(34,230,168,0.08);
+}
+.team-invite-pending-btn.cancel {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.team-invite-pending-btn.cancel:hover {
+  border-color: rgba(255,94,132,0.42);
+  color: var(--pink);
+  background: rgba(255,94,132,0.08);
+}
 
 /* Join team prompt banner */
 .team-join-prompt {
@@ -9192,8 +9796,40 @@ button.app-pill.purple.clickable:hover {
   .plan-tab-content { padding: 0 16px 80px; }
   .intel-grid { grid-template-columns: 1fr; }
   .team-invite-hero { padding: 18px 20px; }
-  .team-invite-input-row { grid-template-columns: 1fr; }
-  .team-invite-send-btn { justify-content: center; }
+  /* Mobile — stack the button below the input. Pull the wrapper out of
+     the pill chrome so the input + button each get their own visual
+     boundary. */
+  .team-invite-input-shell {
+    flex-direction: column;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    gap: 10px;
+  }
+  .team-invite-input-shell:focus-within {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  .team-invite-email-input {
+    background: rgba(0,0,0,0.45);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .team-invite-email-input:focus {
+    border-color: var(--pink);
+    background: rgba(0,0,0,0.6);
+    box-shadow: 0 0 0 4px rgba(255,94,132,0.15);
+  }
+  .team-invite-send-btn {
+    width: 100%;
+    border-radius: 12px;
+    padding: 14px 22px;
+    min-height: 50px;
+  }
   .team-join-prompt { padding: 12px 16px; }
   .team-join-prompt-inner { flex-direction: column; align-items: flex-start; }
   .confirm-fixed-cta { padding: 12px 16px 16px; }
@@ -9585,6 +10221,103 @@ button.app-pill.purple.clickable:hover {
   max-width: 36ch;
   flex: 1;
 }
+/* Booth-number callout inside the sponsor desc — purple so it stands
+   apart from the body copy without yelling. */
+.sponsor-card-booth {
+  display: inline;
+  color: var(--purple);
+  font-style: normal;
+  font-weight: 600;
+}
+.sponsor-card-booth strong {
+  color: var(--purple);
+  font-weight: 800;
+}
+/* "What we can help with" — only renders when there's overlap between
+   the sponsor's solve list and the user's onboarding answers. */
+.sponsor-card-relevance {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255,255,255,0.12);
+  width: 100%;
+  text-align: center;
+}
+.sponsor-card-relevance-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.sponsor-card-relevance-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+/* All help pills follow the muted pain-pill look — subtle outline,
+   muted text, no fill battle with the gradient brand box. Tone class
+   tints the border to hint at the data type (pain vs tool). */
+.sponsor-help-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sponsor-help-pill.pain { border-color: rgba(255,94,132,0.22); }
+.sponsor-help-pill.cat  { border-color: rgba(168,85,247,0.24); }
+
+/* "Also felt by" — only renders for teams of 2+ when at least one
+   teammate has overlap with the sponsor's solves. Mini-avatar + first
+   name pill row beneath the help pills, with its own dashed separator. */
+.sponsor-card-felt-by {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255,255,255,0.08);
+}
+.sponsor-felt-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-faint, rgba(255,255,255,0.40));
+  margin-bottom: 6px;
+}
+.sponsor-felt-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+.sponsor-felt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 3px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.sponsor-felt-pill .mini-av {
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
 .sponsor-card-link {
   font-size: 15px;
   font-weight: 500;
@@ -9596,6 +10329,74 @@ button.app-pill.purple.clickable:hover {
   gap: 6px;
 }
 .sponsor-card-link:hover { opacity: 0.8; }
+
+/* ── AutoEvent footer line ──────────────────────────────────────────
+   Subtle two-line strip below the sponsor cards. Powered-by + small
+   inline logo on row 1, "Want one for your next event?" + link on
+   row 2. No box, no gradient border — reads as a footer credit, not
+   a third sponsor block. */
+.autoevent-foot {
+  max-width: 720px;
+  margin: 28px auto 18px;
+  padding: 16px 0;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.autoevent-foot-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.autoevent-foot-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-faint, rgba(255,255,255,0.45));
+}
+.autoevent-foot-logo {
+  height: 22px;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+  opacity: 0.95;
+}
+.autoevent-foot-built {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+.autoevent-foot-built a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255,255,255,0.18);
+  transition: border-color 0.15s, color 0.15s;
+}
+.autoevent-foot-built a:hover { color: var(--text); border-bottom-color: rgba(255,255,255,0.45); }
+.autoevent-foot-cta {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.autoevent-foot-cta a {
+  color: var(--mint);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px dashed rgba(34,230,168,0.30);
+  transition: border-color 0.15s, color 0.15s;
+}
+.autoevent-foot-cta a:hover {
+  color: #fff;
+  border-bottom-color: var(--mint);
+}
+@media (max-width: 600px) {
+  .autoevent-foot { margin: 22px 16px 14px; }
+  .autoevent-foot-logo { height: 18px; }
+}
 @media (max-width: 600px) {
   .sponsors-footer { padding: 48px 20px 48px; margin-top: 60px; }
   .sponsors-footer-heading { font-size: 34px; margin-bottom: 28px; }
@@ -10107,4 +10908,270 @@ button.app-pill.purple.clickable:hover {
   .plan-confirm-title { font-size: 20px; }
   .plan-confirm-body { font-size: 13.5px; margin-bottom: 18px; }
   .plan-confirm-btn { padding: 11px 16px; font-size: 13px; flex: 1; }
+
+  /* ── Debrief rebuild — mobile ─────────────────────────────────────── */
+  .debrief-card { padding: 18px 16px; border-radius: 14px; }
+  .debrief-card-head { gap: 10px; }
+  .debrief-card-rank { font-size: 38px; min-width: 44px; }
+  .debrief-card-title { font-size: 17px; }
+  .debrief-card-meta { font-size: 11.5px; }
+  .debrief-avg { padding: 18px 14px; gap: 8px; }
+  .debrief-avg-flame { width: 22px; height: 22px; }
+  .debrief-avg-num { font-size: 44px; }
+  .debrief-avg-label { font-size: 10.5px; }
+  .debrief-summary-details summary { padding: 14px 16px; font-size: 13px; }
+  .debrief-summary-details textarea { min-height: 280px; padding: 16px; font-size: 13.5px; }
+  .debrief-actions { gap: 8px; }
+  .debrief-btn { flex: 1 0 calc(50% - 4px); justify-content: center; padding: 12px 14px; font-size: 13px; }
+  .debrief-btn.primary { flex-basis: 100%; }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   DEBRIEF REBUILD — bigger, bolder cards
+   ────────────────────────────────────────────────────────────────────
+   New per-rank card replaces .debrief-hot-card. Each card carries a
+   tone (mint for sessions, purple for booths) that flows to:
+     • The rank number gradient (kept brand pink→purple — reads as "rated")
+     • The card border and ambient glow on hover
+     • The big average flame block underneath
+   The team-rated row + team-notes-block reuse the Checklist classes
+   defined further up, so the visual language matches across tabs. */
+
+.debrief-card {
+  position: relative;
+  padding: 22px 22px 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.debrief-card.tone-mint {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(34,230,168,0.06), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  border-color: rgba(34,230,168,0.18);
+}
+.debrief-card.tone-purple {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(168,85,247,0.07), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  border-color: rgba(168,85,247,0.22);
+}
+.debrief-card.tone-mint:hover   { border-color: rgba(34,230,168,0.36); }
+.debrief-card.tone-purple:hover { border-color: rgba(168,85,247,0.42); }
+
+.debrief-hot-list { display: flex; flex-direction: column; gap: 14px; }
+
+/* Card header — big italic rank + title block */
+.debrief-card-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.debrief-card-rank {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(44px, 6vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variation-settings: 'SOFT' 90;
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  min-width: 64px;
+  padding: 4px 0;
+  text-align: center;
+}
+/* Sessions = neon mint. Pure mint→mint-deep grad with a soft mint
+   text-shadow underneath so the gradient edges don't wash out. */
+.debrief-card.tone-mint .debrief-card-rank {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(34,230,168,0.50));
+}
+.debrief-card.tone-purple .debrief-card-rank {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(168,85,247,0.40));
+}
+.debrief-card-main { min-width: 0; }
+.debrief-card-title {
+  margin: 0 0 6px;
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2.4vw, 24px);
+  letter-spacing: -0.015em;
+  line-height: 1.32;
+  color: var(--text);
+  padding-bottom: 2px;
+}
+.debrief-card-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Big average block — tone-tinted background, huge gradient number */
+.debrief-avg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 20px 22px;
+  border-radius: 14px;
+  border: 1px solid;
+  text-align: center;
+}
+.debrief-avg.tone-mint {
+  background: linear-gradient(180deg, rgba(34,230,168,0.08), rgba(34,230,168,0.02));
+  border-color: rgba(34,230,168,0.24);
+}
+.debrief-avg.tone-purple {
+  background: linear-gradient(180deg, rgba(168,85,247,0.10), rgba(168,85,247,0.025));
+  border-color: rgba(168,85,247,0.28);
+}
+.debrief-avg-flames {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,108,144,0.95);
+  padding: 2px 0;
+}
+.debrief-avg-flame {
+  width: 28px;
+  height: 28px;
+  display: block;
+  overflow: visible;
+}
+.debrief-avg-flame:not(.lit) { opacity: 0.20; filter: none; }
+/* Subtle neon breathe — drop-shadow halo oscillates from a soft 6px
+   glow up to a punchy 18px glow and back. No size change, just light.
+   Each flame is offset 0.8s so the row reads as a soft wave rather
+   than a synchronised flicker. */
+.debrief-avg-flame.lit {
+  animation: debriefFlameGlow 3.2s ease-in-out infinite;
+}
+.debrief-avg-flame.lit:nth-child(2) { animation-delay: 0.8s; }
+.debrief-avg-flame.lit:nth-child(3) { animation-delay: 1.6s; }
+@keyframes debriefFlameGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px  rgba(255,94,132,0.35)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(255,94,132,0.85)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .debrief-avg-flame.lit {
+    animation: none;
+    filter: drop-shadow(0 0 10px rgba(255,94,132,0.50));
+  }
+}
+
+.debrief-avg-num {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(52px, 6.6vw, 70px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variation-settings: 'SOFT' 90;
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 16px rgba(168,85,247,0.40));
+  padding: 4px 0;
+}
+/* Neon mint — solid mint→mint-deep with a punchy text-glow so the
+   number reads as the page's headline metric, not a faded wash. */
+.debrief-avg.tone-mint .debrief-avg-num {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(34,230,168,0.55));
+}
+.debrief-avg-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* Override the flame size when used inside the team-rated pills on the
+   debrief card. The Checklist tab gives them ~10px, but the debrief
+   cards have more room — bump to 12px so they read at-a-glance. */
+.debrief-card .team-rated-flame-icon { width: 12px; height: 12px; }
+.debrief-card .team-rated-name {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+.debrief-card.tone-mint   .team-rated-row .team-rated-name { color: var(--mint); }
+.debrief-card.tone-purple .team-rated-row .team-rated-name { color: var(--purple); }
+.debrief-card .team-rated-row { margin-top: 0; padding-top: 14px; }
+.debrief-card .team-notes-block { margin-top: 0; padding: 14px 16px; }
+.debrief-card .team-note-row { font-size: 13.5px; line-height: 1.55; }
+
+/* ── Summary section at the bottom — collapsed by default ──────────── */
+.debrief-summary-section { margin-top: 12px; }
+.debrief-summary-details {
+  background: var(--ink-2);
+  border: 1px solid var(--ink-3);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  transition: border-color 0.2s;
+}
+.debrief-summary-details[open] { border-color: rgba(255,255,255,0.18); }
+.debrief-summary-details > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text);
+  transition: background 0.15s;
+}
+.debrief-summary-details > summary::-webkit-details-marker { display: none; }
+.debrief-summary-details > summary:hover { background: rgba(255,255,255,0.02); }
+.debrief-summary-chevron {
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+.debrief-summary-details[open] .debrief-summary-chevron { transform: rotate(180deg); }
+.debrief-summary-details textarea {
+  display: block;
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--ink-3);
+  background: transparent;
+  padding: 20px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+.debrief-summary-details textarea:focus { background: rgba(255,94,132,0.02); }

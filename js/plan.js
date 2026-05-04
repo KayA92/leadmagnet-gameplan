@@ -99,7 +99,7 @@ async function loadTeamData(teamId) {
   const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
-      .select('role, joined_at, users(id, first_name, last_name, company)')
+      .select('role, joined_at, users(id, first_name, last_name, company, email)')
       .eq('team_id', teamId),
     supabase
       .from('plans')
@@ -1017,32 +1017,6 @@ function renderChecklistTab() {
         </button>
       </div>
     </div>
-
-    <section class="sponsors-footer" style="max-width:760px;">
-      <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
-      <div class="sponsors-grid">
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <img src="/images/workiro-logo.svg" alt="Workiro">
-          </div>
-          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
-          <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-        <div class="sponsor-card">
-          <div class="sponsor-card-logo">
-            <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
-          </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
-          <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
   `;
 }
 
@@ -1132,8 +1106,14 @@ function renderTeammateCard(m, index) {
   const joinedDate = new Date(m.joined_at);
   const joinedStr = isNaN(joinedDate) ? '' : `Joined · ${joinedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
 
+  const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'this teammate';
   return `
     <div class="teammate ${isMe ? 'me' : ''}">
+      ${!isMe ? `<button class="teammate-quiet-remove" type="button"
+        onclick="planConfirmRemoveTeamMember('${escHtml(u.id)}', '${escHtml(fullName)}')"
+        aria-label="Remove from team" title="Remove from team">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>` : ''}
       <div class="teammate-top">
         <div class="teammate-avatar ${avatarClass}">${escHtml(initials)}</div>
         <div class="teammate-info">
@@ -1167,44 +1147,236 @@ function renderTeammateCard(m, index) {
         </div>
         <div class="teammate-footer-joined">${escHtml(joinedStr)}</div>
       </div>
-      ${!isMe ? `
-        <button class="teammate-remove-btn" onclick="planRemoveTeamMember('${escHtml(u.id)}')" type="button">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Remove from team
-        </button>` : ''}
     </div>
+  `;
+}
+
+// Pending team invites — UX-only memory of recently-sent emails. Lives
+// in localStorage so it survives reloads but doesn't require any DB
+// schema changes. Auto-expires entries older than 7 days. The user can
+// resend (re-fires the magic link) or cancel (just removes from the
+// list — once sent, the email is sent; "cancel" is a memory clean-up).
+const PENDING_INVITES_KEY = 'pendingTeamInvites';
+const PENDING_INVITE_TTL_MS = 7 * 24 * 3600 * 1000;
+
+function _readPendingInvites() {
+  try {
+    const raw = localStorage.getItem(PENDING_INVITES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    const now = Date.now();
+    const fresh = arr.filter(e => e?.email && e?.sentAt && (now - e.sentAt) < PENDING_INVITE_TTL_MS);
+    if (fresh.length !== arr.length) {
+      try { localStorage.setItem(PENDING_INVITES_KEY, JSON.stringify(fresh)); } catch {}
+    }
+    return fresh;
+  } catch { return []; }
+}
+function _writePendingInvites(arr) {
+  try { localStorage.setItem(PENDING_INVITES_KEY, JSON.stringify(arr)); } catch {}
+}
+function rememberPendingInvite(email) {
+  const list = _readPendingInvites().filter(e => e.email !== email);
+  list.unshift({ email, sentAt: Date.now() });
+  _writePendingInvites(list);
+}
+function forgetPendingInvite(email) {
+  _writePendingInvites(_readPendingInvites().filter(e => e.email !== email));
+}
+function _formatRelativeTime(ms) {
+  const diff = Math.max(0, Date.now() - ms);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function renderPendingInvitesBlock() {
+  const list = _readPendingInvites();
+  if (!list.length) return '';
+  // Build a lookup of teammate emails (lowercased) so we can detect
+  // which pending invites have actually accepted. Once accepted, the
+  // row flips to a green "Joined" state with a check icon.
+  const teamEmails = new Set(
+    (_teamData?.members || [])
+      .map(m => (m.users?.email || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
+  const lc = (s) => (s || '').trim().toLowerCase();
+  const PENDING_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>';
+  const ACCEPTED_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  return `
+    <div class="team-invite-pending">
+      <div class="team-invite-pending-label">Sent invites</div>
+      ${list.map(e => {
+        const accepted = teamEmails.has(lc(e.email));
+        const status = accepted ? 'accepted' : 'pending';
+        const icon = accepted ? ACCEPTED_ICON : PENDING_ICON;
+        const timeText = accepted
+          ? 'Joined the team'
+          : `Sent ${_formatRelativeTime(e.sentAt)} · awaiting acceptance`;
+        return `
+        <div class="team-invite-pending-row status-${status}" data-email="${escHtml(e.email)}">
+          <span class="team-invite-pending-icon">${icon}</span>
+          <div class="team-invite-pending-meta">
+            <span class="team-invite-pending-email">${escHtml(e.email)}</span>
+            <span class="team-invite-pending-time">${escHtml(timeText)}</span>
+          </div>
+          <div class="team-invite-pending-actions">
+            ${accepted ? '' : `<button class="team-invite-pending-btn resend" type="button" data-email="${escHtml(e.email)}" onclick="planResendInvite(this.dataset.email)">Resend</button>`}
+            <button class="team-invite-pending-btn cancel" type="button" aria-label="${accepted ? 'Remove from list' : 'Cancel pending'}" data-email="${escHtml(e.email)}" onclick="planCancelPendingInvite(this.dataset.email)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      `;}).join('')}
+    </div>
+  `;
+}
+
+// "Show, don't tell" team-mode preview — surfaces what a real session
+// card looks like once teammates have rated, taken notes, and joined.
+// Shown only in the solo state since teammates with their own active
+// view see the real thing on the Checklist already. Pure markup demo,
+// not interactive — uses real card classes so styling stays in sync.
+function renderTeamPreview() {
+  return `
+    <section class="team-preview">
+      <div class="team-preview-eyebrow">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+        Team mode preview
+      </div>
+      <h3 class="team-preview-headline">Your Planner is <em>even more useful</em> with your team.</h3>
+      <p class="team-preview-sub">Live notes, ratings, and team intel flowing in side-by-side. Every session — every booth — through your whole team's eyes. Here's what one card looks like when team mode is on:</p>
+
+      <!-- Mockup session card — uses real class names so it inherits
+           every styling change made elsewhere on the Checklist. -->
+      <div class="team-preview-card-wrap">
+        <span class="team-preview-card-tag">Preview · Not live</span>
+        <div class="checklist-row is-session" style="animation: none;">
+          <div class="checklist-row-main">
+            <div class="checklist-row-leftcol">
+              <button class="checklist-box" type="button" aria-hidden="true" tabindex="-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <div class="checklist-time-block">
+                <div class="checklist-time-main">10:30</div>
+                <div class="checklist-time-sub">11:15</div>
+              </div>
+            </div>
+            <div class="checklist-main">
+              <div class="checklist-main-title">AI in practice: how three UK firms moved from pilot to firm-wide rollout</div>
+              <div class="checklist-main-meta">Main Stage · <span class="type-pill session">Session</span></div>
+              <div class="match-badge tier-top">
+                <span class="match-bucket">
+                  <svg class="match-bucket-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+                  <span class="match-bucket-text">Top match</span>
+                </span>
+                <span class="match-rank">AI ranked #3 of 240</span>
+              </div>
+              <div class="checklist-blurb-divider"></div>
+              <p class="checklist-blurb">Three case studies from UK firms (10–250 staff) on rolling out AI across compliance, advisory, and bookkeeping. Including what didn't work and why.</p>
+
+              <div class="checklist-row-actions">
+                <div class="row-rate-wrap">
+                  <div class="row-rate-caption">You rated</div>
+                  <div class="row-rate-inline">
+                    <button class="row-fire-btn flame-btn lit" tabindex="-1"><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+                    <button class="row-fire-btn flame-btn lit" tabindex="-1"><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+                    <button class="row-fire-btn flame-btn lit" tabindex="-1"><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+                  </div>
+                </div>
+                <div class="row-team-wrap">
+                  <div class="row-rate-caption">Going</div>
+                  <div class="checklist-avatars">
+                    <div class="mini-av t3" title="You">Y</div>
+                    <div class="mini-av t1" title="Sarah">S</div>
+                    <div class="mini-av t2" title="James">J</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="team-rated-row tone-mint">
+                <span class="team-rated-caption">Team rated</span>
+                <span class="team-rated-pill">
+                  <span class="team-rated-name">Sarah</span>
+                  <span class="team-rated-flames">
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                  </span>
+                </span>
+                <span class="team-rated-pill">
+                  <span class="team-rated-name">James</span>
+                  <span class="team-rated-flames">
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                    <svg class="team-rated-flame-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>
+                  </span>
+                </span>
+              </div>
+
+              <div class="team-notes-block tone-mint">
+                <p class="team-note-row"><span class="team-note-name">Sarah:</span> 🔥 Game-changer: their pilot-to-rollout framework is exactly what we've been missing. Want to discuss with the partners next week.</p>
+                <p class="team-note-row"><span class="team-note-name">James:</span> 📝 To do: get the slide on their pilot-to-rollout framework. Share with the partner group on Friday.</p>
+                <p class="team-note-row"><span class="team-note-name">Sarah:</span> 💡 Idea: run a 30-min internal lunch-and-learn from this — could replace our Q3 training.</p>
+                <p class="team-note-row"><span class="team-note-name">James:</span> 🧠 Made me think: we're 6+ months behind on AI rollout. Need to fast-track the audit-side pilot we keep postponing.</p>
+                <span class="team-notes-more" style="cursor: default;">See all 8 →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="team-preview-foot">Multiply this across every session and every booth in your plan. <strong>That's team mode.</strong></p>
+    </section>
   `;
 }
 
 function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
-  const MAX_TEAM_MEMBERS = 8;
+  const MAX_TEAM_MEMBERS = 12;
   const memberCount = _teamData.members.length;
   const isSolo      = memberCount < 2;
   const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
   const isFull      = memberCount >= MAX_TEAM_MEMBERS;
   const pillTone    = isFull ? 'full' : (memberCount > 1 ? 'team' : 'solo');
 
+  const spotsLeftLine = isFull
+    ? 'Team full'
+    : `${remaining} of ${MAX_TEAM_MEMBERS} spots left`;
   const capacityPill = `
     <div class="team-capacity-pill ${pillTone}">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span><strong>${memberCount}</strong> of ${MAX_TEAM_MEMBERS}</span>
+      <svg class="team-capacity-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <line x1="19" x2="19" y1="8" y2="14"/>
+        <line x1="22" x2="16" y1="11" y2="11"/>
+      </svg>
+      <span class="team-capacity-scarce">${escHtml(spotsLeftLine)}</span>
     </div>
   `;
 
   const inviteForm = `
     <div class="team-invite-form" id="team-invite-form">
-      <div class="team-invite-input-row">
+      <div class="team-invite-input-shell">
         <input type="email" class="team-invite-email-input" id="team-invite-email"
           placeholder="colleague@firm.com" autocomplete="email"
           onkeydown="if(event.key==='Enter'){event.preventDefault();planSendInvite();}">
         <button class="team-invite-send-btn" onclick="planSendInvite()" type="button">
-          Send invite
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <svg class="team-invite-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M22 6 12 13 2 6"/>
+          </svg>
+          <span class="team-invite-send-label">Send invite</span>
         </button>
       </div>
       <div class="team-invite-status" id="team-invite-status"></div>
+      ${renderPendingInvitesBlock()}
     </div>
   `;
 
@@ -1217,8 +1389,8 @@ function renderTeamTab() {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </div>
         <div class="teammate-placeholder-text">
-          Each teammate's brief lands here.<br>
-          <strong>Tap to invite by email.</strong>
+          See your team's top pains and tool wants all in one place.<br>
+          <strong>Invite your team to see their answers vs your own.</strong>
         </div>
       </div>
     </div>
@@ -1226,15 +1398,11 @@ function renderTeamTab() {
 
   const heroTitle = isFull
     ? `Your <em>${MAX_TEAM_MEMBERS}-strong</em> team is locked in.`
-    : (isSolo
-        ? `Invite up to <em>${MAX_TEAM_MEMBERS} teammates.</em>`
-        : `Bring more colleagues. <em>${MAX_TEAM_MEMBERS} seats total.</em>`);
+    : `Invite up to <em>${MAX_TEAM_MEMBERS} teammates.</em>`;
 
   const heroSub = isFull
     ? `You've reached the <strong>${MAX_TEAM_MEMBERS}-teammate</strong> limit per workspace — kept tight on purpose so everyone's notes, ratings, and synthesis stay useful.`
-    : (isSolo
-        ? `Send each colleague an email invite. They get their own AI-matched plan in this workspace — with their notes, ratings, and CPD hours flowing into a shared debrief.`
-        : `Each colleague who joins unlocks <strong>their sessions on your map</strong>, <strong>their notes attributed in real time</strong>, <strong>their booth ratings</strong>, and a <strong>shared debrief</strong>.`);
+    : `More coverage. Shared notes. Joint decisions.`;
 
   const eyebrowLabel = isFull ? 'Workspace at capacity' : 'Workspace invite';
 
@@ -1252,36 +1420,20 @@ function renderTeamTab() {
     </div>
   `;
 
-  const pageTitle = isSolo
-    ? `Bring your team to <em>Accountex.</em>`
-    : `Your firm at <em>Accountex.</em>`;
+  // Single H1 across both states — "Bring your team to Accountex." is
+  // the right framing whether they have teammates yet or not.
+  const pageTitle = `Bring your team to <em>Accountex.</em>`;
 
-  const pageSub = isSolo
-    ? ``
-    : `Who's covering what, whose notes are flowing in live, and what the team has actually decided.`;
+  // Page subtitle deliberately blank — H1 alone names the section,
+  // the workspace invite + Pre-show team intel below carry the
+  // descriptive load.
+  const pageSub = '';
 
-  const aiBlock = isSolo ? `
-    <div class="team-synthesis ai-insights-locked">
-      <div class="team-section-eyebrow tone-mint">AI insights · waiting</div>
-      <h3 class="team-section-title">Patterns across <em>your team.</em></h3>
-      <p class="team-section-lede">
-        Where you're scouting in common, where you'd duplicate, what nobody's covering. Surfaces once a second teammate joins.
-      </p>
-      <div class="ai-insights-locked-note">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>Needs at least <strong>2 teammates</strong> to generate insights.</span>
-      </div>
-    </div>
-  ` : `
-    <div class="team-synthesis">
-      <div class="team-section-eyebrow tone-mint">AI synthesis</div>
-      <h3 class="team-section-title">What the AI sees <em>across the team.</em></h3>
-      <p class="team-section-lede">Patterns nobody flagged on their own. Disagreements worth a 5-minute call. Blind spots in your collective coverage. Attributed by name — never averaged.</p>
-      <div class="intel-grid">
-        ${buildIntelBlocks()}
-      </div>
-    </div>
-  `;
+  // AI synthesis section + TaxReady promo deliberately cut from the
+  // Team tab. AI synthesis on pre-event onboarding answers is theatre
+  // (the data is already visible on the cards above); TaxReady is
+  // off-topic here and lands better in Debrief. Three sections only:
+  // header, workspace invite, who's-going-and-why.
 
   return `
     <div class="app-header">
@@ -1295,141 +1447,282 @@ function renderTeamTab() {
 
     ${inviteHero}
 
-    <div class="app-section">
-      <div class="team-section-eyebrow tone-purple">Pre-show intel</div>
-      <h3 class="team-section-title">Who's going &amp; <em>why.</em></h3>
-      <p class="team-section-lede">
-        Each teammate's onboarding answers, side by side. What they think are your firm's top problems and software to evaluate — invaluable intel to align before, during and after Accountex.
-      </p>
-      <div class="team-section-count-row">
-        <span class="team-section-count-label">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</span>
-      </div>
-      <div class="teammate-grid">
-        ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
-        ${placeholderCard}
-      </div>
-    </div>
-
-    ${aiBlock}
-
-    ${isSolo ? '' : `<div class="taxready-cta-v2">
-      <div class="taxready-cta-v2-eyebrow">
-        <span class="taxready-cta-v2-dot"></span>
-        Bonus · Stand 1144
-      </div>
-      <h2 class="taxready-cta-v2-headline">
-        Outrank every accountant in your postcode. <em>Free.</em>
-      </h2>
-      <p class="taxready-cta-v2-body">
-        TaxReady is the UK's AI-matched accountant directory. <strong>2,690+ firms already on it.</strong> The one rated highest in each city wins the inbound leads. We'll list you in 3 minutes at our booth — or claim it yourself below.
-      </p>
-
-      <div class="taxready-cta-v2-visual-row">
-        <div class="taxready-cta-v2-map">
-          <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-            <path d="M110 30 L130 28 L135 42 L150 50 L155 65 L148 80 L160 90 L165 105 L175 118 L170 135 L180 148 L175 165 L185 180 L180 195 L190 215 L175 235 L155 245 L135 255 L115 250 L95 240 L80 220 L75 195 L65 180 L70 160 L65 140 L75 125 L70 105 L80 88 L75 70 L90 55 L100 42 Z"
-                  fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-            <path d="M40 155 L55 150 L60 165 L55 185 L45 195 L35 185 L32 170 Z"
-                  fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <circle cx="122" cy="138" r="30" fill="none" stroke="rgba(255,94,132,0.3)" stroke-width="1" stroke-dasharray="3 3">
-              <animate attributeName="r" values="20;60;20" dur="3s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.6;0;0.6" dur="3s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="120" cy="95" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="135" cy="115" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="95" cy="130" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="150" cy="145" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="115" cy="155" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="140" cy="175" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="105" cy="190" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="155" cy="200" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="125" cy="215" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="110" cy="110" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="130" cy="170" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="150" cy="105" r="3.5" fill="rgba(255,94,132,0.5)"/>
-            <circle cx="122" cy="138" r="12" fill="rgba(34,230,168,0.22)">
-              <animate attributeName="r" values="9;16;9" dur="2.2s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.6;0.15;0.6" dur="2.2s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="122" cy="138" r="7" fill="#22e6a8" stroke="#fff" stroke-width="2.5"/>
-            <g transform="translate(140, 50)">
-              <rect x="0" y="0" width="150" height="92" rx="10" fill="#0a0a12" stroke="rgba(34,230,168,0.55)" stroke-width="1.5"/>
-              <circle cx="12" cy="15" r="3.5" fill="#22e6a8">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
-              </circle>
-              <text x="22" y="19" fill="#22e6a8" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" letter-spacing="0.1em">AI TOP MATCH</text>
-              <text x="12" y="43" fill="#fff" font-family="Fraunces,serif" font-size="15" font-weight="500">Your Firm Ltd</text>
-              <text x="12" y="60" fill="#22e6a8" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="600">★★★★★ · 47 reviews</text>
-              <text x="12" y="77" fill="rgba(255,255,255,0.55)" font-family="IBM Plex Sans,sans-serif" font-size="9">M1 · Small business specialists</text>
-              <line x1="0" y1="92" x2="-18" y2="96" stroke="rgba(34,230,168,0.55)" stroke-width="1.5" stroke-linecap="round"/>
-            </g>
-            <g transform="translate(15, 255)">
-              <rect x="0" y="0" width="130" height="18" rx="9" fill="rgba(255,94,132,0.08)" stroke="rgba(255,94,132,0.25)" stroke-width="1"/>
-              <circle cx="10" cy="9" r="2.5" fill="#ff5e84">
-                <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite"/>
-              </circle>
-              <text x="19" y="12" fill="rgba(255,255,255,0.65)" font-family="JetBrains Mono,monospace" font-size="7" letter-spacing="0.1em">AI SCANNING 12 RIVALS</text>
-            </g>
-          </svg>
-        </div>
-
-        <div class="taxready-cta-v2-booth">
-          <div class="taxready-cta-v2-booth-top">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>STAND 1144</span>
+    ${(() => {
+      // Section order pivots on team size:
+      // · Solo (1 member, just the user): preview FIRST so the value
+      //   prop sells the invite. Onboarding section is empty-ish anyway.
+      // · 2+ members: onboarding answers FIRST (it's now real intel
+      //   the user came here to see). Preview drops below it as a
+      //   "still want more eyes" reminder.
+      const onboarding = `
+        <div class="app-section team-pre-show">
+          <div class="team-section-eyebrow tone-purple">Team intel</div>
+          <h3 class="team-section-title team-section-title-xl">Your team's <em>onboarding answers.</em></h3>
+          <p class="team-section-lede">Each teammate's onboarding answers — pains and software gaps, side-by-side.</p>
+          <div class="team-section-count-row">
+            <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>
           </div>
-          <div class="taxready-cta-v2-booth-bignum">3 mins</div>
-          <div class="taxready-cta-v2-booth-desc">Fill in a quick form at our booth. We'll handle the rest.</div>
-          <div class="taxready-cta-v2-booth-tick-list">
-            <div class="taxready-cta-v2-booth-tick">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Free to claim
-            </div>
-            <div class="taxready-cta-v2-booth-tick">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              10+ reviews to qualify
-            </div>
-            <div class="taxready-cta-v2-booth-tick">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22e6a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              No setup fee, ever
-            </div>
+          <div class="teammate-grid">
+            ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
+            ${placeholderCard}
           </div>
-        </div>
-      </div>
-
-      <a class="taxready-cta-v2-btn" href="https://taxready.me/accountants.html" target="_blank" rel="noopener">
-        Claim your free profile
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <div class="taxready-cta-v2-foot">
-        Or drop by <strong>stand 1144</strong> for a hand · <a href="https://xumagazine.com" target="_blank" rel="noopener">As featured in XU Magazine</a>
-      </div>
-    </div>`}
+        </div>`;
+      const preview = renderTeamPreview();
+      return isSolo ? `${preview}${onboarding}` : `${onboarding}${preview}`;
+    })()}
   `;
 }
 
 // ── CPD stub ──────────────────────────────────────────────────────────────────
 
+// Per-plan localStorage key for CPD-excluded session IDs. Removing a
+// session from the CPD log is a CPD-only concept — it must NOT mutate
+// the Checklist plan.sessions, so this is held client-side per plan.
+const CPD_EXCLUDED_KEY = 'cpdExcluded:';
+function _cpdKey() {
+  const id = _plan?.id;
+  return id ? CPD_EXCLUDED_KEY + id : null;
+}
+function _cpdGetExcluded() {
+  try {
+    const k = _cpdKey();
+    if (!k) return new Set();
+    return new Set(JSON.parse(localStorage.getItem(k) || '[]'));
+  } catch { return new Set(); }
+}
+function _cpdSetExcluded(set) {
+  const k = _cpdKey();
+  if (!k) return;
+  localStorage.setItem(k, JSON.stringify([...set]));
+}
+
+// Format a session's date / time / theatre into a single human line:
+// "Wed 13 May · 10:20–11:00 · Masterclasses"
+function _cpdFormatSlot(s) {
+  let datePart = '';
+  if (s.date) {
+    const m = /^(\d{1,2})-([A-Za-z]+)-\d+$/.exec(s.date);
+    if (m) {
+      const dow = s.day === 'Day 1' ? 'Wed' : 'Thu';
+      datePart = `${dow} ${parseInt(m[1], 10)} ${m[2]}`;
+    }
+  }
+  if (!datePart) datePart = s.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+  const time = s.start_time && s.end_time
+    ? `${s.start_time}–${s.end_time}`
+    : (s.start_time || '');
+  return [datePart, time, s.theatre].filter(Boolean).join(' · ');
+}
+
 function renderCpdTab() {
-  const sessions = _plan?.sessions || [];
-  // CPD shows the full hours from the user's plan from the start —
-  // they shouldn't have to "earn" their own CPD by ticking sessions
-  // off; that's not our call to police.
-  const cpdHours = (sessions.length * 40 / 60).toFixed(1);
-  const isTeam   = !!(_plan?.team_id);
+  const allSessions = _plan?.sessions || [];
+  const excluded = _cpdGetExcluded();
+  const included = allSessions.filter(s => !excluded.has(String(s.session_id)));
+  const removed  = allSessions.filter(s =>  excluded.has(String(s.session_id)));
+
+  // 40-minute Accountex sessions → 0.67 CPD hours each. Per-row rounded
+  // to 1 decimal for clean reading; total summed from the unrounded
+  // raw value so totals don't drift due to per-row rounding.
+  const HOURS_PER_SESSION = 40 / 60;
+  const totalHours = (included.length * HOURS_PER_SESSION).toFixed(1);
+
+  const byDayThenTime = (a, b) => {
+    const da = a.day === 'Day 1' ? 1 : 2;
+    const db = b.day === 'Day 1' ? 1 : 2;
+    return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+  };
+  const sortedIncluded = [...included].sort(byDayThenTime);
+  const sortedRemoved  = [...removed].sort(byDayThenTime);
+
+  const userName = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ');
+  const userCo   = _userProfile?.company || '';
+  const generatedFor = [userName, userCo].filter(Boolean).join(' · ');
+
+  const rowsHtml = sortedIncluded.length
+    ? sortedIncluded.map(s => {
+        const id = String(s.session_id || '');
+        const titleAttr = (s.title || 'Session').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `
+        <div class="cpd-row">
+          <div class="cpd-row-main">
+            <div class="cpd-row-title">${escHtml(s.title || s.session_id || 'Session')}</div>
+            <div class="cpd-row-meta">${escHtml(_cpdFormatSlot(s))}</div>
+          </div>
+          <div class="cpd-row-hours">${HOURS_PER_SESSION.toFixed(1)} <span>hrs</span></div>
+          <button class="cpd-row-remove" type="button" aria-label="Remove from CPD log"
+                  onclick="planConfirmRemoveCpd('${escHtml(id)}', '${escHtml(titleAttr)}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`;
+      }).join('')
+    : `<div class="cpd-row-empty">No sessions in your plan yet. Add some on the Checklist tab.</div>`;
+
+  const restoreHtml = sortedRemoved.length ? `
+    <details class="cpd-restore">
+      <summary>
+        <span><strong>${sortedRemoved.length}</strong> removed from log</span>
+        <svg class="cpd-restore-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="cpd-restore-list">
+        ${sortedRemoved.map(s => `
+          <div class="cpd-restore-row">
+            <div class="cpd-restore-info">
+              <div class="cpd-restore-title">${escHtml(s.title || 'Session')}</div>
+              <div class="cpd-restore-meta">${escHtml(_cpdFormatSlot(s))}</div>
+            </div>
+            <button class="cpd-restore-btn" type="button"
+                    onclick="planRestoreCpd('${escHtml(String(s.session_id || ''))}')">Re-add</button>
+          </div>
+        `).join('')}
+      </div>
+    </details>` : '';
+
   return `
     <div class="app-header">
-      <h2 class="app-title">CPD <em>log.</em></h2>
-      <p class="app-sub">Your continuing professional development hours, tracked as you go.</p>
-      ${inviteNudgeHtml('cpd', isTeam)}
+      <h2 class="app-title">Your CPD log, <em>one click away.</em></h2>
+      <p class="app-sub">Every session in your plan counts. Download anytime.</p>
     </div>
-    <div style="padding:32px 0;text-align:center;color:var(--text-muted);">
-      <div style="font-family:'Fraunces',serif;font-size:56px;font-weight:500;color:var(--mint);">${cpdHours}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px;">CPD hours logged</div>
-      <p style="margin-top:20px;font-size:14px;">Mark sessions as attended on the Checklist tab to add hours here.</p>
+
+    ${generatedFor ? `<div class="cpd-generated-for">Generated for <strong>${escHtml(generatedFor)}</strong></div>` : ''}
+
+    <div class="cpd-card">
+      <div class="cpd-list">${rowsHtml}</div>
+      <div class="cpd-total">
+        <div class="cpd-total-num">${totalHours}</div>
+        <div class="cpd-total-label">Total CPD hours</div>
+      </div>
+      ${sortedIncluded.length ? `
+        <button class="cpd-download-btn" type="button" onclick="planDownloadCpd()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CPD log
+        </button>` : ''}
     </div>
+
+    <p class="cpd-disclaimer">
+      This log reflects sessions in your plan. Check with your professional body (ICAEW, ACCA, AAT, CTA) for how to count event attendance toward your annual CPD requirement.
+    </p>
+
+    ${restoreHtml}
   `;
 }
+
+window.planConfirmRemoveCpd = function(sessionId, title) {
+  planShowConfirm({
+    title: 'Remove from CPD log?',
+    body: `<strong>${escHtml(title)}</strong> won't count toward your CPD hours. It stays on your Checklist — re-add it any time from the <em>Removed from log</em> list at the bottom of this tab.`,
+    confirmLabel: 'Remove',
+    confirmTone: 'danger',
+    onConfirm: () => {
+      const ex = _cpdGetExcluded();
+      ex.add(String(sessionId));
+      _cpdSetExcluded(ex);
+      renderApp();
+    },
+  });
+};
+
+window.planRestoreCpd = function(sessionId) {
+  const ex = _cpdGetExcluded();
+  ex.delete(String(sessionId));
+  _cpdSetExcluded(ex);
+  renderApp();
+};
+
+window.planDownloadCpd = function() {
+  const allSessions = _plan?.sessions || [];
+  const excluded = _cpdGetExcluded();
+  const sessions = [...allSessions]
+    .filter(s => !excluded.has(String(s.session_id)))
+    .sort((a, b) => {
+      const da = a.day === 'Day 1' ? 1 : 2;
+      const db = b.day === 'Day 1' ? 1 : 2;
+      return da - db || (a.start_time || '').localeCompare(b.start_time || '');
+    });
+  if (!sessions.length) return;
+
+  const HOURS_PER_SESSION = 40 / 60;
+  const total = (sessions.length * HOURS_PER_SESSION).toFixed(1);
+  const userName  = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ') || '';
+  const userCo    = _userProfile?.company || '';
+  const meta = [userName, userCo].filter(Boolean).join(' · ') || 'Accountex 2026';
+
+  const esc = (str) => String(str || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // First-sentence summary for the PDF — caps at ~240 chars to keep
+  // each row visually compact; longer descriptions stay on autoevent.io.
+  const firstSentence = (text) => {
+    if (!text) return '';
+    const trimmed = String(text).trim();
+    const m = /^[\s\S]+?[.!?](?=\s|$)/.exec(trimmed);
+    return (m ? m[0] : trimmed).slice(0, 240);
+  };
+
+  const rows = sessions.map(s => {
+    const slot   = _cpdFormatSlot(s);
+    const title  = esc(s.title || s.session_id || 'Session');
+    const speaker = (s.speakers && s.speakers[0]?.name) ? esc(s.speakers[0].name) : '';
+    const desc   = esc(firstSentence(s.description || ''));
+    const subParts = [speaker && `<span class="speaker">${speaker}</span>`, desc].filter(Boolean);
+    const sub = subParts.length ? `<div class="sub">${subParts.join(' — ')}</div>` : '';
+    return `<tr>
+      <td>
+        <div class="title">${title}</div>
+        ${sub}
+      </td>
+      <td class="meta">${esc(slot)}</td>
+      <td class="hrs">${HOURS_PER_SESSION.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
+    <title>CPD log — Accountex 2026 · ${esc(meta)}</title>
+    <style>
+      ${_printSharedStyles()}
+      .cpd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0 26px; page-break-inside: avoid; }
+      .cpd-stat { border: 1px solid #e0e0e8; border-radius: 8px; padding: 14px 14px 12px; background: #f8f8fb; }
+      .cpd-stat-num { font-family: Georgia, serif; font-style: italic; font-weight: 600; font-size: 22pt; line-height: 1; color: #0fb88a; letter-spacing: -0.02em; margin-bottom: 4px; }
+      .cpd-stat:nth-child(2) .cpd-stat-num { color: #6f3fd1; }
+      .cpd-stat:nth-child(3) .cpd-stat-num { color: #1a1a2e; }
+      .cpd-stat-label { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #6b6b80; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #ececf3; vertical-align: top; }
+      th { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.12em; color: #6b6b80; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid #1a1a2e; }
+      td .title { font-family: Georgia, serif; font-weight: 700; font-size: 11pt; color: #0a0a12; line-height: 1.35; }
+      td .sub { font-size: 9pt; color: #6b6b80; margin-top: 4px; line-height: 1.45; }
+      td .sub .speaker { font-weight: 700; color: #0fb88a; }
+      td.meta { color: #6b6b80; font-size: 9pt; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; width: 160px; }
+      td.hrs, th.hrs { text-align: right; width: 70px; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; }
+      td.hrs { color: #0fb88a; font-weight: 700; }
+      tr.total td { border-top: 2px solid #1a1a2e; border-bottom: none; padding-top: 14px; font-size: 13pt; font-weight: 700; font-family: Georgia, serif; }
+      tr.total td.hrs { color: #0fb88a; font-style: italic; font-size: 18pt; }
+      .disclaimer { margin-top: 22px; font-size: 9pt; color: #6b6b80; font-style: italic; line-height: 1.55; border-top: 1px solid #ececf3; padding-top: 14px; }
+    </style>
+    </head><body>
+    <div class="doc-eyebrow">Accountex 2026 · CPD Log</div>
+    <h1 class="doc-title">Your CPD log.</h1>
+    <p class="doc-meta">Generated for <strong>${esc(meta)}</strong></p>
+
+    <div class="cpd-stats">
+      <div class="cpd-stat"><div class="cpd-stat-num">${total}</div><div class="cpd-stat-label">CPD hours</div></div>
+      <div class="cpd-stat"><div class="cpd-stat-num">${sessions.length}</div><div class="cpd-stat-label">Sessions logged</div></div>
+      <div class="cpd-stat"><div class="cpd-stat-num">${HOURS_PER_SESSION.toFixed(2)}</div><div class="cpd-stat-label">Hours / session</div></div>
+    </div>
+
+    <table>
+      <thead><tr><th>Session</th><th>When</th><th class="hrs">CPD hrs</th></tr></thead>
+      <tbody>${rows}<tr class="total"><td colspan="2">Total</td><td class="hrs">${total}</td></tr></tbody>
+    </table>
+    <p class="disclaimer">This log reflects sessions in your plan. Check with your professional body (ICAEW, ACCA, AAT, CTA) for how to count event attendance toward your annual CPD requirement.</p>
+
+    ${_workiroPdfFooterHtml()}
+
+    <script>window.onload = function() { window.print(); };</script>
+    </body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (win) win.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+};
 
 // ── Debrief helpers ───────────────────────────────────────────────────────────
 
@@ -1466,7 +1759,9 @@ function buildHeatRanked() {
       avgRating:  scoreMap[key].total / scoreMap[key].count,
       raterCount: scoreMap[key].count,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating);
+    // Tie-break: when two items share the same average (e.g. both 3.0),
+    // the one with more raters ranks higher — more signal beats less.
+    .sort((a, b) => (b.avgRating - a.avgRating) || (b.raterCount - a.raterCount));
 }
 
 function buildBoothHeatRanked() {
@@ -1498,7 +1793,9 @@ function buildBoothHeatRanked() {
       avgRating:  scoreMap[key].total / scoreMap[key].count,
       raterCount: scoreMap[key].count,
     }))
-    .sort((a, b) => b.avgRating - a.avgRating);
+    // Tie-break: when two items share the same average (e.g. both 3.0),
+    // the one with more raters ranks higher — more signal beats less.
+    .sort((a, b) => (b.avgRating - a.avgRating) || (b.raterCount - a.raterCount));
 }
 
 function buildSummaryText() {
@@ -1622,7 +1919,75 @@ function buildSummaryText() {
     lines.push('');
   }
 
+  // Workiro CTA footer — appended to the textarea so the email/copy
+  // flow always carries the credit + booth + URL the host requested.
+  lines.push('————————————————————————————');
+  lines.push('');
+  lines.push('This debrief was built with AutoEvent — a free Accountex 2026 planner from Workiro.');
+  lines.push('');
+  lines.push('Workiro: cloud document management for UK accountants — trusted by 65,000+ professionals.');
+  lines.push('Come visit us at booth 1144.');
+  lines.push('');
+  lines.push('→ https://workiro.com');
+
   return lines.join('\n');
+}
+
+// Inline Workiro wordmark — required because PDFs open from a blob:
+// URL where /images/* won't resolve. Light-bg variant (white glyphs
+// recoloured to ink) so it sits cleanly on a printed page.
+const _WORKIRO_LOGO_INLINE = `<svg viewBox="0 0 435 147" xmlns="http://www.w3.org/2000/svg" style="width:128px;height:auto;display:block;">
+  <path d="M31.903 104.701L21.2533 129.305H15.6297L5.01522 104.701H11.166L18.6524 122.275L26.2443 104.701H31.903ZM37.7801 110.395H43.2631V129.305H37.7801V110.395ZM40.5216 107.759C39.514 107.759 38.6939 107.466 38.0612 106.881C37.4286 106.295 37.1123 105.568 37.1123 104.701C37.1123 103.834 37.4286 103.108 38.0612 102.522C38.6939 101.937 39.514 101.644 40.5216 101.644C41.5291 101.644 42.3492 101.925 42.9819 102.487C43.6145 103.05 43.9309 103.752 43.9309 104.596C43.9309 105.51 43.6145 106.271 42.9819 106.881C42.3492 107.466 41.5291 107.759 40.5216 107.759ZM57.455 112.891C58.111 111.977 58.9897 111.286 60.091 110.817C61.2157 110.348 62.5045 110.114 63.9572 110.114V115.175C63.348 115.129 62.938 115.105 62.7271 115.105C61.1572 115.105 59.927 115.55 59.0366 116.441C58.1462 117.308 57.701 118.62 57.701 120.377V129.305H52.218V110.395H57.455V112.891ZM83.932 128.391C83.393 128.789 82.7252 129.094 81.9286 129.305C81.1553 129.492 80.3352 129.586 79.4682 129.586C77.2188 129.586 75.4732 129.012 74.2313 127.864C73.0128 126.715 72.4036 125.028 72.4036 122.802V115.035H69.4864V110.817H72.4036V106.213H77.8866V110.817H82.5964V115.035H77.8866V122.732C77.8866 123.529 78.0858 124.15 78.4841 124.595C78.9059 125.017 79.4917 125.228 80.2415 125.228C81.1085 125.228 81.8466 124.993 82.4558 124.525L83.932 128.391ZM109.926 110.395V129.305H104.724V127.055C103.998 127.875 103.131 128.508 102.123 128.953C101.116 129.375 100.026 129.586 98.8545 129.586C96.3708 129.586 94.4025 128.871 92.9498 127.442C91.497 126.013 90.7706 123.892 90.7706 121.08V110.395H96.2536V120.272C96.2536 123.318 97.5307 124.841 100.085 124.841C101.397 124.841 102.451 124.419 103.248 123.576C104.045 122.709 104.443 121.432 104.443 119.745V110.395H109.926ZM126.499 110.114C129.428 110.114 131.677 110.817 133.247 112.223C134.817 113.605 135.602 115.703 135.602 118.514V129.305H130.471V126.95C129.44 128.707 127.518 129.586 124.706 129.586C123.254 129.586 121.988 129.34 120.91 128.848C119.856 128.356 119.048 127.676 118.485 126.809C117.923 125.942 117.642 124.958 117.642 123.857C117.642 122.099 118.298 120.717 119.61 119.709C120.946 118.702 122.996 118.198 125.761 118.198H130.119C130.119 117.003 129.756 116.089 129.029 115.457C128.303 114.801 127.214 114.472 125.761 114.472C124.753 114.472 123.757 114.636 122.773 114.965C121.813 115.269 120.992 115.691 120.313 116.23L118.345 112.399C119.376 111.672 120.606 111.11 122.035 110.712C123.488 110.313 124.976 110.114 126.499 110.114ZM126.077 125.895C127.014 125.895 127.846 125.684 128.573 125.263C129.299 124.818 129.814 124.173 130.119 123.33V121.397H126.358C124.109 121.397 122.984 122.135 122.984 123.611C122.984 124.314 123.254 124.876 123.792 125.298C124.355 125.696 125.116 125.895 126.077 125.895ZM144.431 103.225H149.914V129.305H144.431V103.225ZM184.85 129.726C182.342 129.726 180.07 129.188 178.031 128.11C176.016 127.008 174.423 125.497 173.251 123.576C172.103 121.631 171.529 119.44 171.529 117.003C171.529 114.566 172.103 112.387 173.251 110.466C174.423 108.521 176.016 107.009 178.031 105.932C180.07 104.83 182.354 104.28 184.885 104.28C187.017 104.28 188.938 104.655 190.649 105.404C192.383 106.154 193.836 107.232 195.007 108.638L191.352 112.012C189.688 110.091 187.626 109.13 185.166 109.13C183.643 109.13 182.284 109.47 181.089 110.149C179.894 110.805 178.957 111.731 178.277 112.926C177.621 114.121 177.293 115.48 177.293 117.003C177.293 118.526 177.621 119.885 178.277 121.08C178.957 122.275 179.894 123.212 181.089 123.892C182.284 124.548 183.643 124.876 185.166 124.876C187.626 124.876 189.688 123.904 191.352 121.959L195.007 125.333C193.836 126.762 192.383 127.852 190.649 128.602C188.915 129.352 186.982 129.726 184.85 129.726ZM209.822 110.114C212.751 110.114 215 110.817 216.57 112.223C218.14 113.605 218.925 115.703 218.925 118.514V129.305H213.793V126.95C212.762 128.707 210.841 129.586 208.029 129.586C206.576 129.586 205.311 129.34 204.233 128.848C203.179 128.356 202.37 127.676 201.808 126.809C201.246 125.942 200.965 124.958 200.965 123.857C200.965 122.099 201.621 120.717 202.933 119.709C204.268 118.702 206.319 118.198 209.084 118.198H213.442C213.442 117.003 213.079 116.089 212.352 115.457C211.626 114.801 210.536 114.472 209.084 114.472C208.076 114.472 207.08 114.636 206.096 114.965C205.135 115.269 204.315 115.691 203.636 116.23L201.667 112.399C202.698 111.672 203.929 111.11 205.358 110.712C206.811 110.313 208.299 110.114 209.822 110.114ZM209.4 125.895C210.337 125.895 211.169 125.684 211.895 125.263C212.622 124.818 213.137 124.173 213.442 123.33V121.397H209.681C207.432 121.397 206.307 122.135 206.307 123.611C206.307 124.314 206.576 124.876 207.115 125.298C207.678 125.696 208.439 125.895 209.4 125.895ZM238.93 110.114C240.688 110.114 242.281 110.524 243.71 111.344C245.163 112.141 246.3 113.277 247.12 114.754C247.94 116.206 248.35 117.905 248.35 119.85C248.35 121.795 247.94 123.505 247.12 124.982C246.3 126.434 245.163 127.571 243.71 128.391C242.281 129.188 240.688 129.586 238.93 129.586C236.329 129.586 234.349 128.766 232.99 127.126V129.305H227.753V103.225H233.236V112.399C234.619 110.876 236.517 110.114 238.93 110.114ZM237.981 125.087C239.387 125.087 240.535 124.618 241.426 123.681C242.34 122.72 242.797 121.443 242.797 119.85C242.797 118.257 242.34 116.991 241.426 116.054C240.535 115.093 239.387 114.613 237.981 114.613C236.575 114.613 235.416 115.093 234.502 116.054C233.611 116.991 233.166 118.257 233.166 119.85C233.166 121.443 233.611 122.72 234.502 123.681C235.416 124.618 236.575 125.087 237.981 125.087ZM255.887 110.395H261.37V129.305H255.887V110.395ZM258.628 107.759C257.62 107.759 256.8 107.466 256.168 106.881C255.535 106.295 255.219 105.568 255.219 104.701C255.219 103.834 255.535 103.108 256.168 102.522C256.8 101.937 257.62 101.644 258.628 101.644C259.636 101.644 260.456 101.925 261.088 102.487C261.721 103.05 262.037 103.752 262.037 104.596C262.037 105.51 261.721 106.271 261.088 106.881C260.456 107.466 259.636 107.759 258.628 107.759ZM281.818 110.114C284.161 110.114 286.047 110.817 287.476 112.223C288.929 113.629 289.656 115.714 289.656 118.479V129.305H284.173V119.323C284.173 117.823 283.844 116.71 283.188 115.984C282.532 115.234 281.583 114.859 280.341 114.859C278.959 114.859 277.858 115.293 277.038 116.16C276.217 117.003 275.807 118.268 275.807 119.955V129.305H270.324V110.395H275.561V112.61C276.288 111.813 277.19 111.204 278.268 110.782C279.346 110.337 280.529 110.114 281.818 110.114ZM317.221 119.92C317.221 119.991 317.185 120.483 317.115 121.397H302.81C303.068 122.568 303.677 123.494 304.638 124.173C305.598 124.853 306.793 125.192 308.223 125.192C309.207 125.192 310.074 125.052 310.824 124.771C311.597 124.466 312.312 123.997 312.968 123.365L315.885 126.528C314.104 128.567 311.503 129.586 308.082 129.586C305.95 129.586 304.064 129.176 302.423 128.356C300.783 127.512 299.518 126.352 298.627 124.876C297.737 123.4 297.292 121.725 297.292 119.85C297.292 117.999 297.725 116.335 298.592 114.859C299.483 113.359 300.689 112.2 302.213 111.379C303.759 110.536 305.481 110.114 307.379 110.114C309.23 110.114 310.906 110.513 312.405 111.309C313.905 112.106 315.077 113.254 315.92 114.754C316.787 116.23 317.221 117.952 317.221 119.92ZM307.414 114.262C306.172 114.262 305.13 114.613 304.286 115.316C303.443 116.019 302.927 116.98 302.74 118.198H312.054C311.866 117.003 311.351 116.054 310.507 115.351C309.664 114.625 308.633 114.262 307.414 114.262ZM336.933 128.391C336.394 128.789 335.727 129.094 334.93 129.305C334.157 129.492 333.337 129.586 332.47 129.586C330.22 129.586 328.474 129.012 327.233 127.864C326.014 126.715 325.405 125.028 325.405 122.802V115.035H322.488V110.817H325.405V106.213H330.888V110.817H335.598V115.035H330.888V122.732C330.888 123.529 331.087 124.15 331.485 124.595C331.907 125.017 332.493 125.228 333.243 125.228C334.11 125.228 334.848 124.993 335.457 124.525L336.933 128.391ZM374.92 124.665V129.305H356.327V125.614L365.817 116.652C366.824 115.691 367.504 114.871 367.855 114.191C368.207 113.488 368.382 112.797 368.382 112.118C368.382 111.133 368.043 110.384 367.363 109.868C366.707 109.329 365.735 109.06 364.446 109.06C363.368 109.06 362.396 109.271 361.529 109.692C360.662 110.091 359.935 110.7 359.349 111.52L355.202 108.849C356.163 107.42 357.487 106.307 359.174 105.51C360.861 104.69 362.794 104.28 364.973 104.28C366.801 104.28 368.394 104.584 369.753 105.194C371.136 105.779 372.202 106.623 372.951 107.724C373.725 108.802 374.111 110.079 374.111 111.555C374.111 112.891 373.83 114.144 373.268 115.316C372.705 116.488 371.616 117.823 369.999 119.323L364.34 124.665H374.92ZM384.712 129.586C383.751 129.586 382.943 129.258 382.287 128.602C381.631 127.946 381.303 127.126 381.303 126.141C381.303 125.134 381.631 124.325 382.287 123.716C382.943 123.084 383.751 122.767 384.712 122.767C385.673 122.767 386.481 123.084 387.137 123.716C387.793 124.325 388.121 125.134 388.121 126.141C388.121 127.126 387.793 127.946 387.137 128.602C386.481 129.258 385.673 129.586 384.712 129.586ZM404.642 129.726C402.603 129.726 400.787 129.223 399.194 128.215C397.6 127.208 396.347 125.755 395.433 123.857C394.543 121.935 394.097 119.651 394.097 117.003C394.097 114.355 394.543 112.082 395.433 110.184C396.347 108.263 397.6 106.799 399.194 105.791C400.787 104.783 402.603 104.28 404.642 104.28C406.68 104.28 408.496 104.783 410.089 105.791C411.683 106.799 412.925 108.263 413.815 110.184C414.729 112.082 415.186 114.355 415.186 117.003C415.186 119.651 414.729 121.935 413.815 123.857C412.925 125.755 411.683 127.208 410.089 128.215C408.496 129.223 406.68 129.726 404.642 129.726ZM404.642 124.911C406.141 124.911 407.313 124.267 408.156 122.978C409.023 121.689 409.457 119.698 409.457 117.003C409.457 114.308 409.023 112.317 408.156 111.028C407.313 109.739 406.141 109.095 404.642 109.095C403.165 109.095 401.994 109.739 401.127 111.028C400.283 112.317 399.862 114.308 399.862 117.003C399.862 119.698 400.283 121.689 401.127 122.978C401.994 124.267 403.165 124.911 404.642 124.911Z" fill="#9E75EF"/>
+  <path d="M144.065 37.789C141.348 35.1781 138.124 33.1533 134.394 31.7146C130.718 30.276 126.668 29.5566 122.245 29.5566C117.876 29.5566 113.827 30.276 110.097 31.7146C106.367 33.1533 103.117 35.1781 100.346 37.789C97.5752 40.3999 95.4172 43.4637 93.872 46.9804C92.38 50.4971 91.634 54.3335 91.634 58.4896C91.634 62.6458 92.38 66.4822 93.872 69.9989C95.4172 73.5156 97.5485 76.5794 100.266 79.1903C103.037 81.8012 106.287 83.826 110.017 85.2646C113.8 86.7033 117.903 87.4226 122.325 87.4226C126.695 87.4226 130.718 86.7033 134.394 85.2646C138.124 83.826 141.348 81.8279 144.065 79.2702C146.836 76.6593 148.994 73.5955 150.539 70.0788C152.084 66.5088 152.857 62.6458 152.857 58.4896C152.857 54.2802 152.084 50.4438 150.539 46.9804C148.994 43.4637 146.836 40.3999 144.065 37.789ZM138.39 65.7628C137.538 67.9475 136.312 69.839 134.714 71.4376C133.115 73.0361 131.25 74.2616 129.119 75.1141C127.041 75.9667 124.75 76.3929 122.245 76.3929C119.741 76.3929 117.423 75.9667 115.292 75.1141C113.161 74.2616 111.296 73.0361 109.697 71.4376C108.152 69.839 106.926 67.9475 106.021 65.7628C105.168 63.5249 104.742 61.1005 104.742 58.4896C104.742 55.8255 105.168 53.4011 106.021 51.2164C106.926 49.0318 108.179 47.1402 109.777 45.5417C111.376 43.9432 113.214 42.7177 115.292 41.8652C117.423 41.0126 119.741 40.5863 122.245 40.5863C124.75 40.5863 127.068 41.0126 129.199 41.8652C131.33 42.7177 133.169 43.9432 134.714 45.5417C136.312 47.1402 137.538 49.0318 138.39 51.2164C139.296 53.4011 139.749 55.8255 139.749 58.4896C139.749 61.1538 139.296 63.5782 138.39 65.7628Z" fill="#1a1a2e"/>
+  <path d="M63.9137 69.8359L51.2322 30.5215H39.2434L26.049 69.847L13.4275 30.5215H0L18.3029 86.4693H32.2099L44.8914 48.5602L57.2266 86.4693H71.1336L89.4365 30.5215H77.0481L63.9137 69.8359Z" fill="#1a1a2e"/>
+  <path d="M290.805 30.5215H277.857V86.4693H290.805V30.5215Z" fill="#1a1a2e"/>
+  <path d="M416.473 46.9804C414.928 43.4637 412.77 40.3999 409.999 37.789C407.282 35.1781 404.058 33.1533 400.328 31.7146C396.652 30.276 392.602 29.5566 388.18 29.5566C383.811 29.5566 379.761 30.276 376.031 31.7146C372.301 33.1533 369.051 35.1781 366.28 37.789C363.51 40.3999 361.352 43.4637 359.806 46.9804C358.314 50.4971 357.568 54.3335 357.568 58.4896C357.568 62.6458 358.314 66.4822 359.806 69.9989C361.352 73.5156 363.483 76.5794 366.2 79.1903C368.971 81.8012 372.221 83.826 375.951 85.2646C379.734 86.7033 383.837 87.4226 388.26 87.4226C392.629 87.4226 396.652 86.7033 400.328 85.2646C404.058 83.826 407.282 81.8279 409.999 79.2702C412.77 76.6593 414.928 73.5955 416.473 70.0788C418.019 66.5088 418.791 62.6458 418.791 58.4896C418.791 54.2802 418.019 50.4438 416.473 46.9804ZM404.325 65.7628C403.472 67.9475 402.247 69.839 400.648 71.4376C399.05 73.0361 397.185 74.2616 395.053 75.1141C392.975 75.9667 390.684 76.3929 388.18 76.3929C385.675 76.3929 383.358 75.9667 381.226 75.1141C379.095 74.2616 377.23 73.0361 375.632 71.4376C374.086 69.839 372.861 67.9475 371.955 65.7628C371.102 63.5249 370.676 61.1005 370.676 58.4896C370.676 55.8255 371.102 53.4011 371.955 51.2164C372.861 49.0318 374.113 47.1402 375.711 45.5417C377.31 43.9432 379.148 42.7177 381.226 41.8652C383.358 41.0126 385.675 40.5863 388.18 40.5863C390.684 40.5863 393.002 41.0126 395.133 41.8652C397.265 42.7177 399.103 43.9432 400.648 45.5417C402.247 47.1402 403.472 49.0318 404.325 51.2164C405.231 53.4011 405.683 55.8255 405.683 58.4896C405.683 61.1538 405.231 63.5782 404.325 65.7628Z" fill="#1a1a2e"/>
+  <path d="M340.363 68.4861C343.986 66.8875 346.783 64.5964 348.755 61.6125C350.726 58.5753 351.712 54.9787 351.712 50.8225C351.712 46.6131 350.726 42.9899 348.755 39.9527C346.783 36.9155 343.986 34.5977 340.363 32.9992C336.739 31.3474 332.423 30.5215 327.415 30.5215H303.197V86.4693H316.145V70.8838H327.415C327.619 70.8838 327.805 70.8616 328.01 70.8594L338.764 86.4693H352.751L340.249 68.5282C340.285 68.5127 340.327 68.5016 340.363 68.4861ZM335.647 43.6293C337.618 45.3343 338.604 47.7321 338.604 50.8225C338.604 53.8597 337.618 56.2575 335.647 58.0158C333.675 59.7209 330.692 60.5734 326.695 60.5734H316.145V41.0716H326.695C330.692 41.0716 333.675 41.9242 335.647 43.6293Z" fill="#1a1a2e"/>
+  <path d="M198.867 68.4861C202.491 66.8875 205.288 64.5964 207.26 61.6125C209.231 58.5753 210.217 54.9787 210.217 50.8225C210.217 46.6131 209.231 42.9899 207.26 39.9527C205.288 36.9155 202.491 34.5977 198.867 32.9992C195.244 31.3474 190.928 30.5215 185.92 30.5215H161.702V86.4693H174.65V70.8838H185.92C186.124 70.8838 186.31 70.8616 186.515 70.8594L197.269 86.4693H211.256L198.754 68.5282C198.79 68.5127 198.832 68.5016 198.867 68.4861ZM194.152 43.6293C196.123 45.3343 197.109 47.7321 197.109 50.8225C197.109 53.8597 196.123 56.2575 194.152 58.0158C192.18 59.7209 189.196 60.5734 185.2 60.5734H174.65V41.0716H185.2C189.196 41.0716 192.18 41.9242 194.152 43.6293Z" fill="#1a1a2e"/>
+  <path d="M271.617 30.5215H257.231L232.454 56.6305V30.5215H219.586V86.4693H232.454V72.3469L239.951 64.5209L257.87 86.4693H272.976L248.455 55.4493L271.617 30.5215Z" fill="#1a1a2e"/>
+  <path d="M140.153 0.00721339L100.829 7.47358C100.463 7.5424 100.266 8.11743 100.388 8.75461L101.813 16.2565C101.935 16.8959 102.328 17.3577 102.694 17.2866L142.018 9.82028C142.384 9.75145 142.582 9.17644 142.46 8.53925L141.034 1.03736C140.912 0.397961 140.519 -0.0638314 140.153 0.00721339Z" fill="#5DEFFF"/>
+</svg>`;
+
+// Workiro CTA block as it appears at the bottom of the printable PDFs.
+// Same copy as the on-screen sponsors footer, restyled for print.
+function _workiroPdfFooterHtml() {
+  return `
+    <section class="wk-foot">
+      <div class="wk-foot-logo">${_WORKIRO_LOGO_INLINE}</div>
+      <p class="wk-foot-cta">
+        <strong>Cloud document management for UK accountants</strong> — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.
+      </p>
+      <p class="wk-foot-link"><a href="https://workiro.com">workiro.com&nbsp;→</a></p>
+      <p class="wk-foot-fineprint">This is a free planner from Workiro, built for Accountex 2026.</p>
+    </section>
+  `;
+}
+
+// Shared print stylesheet — used by both the debrief PDF and the CPD
+// log PDF so they read as one matched pair when printed together.
+function _printSharedStyles() {
+  return `
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; line-height: 1.55; margin: 1.6cm 1.8cm; color: #1a1a2e; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-eyebrow { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 9pt; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; color: #6b6b80; margin: 0 0 6px; }
+    .doc-title { font-family: Georgia, 'Iowan Old Style', serif; font-style: italic; font-weight: 500; font-size: 30pt; line-height: 1.05; letter-spacing: -0.015em; margin: 0 0 8px; color: #0a0a12; }
+    .doc-meta { font-size: 10pt; color: #6b6b80; margin: 0 0 4px; }
+    .doc-meta strong { color: #1a1a2e; font-weight: 700; }
+    .doc-divider { height: 1px; background: linear-gradient(90deg, #1a1a2e 0%, #1a1a2e 24%, transparent 100%); margin: 22px 0 24px; border: 0; }
+    .section-eyebrow { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 9.5pt; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: #0fb88a; margin: 0 0 14px; }
+    .section-eyebrow.tone-purple { color: #a855f7; }
+    .section-eyebrow.tone-pink   { color: #ff5e84; }
+    h2.section-title { font-family: Georgia, serif; font-style: italic; font-size: 20pt; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 18px; color: #0a0a12; }
+
+    /* Workiro footer */
+    .wk-foot { margin-top: 48px; padding-top: 22px; border-top: 1px solid #e0e0e8; text-align: left; page-break-inside: avoid; }
+    .wk-foot-logo { margin-bottom: 14px; }
+    .wk-foot-cta { font-size: 10.5pt; line-height: 1.55; color: #1a1a2e; margin: 0 0 10px; max-width: 480px; }
+    .wk-foot-cta strong { font-weight: 700; }
+    .wk-foot-link { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 10pt; font-weight: 700; margin: 0 0 14px; }
+    .wk-foot-link a { color: #6f3fd1; text-decoration: none; }
+    .wk-foot-fineprint { font-size: 8.5pt; color: #8a8a9c; font-style: italic; margin: 0; }
+    @media print { body { margin: 1.4cm 1.6cm; } }
+  `;
 }
 
 // ── Debrief tab ───────────────────────────────────────────────────────────────
@@ -1632,7 +1997,6 @@ function renderDebriefTab() {
   const lastName    = _userProfile?.last_name  || '';
   const company     = _userProfile?.company    || '';
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || (_authUser?.email || 'You');
-  const fromLine    = [displayName, company].filter(Boolean).join(' · ');
 
   const summaryText     = buildSummaryText();
   const heatRanked      = buildHeatRanked();
@@ -1641,60 +2005,90 @@ function renderDebriefTab() {
   const allNotes = _allNotesNow();
   const members  = _teamData?.members || [];
 
-  function memberFor(createdBy) {
-    return members.find(m => m.users?.id === createdBy);
-  }
-
   function notesFor(itemType, itemId) {
     const id = String(itemId);
-    return allNotes.filter(n => n.item_type === itemType && String(n.item_id) === id && n.note_text?.trim());
+    return allNotes
+      .filter(n => n.item_type === itemType && String(n.item_id) === id && n.note_text?.trim())
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }
 
-  function initials(u) {
-    return `${u?.first_name?.[0] || ''}${u?.last_name?.[0] || ''}`.toUpperCase() || '?';
+  // Per-rater list for an item — walks teamPlans (or the lone _plan if
+  // solo) and pulls each rater's name + rating. Powers the team-rated
+  // pill row on each debrief card so users see WHO rated WHAT.
+  function ratersFor(itemType, itemId) {
+    const plans = _teamData?.teamPlans?.length
+      ? _teamData.teamPlans
+      : (_plan ? [_plan] : []);
+    const idStr = String(itemId);
+    const out = [];
+    for (const p of plans) {
+      const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
+      const it = list.find(x => itemType === 'booth'
+        ? String(x.stand_number) === idStr
+        : String(x.session_id) === idStr);
+      if (!it || !it.rating) continue;
+      const isMe = p.user_id === _authUser?.id;
+      const member = isMe ? null : members.find(m => m.users?.id === p.user_id);
+      const name = isMe
+        ? (firstName || 'You')
+        : (member?.users?.first_name || 'Teammate');
+      out.push({ name, rating: it.rating, isMe });
+    }
+    // Self first, then alphabetical for the rest
+    out.sort((a, b) => (a.isMe ? -1 : b.isMe ? 1 : a.name.localeCompare(b.name)));
+    return out;
   }
 
-  function renderDebriefFlames(avg) {
-    const rounded = Math.round(avg);
+  // Inline 3 small flame icons — N lit, 3-N unlit. Used inside team-
+  // rated pills (10px) and the big average block (28px) via sizing
+  // overrides on the wrapping span.
+  function debriefFlames(rating, klass = '') {
     return [1, 2, 3].map(n =>
-      `<span class="flame-btn ${n <= rounded ? 'lit' : ''}" style="pointer-events:none;">${flameSvg()}</span>`
+      `<svg class="${klass} ${n <= rating ? 'lit' : ''}" viewBox="0 0 24 24" fill="${n <= rating ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2C12 2 13 5 16 8C19 11 20 13.5 20 16C20 20.4 16.4 24 12 24C7.6 24 4 20.4 4 16C4 13 6 10 8 8C8 10 9 11 10 11C11 11 11 9.5 11 7.5C11 5.5 12 3 12 2Z"/></svg>`
     ).join('');
   }
 
-  function renderHotCard(rank, title, meta, avgRating, raterCount, itemType, itemId) {
+  function renderHotCard(rank, title, meta, avgRating, raterCount, itemType, itemId, tone) {
     const notes = notesFor(itemType, itemId);
-    const noteHtml = notes.length ? `
-      <div class="debrief-hot-notes">
+    const raters = ratersFor(itemType, itemId);
+    const ratedRowHtml = raters.length ? `
+      <div class="team-rated-row tone-${tone}">
+        <span class="team-rated-caption">Team rated</span>
+        ${raters.map(r => `
+          <span class="team-rated-pill">
+            <span class="team-rated-name">${escHtml(r.name)}${r.isMe ? ' (you)' : ''}</span>
+            <span class="team-rated-flames">${debriefFlames(r.rating, 'team-rated-flame-icon')}</span>
+          </span>
+        `).join('')}
+      </div>` : '';
+    const avgHtml = raterCount > 0 ? `
+      <div class="debrief-avg tone-${tone}">
+        <div class="debrief-avg-flames">${debriefFlames(Math.round(avgRating), 'debrief-avg-flame')}</div>
+        <div class="debrief-avg-num">${avgRating.toFixed(1)}</div>
+        <div class="debrief-avg-label">Average · ${raterCount} rating${raterCount === 1 ? '' : 's'}</div>
+      </div>` : '';
+    const notesHtml = notes.length ? `
+      <div class="team-notes-block tone-${tone}">
         ${notes.map(n => {
-          const m    = memberFor(n.created_by);
-          const u    = m?.users;
-          const name = u?.first_name ? `${u.first_name} ${u.last_name || ''}`.trim() : 'Teammate';
-          const ini  = initials(u);
-          return `
-            <div class="debrief-hot-note">
-              <div class="mini-av" style="flex-shrink:0;">${escHtml(ini)}</div>
-              <div class="debrief-hot-note-body">
-                <div class="debrief-hot-note-head"><strong>${escHtml(name)}</strong></div>
-                <div class="debrief-hot-note-text">${escHtml(n.note_text)}</div>
-              </div>
-            </div>`;
+          const m = members.find(mm => mm.users?.id === n.created_by);
+          const name = m?.users?.first_name
+            || (n.created_by === _authUser?.id ? (firstName || 'You') : 'Teammate');
+          return `<p class="team-note-row"><span class="team-note-name">${escHtml(name)}:</span> ${escHtml(n.note_text)}</p>`;
         }).join('')}
       </div>` : '';
     return `
-      <div class="debrief-hot-card">
-        <div class="debrief-hot-card-head">
-          <div class="debrief-hot-rank">#${rank}</div>
-          <div class="debrief-hot-main">
-            <div class="debrief-hot-title">${escHtml(title)}</div>
-            <div class="debrief-hot-meta">${escHtml(meta)}</div>
-          </div>
-          <div class="debrief-hot-rating">
-            ${raterCount > 0 ? renderDebriefFlames(avgRating) : ''}
-            <div class="debrief-hot-count">${raterCount > 0 ? `${raterCount} rated` : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}</div>
+      <article class="debrief-card tone-${tone}">
+        <div class="debrief-card-head">
+          <div class="debrief-card-rank">#${rank}</div>
+          <div class="debrief-card-main">
+            <h4 class="debrief-card-title">${escHtml(title)}</h4>
+            <div class="debrief-card-meta">${escHtml(meta)}</div>
           </div>
         </div>
-        ${noteHtml}
-      </div>`;
+        ${ratedRowHtml}
+        ${avgHtml}
+        ${notesHtml}
+      </article>`;
   }
 
   const sessionCards = heatRanked.map(({ session: s, avgRating, raterCount }, i) => {
@@ -1703,72 +2097,65 @@ function renderDebriefTab() {
       s.theatre || '',
       s.start_time || '',
     ].filter(Boolean).join(' · ');
-    return renderHotCard(i + 1, s.title, meta, avgRating, raterCount, 'session', s.session_id);
+    return renderHotCard(i + 1, s.title, meta, avgRating, raterCount, 'session', s.session_id, 'mint');
   }).join('');
 
   const boothCards = boothHeatRanked.map(({ booth: b, avgRating, raterCount }, i) => {
     const meta = `Stand ${b.stand_number}`;
-    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number);
+    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number, 'purple');
   }).join('');
 
-  const isTeam = !!(_plan?.team_id);
   return `
-    ${inviteNudgeHtml('debrief', isTeam)}
     <div class="app-section">
-      <div class="team-section-eyebrow tone-pink">The summary</div>
-      <h3 class="team-section-title">Your Accountex, <em>distilled.</em></h3>
-      <p class="team-section-lede">Action items first. Copy, email, or save as PDF.</p>
-      <div class="email-draft">
-        <div class="email-draft-header">
-          <div class="email-draft-row">
-            <div class="email-draft-label">From</div>
-            <div class="email-draft-value">${escHtml(fromLine)}</div>
-          </div>
-          <div class="email-draft-row">
-            <div class="email-draft-label">For</div>
-            <div class="email-draft-value">Share with partners, the team, or keep for yourself</div>
-          </div>
-        </div>
-        <textarea class="email-draft-body" id="debrief-textarea" spellcheck="false">${escHtml(summaryText)}</textarea>
-      </div>
-      <div class="debrief-actions">
-        <button class="debrief-btn secondary" onclick="planCopyDebrief(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Copy to clipboard
-        </button>
-        <button class="debrief-btn secondary" onclick="planEmailDebrief()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-          Email this
-        </button>
-        <button class="debrief-btn primary" onclick="planDownloadDebrief()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download as PDF
-        </button>
-      </div>
-    </div>
-
-    <div class="app-section">
-      <div class="team-section-eyebrow tone-pink">
+      <div class="team-section-eyebrow tone-mint">
         ${flameSvg()}
         Hot sessions
       </div>
-      <h3 class="team-section-title">Top-rated <em>by you and your team.</em></h3>
+      <h3 class="team-section-title team-section-title-xl">Top-rated <em class="tone-mint">sessions</em> by you and your team.</h3>
+      <p class="team-section-lede">Every session your team rated, ranked by average heat — with each teammate's full notes.</p>
       ${heatRanked.length
         ? `<div class="debrief-hot-list">${sessionCards}</div>`
         : `<div class="debrief-empty">Sessions appear here once you rate them during the show.</div>`}
     </div>
 
     <div class="app-section">
-      <div class="team-section-eyebrow tone-pink">
+      <div class="team-section-eyebrow tone-purple">
         ${flameSvg()}
         Hot booths
       </div>
-      <h3 class="team-section-title">Vendors <em>worth a follow-up.</em></h3>
+      <h3 class="team-section-title team-section-title-xl">Top-rated <em>booths</em> by you and your team.</h3>
+      <p class="team-section-lede">Every booth your team rated, ranked by average heat — with each teammate's full notes.</p>
       ${boothHeatRanked.length
         ? `<div class="debrief-hot-list">${boothCards}</div>`
         : `<div class="debrief-empty">Booths appear here once you rate them during the show.</div>`}
     </div>
 
+    <div class="app-section debrief-summary-section">
+      <div class="team-section-eyebrow tone-pink">The whole event in one PDF</div>
+      <h3 class="team-section-title team-section-title-xl">Every rating, every note — <em>one click.</em></h3>
+      <p class="team-section-lede">Every session you rated, every booth you flagged, every note your team left — pulled into a <em>clean, ready-to-share debrief PDF.</em> No copy-paste. No formatting. Just done.</p>
+      <details class="debrief-summary-details">
+        <summary>
+          <span>Preview the debrief</span>
+          <svg class="debrief-summary-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <textarea class="email-draft-body" id="debrief-textarea" spellcheck="false">${escHtml(summaryText)}</textarea>
+      </details>
+      <div class="debrief-actions">
+        <button class="debrief-btn primary" onclick="planDownloadDebrief()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+        <button class="debrief-btn secondary" onclick="planEmailDebrief()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Email
+        </button>
+        <button class="debrief-btn secondary" onclick="planCopyDebrief(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
   `;
 }
 
@@ -2266,18 +2653,121 @@ window.togglePlanBooth = async function(standNumber) {
 
 // ── Sponsors footer ───────────────────────────────────────────────────────────
 
-function sponsorsFooterHtml() {
+// Per-sponsor "pains we solve" mapping. Pain labels match the
+// humanised strings stored in plan.problem (PAIN_LABELS in wizard.js).
+// Category slugs match plan.categories. If a user's onboarding has
+// nothing in common with a sponsor, the pains-we-solve block is hidden
+// for that card — we don't fake relevance.
+const SPONSOR_SOLVES = {
+  workiro: {
+    name: 'Workiro',
+    painLabels: [
+      'Document chaos', 'Audit-ready client files', 'Portal adoption / clients hate it',
+      'AML / KYC pressure', 'Chasing clients for records', 'Cyber threats / phishing',
+      'FRS 102 transition', 'Disconnected tech stack',
+    ],
+    categories: [
+      'doc-mgmt', 'doc-management', 'portals-esign', 'aml-onboarding', 'practice-mgmt',
+      'practice-management', 'cyber', 'cyber-security',
+    ],
+  },
+  xu: {
+    name: 'XU Magazine',
+    painLabels: [
+      'AI — where to even start', 'Data mess blocking AI', 'AI — proving the ROI',
+      'AI — team adoption', 'AI skills gap', 'AI governance & risk',
+      'Disconnected tech stack', 'Stuck in compliance',
+    ],
+    categories: [
+      'cloud-accounting', 'ai-automation', 'practice-mgmt', 'practice-management',
+      'tax-mtd', 'forecasting', 'reporting', 'data-analytics',
+    ],
+  },
+};
+function _matchSponsorRelevance(sponsorKey, plan) {
+  const sp = SPONSOR_SOLVES[sponsorKey];
+  if (!sp || !plan) return { pains: [], cats: [] };
+  const userPains = (plan.problem || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
+  const userCats  = plan.categories || [];
+  const lc = (s) => s.toLowerCase();
+  const matchedPains = userPains.filter(p =>
+    sp.painLabels.some(want => lc(want) === lc(p))
+  );
+  const matchedCats = userCats.filter(c => sp.categories.includes(c));
+  return { pains: matchedPains, cats: matchedCats };
+}
+
+// "Also felt by" — for a given sponsor, lists OTHER teammates whose
+// onboarding answers also overlap with the sponsor's solve list.
+// Only computed when the team has 2+ members. Returns user objects
+// from _teamData.members so we can render avatar + first name.
+function _sponsorFeltBy(sponsorKey) {
+  if (!_teamData) return [];
+  if ((_teamData.members?.length ?? 0) < 2) return [];
+  const sp = SPONSOR_SOLVES[sponsorKey];
+  if (!sp) return [];
+  const lc = (s) => (s || '').toLowerCase();
+  const wantPains = new Set(sp.painLabels.map(lc));
+  const wantCats  = new Set(sp.categories);
+  const out = [];
+  for (const tp of (_teamData.teamPlans || [])) {
+    if (tp.user_id === _authUser?.id) continue;
+    const member = _teamData.members.find(m => m.users?.id === tp.user_id);
+    if (!member?.users) continue;
+    const tpPains = (tp.problem || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
+    const overlap = tpPains.some(p => wantPains.has(lc(p)))
+                 || (tp.categories || []).some(c => wantCats.has(c));
+    if (overlap) out.push(member.users);
+  }
+  return out;
+}
+
+function _renderSponsorPainsBlock(sponsorKey, plan) {
+  const { pains, cats } = _matchSponsorRelevance(sponsorKey, plan);
+  if (!pains.length && !cats.length) return '';
+  const painPills = pains.map(p =>
+    `<span class="sponsor-help-pill pain">${escHtml(p)}</span>`).join('');
+  const catPills = cats.map(c =>
+    `<span class="sponsor-help-pill cat">${escHtml(CATEGORY_LABELS[c] || c)}</span>`).join('');
+  const feltBy = _sponsorFeltBy(sponsorKey);
+  const feltByHtml = feltBy.length ? `
+    <div class="sponsor-card-felt-by">
+      <span class="sponsor-felt-label">Also felt by</span>
+      <div class="sponsor-felt-list">
+        ${feltBy.map((u, i) => `
+          <span class="sponsor-felt-pill">
+            <span class="mini-av t${(i % 4) + 1}">${escHtml((u.first_name?.[0] || '?').toUpperCase())}</span>
+            <span class="sponsor-felt-name">${escHtml(u.first_name || 'Teammate')}</span>
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+  return `
+    <div class="sponsor-card-relevance">
+      <div class="sponsor-card-relevance-label">What we can help with</div>
+      <div class="sponsor-card-relevance-pills">${painPills}${catPills}</div>
+      ${feltByHtml}
+    </div>
+  `;
+}
+
+function sponsorsFooterHtml(plan = _plan) {
   return `
     <section class="sponsors-footer" style="max-width:760px;">
-      <h2 class="sponsors-footer-heading">This <em>free Game Plan</em> is brought to you by</h2>
+      <h2 class="sponsors-footer-heading">This free Accountex 2026 Planner <em>is brought to you by:</em></h2>
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">
             <img src="/images/workiro-logo.svg" alt="Workiro">
           </div>
-          <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
+          <p class="sponsor-card-desc">
+            Cloud document management for UK accountants — trusted by 65,000+ professionals.
+            <span class="sponsor-card-booth">Come visit us at booth <strong>1144</strong>.</span>
+          </p>
+          ${_renderSponsorPainsBlock('workiro', plan)}
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-            workiro.com
+            Visit workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
@@ -2285,16 +2775,32 @@ function sponsorsFooterHtml() {
           <div class="sponsor-card-logo">
             <img src="/images/XU%20Magazine.webp" alt="XU Magazine">
           </div>
-          <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
+          <p class="sponsor-card-desc">
+            The independent news source for accounting app users.
+            <span class="sponsor-card-booth">Come visit us at booth <strong>510</strong>.</span>
+          </p>
+          ${_renderSponsorPainsBlock('xu', plan)}
           <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-            xumagazine.com
+            Visit xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
       </div>
     </section>
+
+    <div class="autoevent-foot">
+      <div class="autoevent-foot-line">
+        <span class="autoevent-foot-label">Powered by</span>
+        <img class="autoevent-foot-logo" src="/images/AutoEvent.svg" alt="AutoEvent">
+        <span class="autoevent-foot-built">— a free tool by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></span>
+      </div>
+      <div class="autoevent-foot-cta">
+        Want one of these for your next event? <a href="/" target="_blank" rel="noopener">About AutoEvent →</a>
+      </div>
+    </div>
+
     <div class="hero-page-footer">
-      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+      Free · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
     </div>
   `;
 }
@@ -2386,27 +2892,14 @@ function renderApp() {
   }
 }
 
-const _teamFooterHtml = `
-    <div class="hero-page-footer">
-      Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
-    </div>
-    <div class="sponsors-footer" style="border-top:none;">
-      <div class="sponsors-footer-label">BROUGHT TO YOU BY</div>
-      <div class="sponsors-strip-logos" style="justify-content:center;margin-top:8px;">
-        <img class="sponsor-img workiro-img" src="/images/workiro-logo.svg" alt="Workiro">
-        <img class="sponsor-img xu-img" src="/images/XU%20Magazine.webp" alt="XU Magazine">
-      </div>
-    </div>
-  `;
-
 function renderCurrentTab() {
-  const footer = sponsorsFooterHtml();
+  const footer = sponsorsFooterHtml(_plan);
   switch (_currentTab) {
-    case 'checklist': return renderChecklistTab();
-    case 'team':      return renderTeamTab() + _teamFooterHtml;
-    case 'cpd':       return renderCpdTab() + footer;
-    case 'debrief':   return renderDebriefTab() + footer;
-    default:          return renderChecklistTab();
+    case 'checklist': return renderChecklistTab() + footer;
+    case 'team':      return renderTeamTab()      + footer;
+    case 'cpd':       return renderCpdTab()       + footer;
+    case 'debrief':   return renderDebriefTab()   + footer;
+    default:          return renderChecklistTab() + footer;
   }
 }
 
@@ -2642,7 +3135,7 @@ async function handleSignIn(authUser, teamToken) {
             lead_user_id: authUser.id,
             company:      userRow?.company || null,
             invite_token: crypto.randomUUID(),
-            max_members:  8,
+            max_members:  12,
           })
           .select('id, invite_token')
           .single();
@@ -2769,27 +3262,270 @@ function showLoading(show) {
 
 // ── Debrief PDF helper ────────────────────────────────────────────────────────
 
-function buildPrintHtml(text, name, company) {
-  const header = [name, company].filter(Boolean).join(' · ') || 'Accountex 2026';
-  const escaped = text
+// Rich, structured debrief PDF — built directly from plan + team
+// data (not the textarea, which is the plain-text email/copy variant).
+// Adds a stats strip, bold per-rater pills, author-bold notes, and the
+// Workiro footer block. Page-break-inside: avoid keeps each session/
+// booth card from splitting awkwardly across pages.
+function buildPrintHtml() {
+  const firstName = _userProfile?.first_name || '';
+  const lastName  = _userProfile?.last_name  || '';
+  const company   = _userProfile?.company    || '';
+  const userName  = [firstName, lastName].filter(Boolean).join(' ');
+  const headerLine = [userName, company].filter(Boolean).join(' · ') || 'Accountex 2026';
+
+  const esc = (str) => String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // ── Source data ───────────────────────────────────────────────────
+  const heatRanked      = buildHeatRanked();
+  const boothHeatRanked = buildBoothHeatRanked();
+  const allNotes  = _allNotesNow().filter(n => n.note_text?.trim());
+  const members   = _teamData?.members || [];
+  const teamPlans = _teamData?.teamPlans || [];
+
+  const authorOf = (id) => {
+    if (!id) return '';
+    if (id === _authUser?.id) return userName || 'You';
+    const m = members.find(mm => mm.users?.id === id);
+    return m?.users?.first_name || 'Teammate';
+  };
+
+  // Per-rater list (mirrors the on-screen `ratersFor` in the debrief tab).
+  function ratersFor(itemType, itemId) {
+    const plans = teamPlans.length ? teamPlans : (_plan ? [_plan] : []);
+    const idStr = String(itemId);
+    const out = [];
+    for (const p of plans) {
+      const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
+      const it = list.find(x => itemType === 'booth'
+        ? String(x.stand_number) === idStr
+        : String(x.session_id) === idStr);
+      if (!it || !it.rating) continue;
+      const isMe = p.user_id === _authUser?.id;
+      const member = isMe ? null : members.find(mm => mm.users?.id === p.user_id);
+      const name = isMe ? (firstName || 'You')
+                        : (member?.users?.first_name || 'Teammate');
+      out.push({ name, rating: it.rating, isMe });
+    }
+    out.sort((a, b) => (a.isMe ? -1 : b.isMe ? 1 : a.name.localeCompare(b.name)));
+    return out;
+  }
+
+  function notesFor(itemType, itemId) {
+    const id = String(itemId);
+    return allNotes
+      .filter(n => n.item_type === itemType && String(n.item_id) === id)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  const flames = (n) => '●'.repeat(n) + '○'.repeat(Math.max(0, 3 - n));
+
+  function slotLine(s) {
+    let datePart = '';
+    if (s.date) {
+      const m = /^(\d{1,2})-([A-Za-z]+)-\d+$/.exec(s.date);
+      if (m) {
+        const dow = s.day === 'Day 1' ? 'Wed' : 'Thu';
+        datePart = `${dow} ${parseInt(m[1], 10)} ${m[2]}`;
+      }
+    }
+    if (!datePart) datePart = s.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
+    const time = s.start_time && s.end_time
+      ? `${s.start_time}–${s.end_time}`
+      : (s.start_time || '');
+    return [datePart, time, s.theatre].filter(Boolean).join(' · ');
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────
+  const sessionsInPlan = (_plan?.sessions || []).length;
+  const boothsInPlan   = (_plan?.booths   || []).length;
+  const cpdHours       = (sessionsInPlan * (40/60)).toFixed(1);
+  const ratedItems     = heatRanked.length + boothHeatRanked.length;
+  const noteCount      = allNotes.length;
+  const allAvgs        = [...heatRanked, ...boothHeatRanked].map(h => h.avgRating);
+  const overallAvg     = allAvgs.length
+    ? (allAvgs.reduce((a,b)=>a+b,0) / allAvgs.length).toFixed(1)
+    : '—';
+
+  const statTile = (num, label) => `
+    <div class="stat-tile">
+      <div class="stat-num">${esc(String(num))}</div>
+      <div class="stat-label">${esc(label)}</div>
+    </div>`;
+
+  const statsHtml = `
+    <div class="stats-strip">
+      ${statTile(cpdHours, 'CPD hours')}
+      ${statTile(ratedItems, 'Rated')}
+      ${statTile(noteCount, 'Notes captured')}
+      ${statTile(overallAvg, 'Average score')}
+    </div>`;
+
+  // ── Mission ───────────────────────────────────────────────────────
+  const missionHtml = _plan?.problem ? `
+    <section class="block">
+      <div class="section-eyebrow tone-pink">Your mission</div>
+      <blockquote class="mission-quote">${esc(_plan.problem)}</blockquote>
+    </section>
+    <hr class="doc-divider">` : '';
+
+  // ── Top sessions / vendors ────────────────────────────────────────
+  function rankCard(rank, title, meta, raters, avgRating, raterCount, notes, tone) {
+    const rated = raters.length ? `
+      <div class="rater-row">
+        ${raters.map(r => `
+          <span class="rater-pill rater-pill--${tone}">
+            <strong>${esc(r.name)}${r.isMe ? ' (you)' : ''}</strong>
+            <span class="rater-flames">${flames(r.rating)}</span>
+          </span>
+        `).join('')}
+      </div>` : '';
+    const avg = raterCount > 0 ? `
+      <div class="avg-block avg-block--${tone}">
+        <div class="avg-flames">${flames(Math.round(avgRating))}</div>
+        <div class="avg-num">${avgRating.toFixed(1)}</div>
+        <div class="avg-label">Average · ${raterCount} rating${raterCount === 1 ? '' : 's'}</div>
+      </div>` : '';
+    const notesHtml = notes.length ? `
+      <div class="notes-block notes-block--${tone}">
+        ${notes.map(n => `
+          <p class="note-row"><strong class="note-author note-author--${tone}">${esc(authorOf(n.created_by))}:</strong> ${esc(n.note_text)}</p>
+        `).join('')}
+      </div>` : '';
+    return `
+      <article class="rank-card">
+        <div class="rank-card-head">
+          <div class="rank-num rank-num--${tone}">#${rank}</div>
+          <div class="rank-card-main">
+            <h3 class="rank-card-title">${esc(title)}</h3>
+            <div class="rank-card-meta">${esc(meta)}</div>
+          </div>
+        </div>
+        ${rated}
+        ${avg}
+        ${notesHtml}
+      </article>`;
+  }
+
+  const sessionsSection = heatRanked.length ? `
+    <section class="block">
+      <div class="section-eyebrow">Top-rated sessions</div>
+      <h2 class="section-title">By you and your team</h2>
+      ${heatRanked.map((h, i) => {
+        const s = h.session;
+        return rankCard(
+          i + 1,
+          s.title || 'Session',
+          slotLine(s),
+          ratersFor('session', s.session_id),
+          h.avgRating,
+          h.raterCount,
+          notesFor('session', s.session_id),
+          'mint',
+        );
+      }).join('')}
+    </section>` : '';
+
+  const boothsSection = boothHeatRanked.length ? `
+    <section class="block">
+      <div class="section-eyebrow tone-purple">Top-rated booths</div>
+      <h2 class="section-title">Vendors worth a follow-up</h2>
+      ${boothHeatRanked.map((h, i) => {
+        const b = h.booth;
+        return rankCard(
+          i + 1,
+          b.company_name || 'Vendor',
+          `Stand ${b.stand_number}`,
+          ratersFor('booth', b.stand_number),
+          h.avgRating,
+          h.raterCount,
+          notesFor('booth', b.stand_number),
+          'purple',
+        );
+      }).join('')}
+    </section>` : '';
+
+  const emptyState = (!heatRanked.length && !boothHeatRanked.length) ? `
+    <p class="empty-state">Rate sessions and vendors on the Checklist tab — your debrief will fill in here.</p>` : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Accountex 2026 Debrief</title>
+<title>Accountex 2026 Debrief — ${esc(headerLine)}</title>
 <style>
-  body { font-family: Georgia, serif; font-size: 13pt; line-height: 1.7; margin: 2cm 2.5cm; color: #111; }
-  h1 { font-size: 18pt; margin: 0 0 4px; }
-  .meta { font-size: 10pt; color: #666; margin-bottom: 28px; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
-  pre { font-family: inherit; white-space: pre-wrap; word-break: break-word; margin: 0; }
-  @media print { body { margin: 1.5cm 2cm; } }
+  ${_printSharedStyles()}
+  /* Stats strip */
+  .stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0 26px; page-break-inside: avoid; }
+  .stat-tile { border: 1px solid #e0e0e8; border-radius: 8px; padding: 14px 14px 12px; background: #f8f8fb; }
+  .stat-num { font-family: Georgia, serif; font-style: italic; font-weight: 600; font-size: 22pt; line-height: 1; color: #0fb88a; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .stat-tile:nth-child(2) .stat-num { color: #6f3fd1; }
+  .stat-tile:nth-child(3) .stat-num { color: #1a1a2e; }
+  .stat-tile:nth-child(4) .stat-num { color: #d3506f; }
+  .stat-label { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #6b6b80; }
+
+  /* Mission */
+  .mission-quote { margin: 0; padding: 14px 18px; background: rgba(255,94,132,0.05); border-left: 3px solid #ff5e84; font-size: 12pt; color: #1a1a2e; font-style: italic; line-height: 1.5; border-radius: 0 6px 6px 0; }
+
+  /* Rank cards */
+  .block { margin-bottom: 28px; }
+  .rank-card { padding: 16px 18px; border: 1px solid #e0e0e8; border-radius: 10px; margin-bottom: 14px; page-break-inside: avoid; background: #fff; }
+  .rank-card-head { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; margin-bottom: 12px; }
+  .rank-num { font-family: Georgia, serif; font-style: italic; font-weight: 600; font-size: 30pt; line-height: 1; letter-spacing: -0.04em; min-width: 48px; text-align: center; }
+  .rank-num--mint   { color: #0fb88a; }
+  .rank-num--purple { color: #6f3fd1; }
+  .rank-card-title { margin: 0 0 4px; font-family: Georgia, serif; font-weight: 700; font-size: 13.5pt; letter-spacing: -0.01em; line-height: 1.3; color: #0a0a12; }
+  .rank-card-meta { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8.5pt; letter-spacing: 0.10em; text-transform: uppercase; color: #6b6b80; font-weight: 700; }
+
+  /* Per-rater pills */
+  .rater-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding-top: 10px; border-top: 1px dashed #e8e8ef; }
+  .rater-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 9.5pt; line-height: 1.4; }
+  .rater-pill strong { font-weight: 700; }
+  .rater-pill--mint   { background: rgba(34,230,168,0.10); border: 1px solid rgba(15,184,138,0.30); }
+  .rater-pill--mint strong   { color: #0fb88a; }
+  .rater-pill--purple { background: rgba(168,85,247,0.08); border: 1px solid rgba(111,63,209,0.28); }
+  .rater-pill--purple strong { color: #6f3fd1; }
+  .rater-flames { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.10em; color: #d3506f; font-weight: 700; }
+
+  /* Avg block */
+  .avg-block { display: flex; align-items: baseline; gap: 12px; padding: 10px 14px; border-radius: 8px; margin: 0 0 10px; }
+  .avg-block--mint   { background: rgba(34,230,168,0.08); }
+  .avg-block--purple { background: rgba(168,85,247,0.07); }
+  .avg-flames { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 11pt; letter-spacing: 0.06em; color: #d3506f; font-weight: 700; }
+  .avg-num { font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 18pt; line-height: 1; letter-spacing: -0.02em; }
+  .avg-block--mint   .avg-num { color: #0fb88a; }
+  .avg-block--purple .avg-num { color: #6f3fd1; }
+  .avg-label { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 8pt; letter-spacing: 0.10em; text-transform: uppercase; font-weight: 700; color: #6b6b80; margin-left: auto; }
+
+  /* Notes */
+  .notes-block { padding: 10px 14px; border-radius: 8px; }
+  .notes-block--mint   { background: rgba(34,230,168,0.05); border: 1px solid rgba(15,184,138,0.18); }
+  .notes-block--purple { background: rgba(168,85,247,0.04); border: 1px solid rgba(111,63,209,0.18); }
+  .note-row { font-size: 10.5pt; line-height: 1.5; margin: 0 0 6px; color: #1a1a2e; }
+  .note-row:last-child { margin: 0; }
+  .note-author { font-weight: 700; margin-right: 4px; }
+  .note-author--mint   { color: #0fb88a; }
+  .note-author--purple { color: #6f3fd1; }
+
+  .empty-state { padding: 32px 24px; background: #f8f8fb; border-radius: 8px; color: #6b6b80; font-style: italic; text-align: center; }
 </style>
 </head>
 <body>
-<h1>Accountex 2026 — Debrief</h1>
-<div class="meta">${header}</div>
-<pre>${escaped}</pre>
+<div class="doc-eyebrow">Accountex 2026 · Debrief</div>
+<h1 class="doc-title">Your debrief.</h1>
+<p class="doc-meta">Generated for <strong>${esc(headerLine)}</strong></p>
+${statsHtml}
+
+<hr class="doc-divider">
+
+${missionHtml}
+${sessionsSection}
+${boothsSection}
+${emptyState}
+
+${_workiroPdfFooterHtml()}
+
 <script>window.onload = function() { window.print(); };<\/script>
 </body>
 </html>`;
@@ -3023,10 +3759,7 @@ window.planEmailDebrief = function() {
 };
 
 window.planDownloadDebrief = function() {
-  const ta      = document.getElementById('debrief-textarea');
-  const name    = [_userProfile?.first_name, _userProfile?.last_name].filter(Boolean).join(' ');
-  const company = _userProfile?.company || '';
-  const html = buildPrintHtml(ta ? ta.value : '', name, company);
+  const html = buildPrintHtml();
   const blob = new Blob([html], { type: 'text/html' });
   const url  = URL.createObjectURL(blob);
   const win  = window.open(url, '_blank');
@@ -3317,6 +4050,20 @@ window.planMakeSlotFreeTime = function(sessionId) {
   renderApp();
 };
 
+// Routes the in-card × through the in-app confirm modal so the user
+// gets a clear "are you sure?" before the RPC fires. Note: any team
+// member can remove any other (including the lead) — that's how the
+// remove_team_member SECURITY DEFINER function is written.
+window.planConfirmRemoveTeamMember = function(userId, name) {
+  planShowConfirm({
+    title: 'Remove from team',
+    body: `Remove <strong>${escHtml(name || 'this teammate')}</strong> from your team workspace? They'll lose access to the team's plan, notes, and ratings. They can rejoin if you re-invite them.`,
+    confirmLabel: 'Remove',
+    confirmTone: 'danger',
+    onConfirm: () => window.planRemoveTeamMember(userId),
+  });
+};
+
 window.planRemoveTeamMember = async function(userId) {
   const { data, error } = await supabase.rpc('remove_team_member', { p_user_id: userId });
   if (error || data?.error) {
@@ -3331,43 +4078,72 @@ window.planRemoveTeamMember = async function(userId) {
   renderApp();
 };
 
-window.planSendInvite = async function() {
-  const input  = document.getElementById('team-invite-email');
+// Shared markup for the send button — body of innerHTML reused after
+// resetting the .sending state. Keep in sync with the inline render.
+const _SEND_INVITE_BTN_HTML = `<svg class="team-invite-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6 12 13 2 6"/></svg><span class="team-invite-send-label">Send invite</span>`;
+
+// Core send routine — runs both the initial Send and the Resend path.
+// Resend skips reading the input (email comes from the pending list),
+// so we don't disturb whatever the user has typed for the next invite.
+async function _sendTeamInvite(email, opts = {}) {
   const status = document.getElementById('team-invite-status');
   const btn    = document.querySelector('.team-invite-send-btn');
-  const email  = (input?.value || '').trim().toLowerCase();
 
   if (!email || !email.includes('@') || !email.includes('.')) {
     if (status) { status.textContent = 'Please enter a valid email address.'; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
   if (email === _authUser?.email) {
     if (status) { status.textContent = 'That\'s your own email address.'; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
   if (!_teamData?.inviteToken) {
     if (status) { status.textContent = 'Team not ready yet — please try again.'; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
 
-  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  if (opts.fromInputBtn && btn) {
+    btn.disabled = true;
+    btn.classList.add('sending');
+    btn.innerHTML = `<span class="team-invite-send-label">Sending…</span>`;
+  }
 
   const redirectTo = `${window.location.origin}/magic-link-confirm/?team=${_teamData.inviteToken}&`;
   const { error } = await sendMagicLink(email, redirectTo);
 
-  if (btn) {
+  if (opts.fromInputBtn && btn) {
     btn.disabled = false;
-    btn.innerHTML = 'Send invite <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+    btn.classList.remove('sending');
+    btn.innerHTML = _SEND_INVITE_BTN_HTML;
   }
 
   if (error) {
     if (status) { status.textContent = `Could not send invite: ${error.message}`; status.className = 'team-invite-status error'; }
-    return;
+    return false;
   }
 
-  if (input) input.value = '';
-  if (status) { status.textContent = `Invite sent to ${email}`; status.className = 'team-invite-status success'; }
+  rememberPendingInvite(email);
+  if (status) { status.textContent = `${opts.resend ? 'Resent' : 'Invite sent'} to ${email}`; status.className = 'team-invite-status success'; }
   setTimeout(() => { if (status) status.textContent = ''; }, 5000);
+  return true;
+}
+
+window.planSendInvite = async function() {
+  const input = document.getElementById('team-invite-email');
+  const email = (input?.value || '').trim().toLowerCase();
+  const ok = await _sendTeamInvite(email, { fromInputBtn: true });
+  if (ok && input) input.value = '';
+  if (ok) renderApp(); // refresh so the new pending row appears
+};
+
+window.planResendInvite = async function(email) {
+  const ok = await _sendTeamInvite(email, { resend: true });
+  if (ok) renderApp(); // bumps the "sent X ago" timestamp + reorders
+};
+
+window.planCancelPendingInvite = function(email) {
+  forgetPendingInvite(email);
+  renderApp();
 };
 
 // ── Demo mode (no auth, no DB) ────────────────────────────────────────────────
@@ -3482,11 +4258,11 @@ async function initDemoMode() {
       inviteToken: 'demo-invite-token',
       members: [
         { role: 'lead',   joined_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-          users: { id: 'demo-user', first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' } },
+          users: { id: 'demo-user', first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd', email: 'demo@autoevent.io' } },
         { role: 'member', joined_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-          users: { id: 'demo-sarah', first_name: 'Sarah', last_name: 'Reid', company: 'Demo Firm Ltd' } },
+          users: { id: 'demo-sarah', first_name: 'Sarah', last_name: 'Reid', company: 'Demo Firm Ltd', email: 'sarah@demofirm.co.uk' } },
         { role: 'member', joined_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-          users: { id: 'demo-james', first_name: 'James', last_name: 'O’Connor', company: 'Demo Firm Ltd' } },
+          users: { id: 'demo-james', first_name: 'James', last_name: 'O’Connor', company: 'Demo Firm Ltd', email: 'james@demofirm.co.uk' } },
       ],
       teamPlans: [
         _plan,

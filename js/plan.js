@@ -557,7 +557,7 @@ const NOTE_CHIPS_BOOTH = [
   { emoji: '📅', label: 'Need demo' },
   { emoji: '👤', label: 'Send to partner' },
 ];
-const NOTE_HINT = 'Notes and ratings visible across teammates you add';
+const NOTE_HINT = 'Notes & ratings visible across your team';
 
 function _renderNotePanel(panel, noteId, savedText) {
   if (savedText) {

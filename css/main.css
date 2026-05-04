@@ -8360,6 +8360,10 @@ button.app-pill.purple.clickable:hover {
   margin-bottom: 10px;
   font-variation-settings: 'SOFT' 50;
 }
+.slot-swap-modal .login-modal-title {
+  font-size: clamp(28px, 3.6vw, 36px);
+  line-height: 1.1;
+}
 .login-modal-title em {
   font-style: italic;
   background: var(--grad);

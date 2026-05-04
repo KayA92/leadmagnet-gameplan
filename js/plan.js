@@ -799,11 +799,15 @@ function renderChecklistTab() {
       <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
         <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(String(item.stand_number))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
+            <button class="checklist-time-swap variant-booth" onclick="openPlanEditor('booths')" type="button" aria-label="Edit booths">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              Swap
+            </button>
           </div>
           <div class="checklist-main">
             <div class="checklist-main-title">${escHtml(item.company_name)}</div>
@@ -1747,9 +1751,30 @@ function _ensurePlanEditorOverlay() {
         </div>
         <div class="plan-editor-results" id="planEditorResults"></div>
       </div>
+      <div class="plan-editor-floating-bar" id="planEditorFloatingBar">
+        <button class="plan-editor-floating-btn" onclick="planEditorScrollTop()" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          Back to top
+        </button>
+        <button class="plan-editor-floating-btn close" onclick="closePlanEditor()" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Close
+        </button>
+      </div>
     </div>`;
-  document.body.appendChild(el.firstElementChild);
+  const overlay = el.firstElementChild;
+  document.body.appendChild(overlay);
+  // Reveal the floating bar once the user has scrolled past 480px inside
+  // the modal. The overlay is the scroll container — listen there.
+  overlay.addEventListener('scroll', () => {
+    overlay.classList.toggle('scrolled', overlay.scrollTop > 480);
+  }, { passive: true });
 }
+
+window.planEditorScrollTop = function() {
+  const overlay = document.getElementById('planEditorOverlay');
+  if (overlay) overlay.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 let _planEditorEscHandler = null;
 
@@ -1776,6 +1801,9 @@ window.openPlanEditor = function(mode) {
   }
   if (search) search.value = '';
 
+  // Drives the booth-purple theme (vs the default mint for sessions) via
+  // CSS .plan-editor-overlay[data-mode="booths"] selectors.
+  overlay.dataset.mode = mode;
   overlay.classList.add('open');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
@@ -1805,6 +1833,7 @@ window.openPlanEditorWithProblem = function(cat) {
   sub.textContent = `${(_plan?.sessions || []).length} in your plan · ${(_allSessions || []).length} available`;
   if (search) search.value = '';
 
+  overlay.dataset.mode = 'sessions';
   overlay.classList.add('open');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';

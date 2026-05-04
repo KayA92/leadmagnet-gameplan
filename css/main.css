@@ -2969,6 +2969,108 @@ button.app-pill.purple.clickable:hover {
   border-color: var(--mint);
 }
 
+/* ── Booth-mode editor: purple theme override ──────────────────────────
+   When the editor opens with mode="booths", swap mint utility accents
+   for purple (matches booth colour identity throughout the app). Sessions
+   editor stays mint. */
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.out {
+  border-color: rgba(168,85,247,0.50);
+  color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.out:hover {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.in {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.50);
+  color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row-toggle.in:hover {
+  background: rgba(168,85,247,0.22);
+  border-color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .editor-row.in-plan {
+  background: rgba(168,85,247,0.06);
+  border-color: rgba(168,85,247,0.30);
+  box-shadow: 0 0 16px rgba(168,85,247,0.10);
+}
+.plan-editor-overlay[data-mode="booths"] .search-input:focus {
+  border-color: rgba(168,85,247,0.55);
+  box-shadow: 0 0 0 4px rgba(168,85,247,0.10);
+}
+
+/* ── Floating bottom bar — appears once user scrolls past 480px inside
+   the editor modal. Quick "Back to top" + "Close" affordances so they
+   don't have to scroll all the way back up. ────────────────────────── */
+.plan-editor-floating-bar {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  z-index: 240;
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(15,15,22,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--ink-3);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.plan-editor-overlay.scrolled .plan-editor-floating-bar {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.plan-editor-floating-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: rgba(34,230,168,0.10);
+  border: 1px solid rgba(34,230,168,0.40);
+  color: var(--mint);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.plan-editor-floating-btn:hover {
+  background: rgba(34,230,168,0.20);
+  border-color: var(--mint);
+}
+.plan-editor-floating-btn.close {
+  background: rgba(255,94,132,0.10);
+  border-color: rgba(255,94,132,0.40);
+  color: var(--pink);
+}
+.plan-editor-floating-btn.close:hover {
+  background: rgba(255,94,132,0.20);
+  border-color: var(--pink);
+}
+/* Booth-mode: Back-to-top button picks up the purple too */
+.plan-editor-overlay[data-mode="booths"] .plan-editor-floating-btn:not(.close) {
+  background: rgba(168,85,247,0.12);
+  border-color: rgba(168,85,247,0.45);
+  color: var(--purple);
+}
+.plan-editor-overlay[data-mode="booths"] .plan-editor-floating-btn:not(.close):hover {
+  background: rgba(168,85,247,0.22);
+  border-color: var(--purple);
+}
+@media (max-width: 640px) {
+  .plan-editor-floating-bar { bottom: 12px; padding: 6px; gap: 8px; }
+  .plan-editor-floating-btn { padding: 8px 12px; font-size: 12px; }
+}
+
 @media (max-width: 640px) {
   .editor-row {
     grid-template-columns: 1fr auto;
@@ -4043,20 +4145,45 @@ button.app-pill.purple.clickable:hover {
   margin: 4px 0 12px;
 }
 
-/* Booth cards get a subtle purple tint so they stand apart from session
-   cards as the user scrolls past the day's sessions into the booths
-   block — purple = booths everywhere in the app (type pill, etc.). */
+/* Booth cards get a much stronger purple identity so they stand apart
+   from session cards as the user scrolls past the day's sessions into
+   the booths block — purple = booths everywhere in the app. */
 .checklist-row.is-booth {
   position: relative;
-  background: linear-gradient(135deg, rgba(168,85,247,0.045) 0%, rgba(168,85,247,0.020) 100%);
-  border-color: rgba(168,85,247,0.22);
+  background: linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(168,85,247,0.05) 100%);
+  border-color: rgba(168,85,247,0.42);
+  box-shadow: 0 0 22px rgba(168,85,247,0.10);
 }
-.checklist-row.is-booth:hover { border-color: rgba(168,85,247,0.40); }
-/* Attended/rated states keep their mint accents but layered over purple
-   bg so the tint still reads as a booth even when ticked. */
+.checklist-row.is-booth:hover {
+  border-color: rgba(168,85,247,0.65);
+  box-shadow: 0 0 28px rgba(168,85,247,0.18);
+}
+/* Attended state keeps the booth purple identity but layers a mint glow
+   on the border so it's still readable as "ticked". */
 .checklist-row.is-booth.attended {
-  background: linear-gradient(135deg, rgba(168,85,247,0.04) 0%, rgba(34,230,168,0.05) 100%);
-  border-color: rgba(34,230,168,0.30);
+  background: linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(34,230,168,0.06) 100%);
+  border-color: rgba(34,230,168,0.45);
+}
+/* Booth Swap chip under the checkbox — purple variant of .checklist-time-swap */
+.checklist-time-swap.variant-booth {
+  color: var(--purple);
+  margin-top: 8px;
+}
+/* Clearer × in the booth top-right — visible always (was hover-only) */
+.checklist-row.is-booth .booth-quiet-remove {
+  width: 30px;
+  height: 30px;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(168,85,247,0.30);
+  color: rgba(255,255,255,0.55);
+  opacity: 1;
+  top: 10px;
+  right: 10px;
+}
+.checklist-row.is-booth .booth-quiet-remove:hover {
+  color: var(--pink);
+  background: rgba(255,94,132,0.15);
+  border-color: rgba(255,94,132,0.50);
 }
 
 /* Booth quiet remove — small × in the top-right corner of the card,

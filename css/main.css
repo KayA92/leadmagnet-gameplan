@@ -6706,7 +6706,11 @@ button.app-pill.purple.clickable:hover {
 }
 .team-section-title em {
   font-style: italic;
-  color: var(--text);
+  font-variation-settings: 'SOFT' 80;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .team-section-lede {
   font-size: 14.5px;
@@ -6716,19 +6720,10 @@ button.app-pill.purple.clickable:hover {
   max-width: 640px;
 }
 .team-section-lede strong { color: var(--text); font-weight: 600; }
-/* Benefit line — sits between the descriptive subtitle and the count
-   row. Slightly brighter than the subtitle so it reads as the value
-   moment without becoming an H2 in disguise. The italic clause picks
-   up the brand pink/purple gradient. */
-.team-section-benefit {
-  font-size: 15.5px;
-  line-height: 1.5;
-  color: var(--text);
-  margin: 8px 0 18px;
-  max-width: 640px;
-  font-weight: 500;
-}
-.team-section-benefit em {
+/* Italic em on the standard section subtitle picks up the brand
+   gradient — used to give a key phrase pop without bumping the
+   subtitle to a heading-level treatment. */
+.team-section-lede em {
   font-style: italic;
   background: var(--grad);
   -webkit-background-clip: text;

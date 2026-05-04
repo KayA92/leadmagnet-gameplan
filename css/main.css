@@ -3925,22 +3925,36 @@ button.app-pill.purple.clickable:hover {
   color: var(--text-faint);
   text-align: right;
 }
-.teammate-remove-btn {
-  display: flex; align-items: center; gap: 5px;
-  width: 100%; justify-content: center;
-  margin-top: 4px;
-  padding: 6px 10px;
-  background: transparent;
-  border: 1px solid rgba(239,68,68,0.2);
+/* Quiet × in the top-right corner of a teammate card. Hover-reveal so
+   it doesn't sit there shouting on every card. Click opens the
+   in-app confirm modal — same pattern as the booth-card × on Checklist. */
+.teammate { position: relative; }
+.teammate-quiet-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 6px;
-  color: var(--text-faint);
-  font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
-  cursor: pointer; transition: all 0.15s;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
 }
-.teammate-remove-btn:hover {
-  border-color: rgba(239,68,68,0.6);
-  color: #ef4444;
-  background: rgba(239,68,68,0.06);
+.teammate:hover .teammate-quiet-remove,
+.teammate-quiet-remove:focus-visible {
+  opacity: 1;
+}
+.teammate-quiet-remove:hover {
+  color: var(--pink);
+  background: rgba(255,94,132,0.15);
+  border-color: rgba(255,94,132,0.50);
 }
 
 /* Overlap warning banner */
@@ -6714,36 +6728,44 @@ button.app-pill.purple.clickable:hover {
 .team-capacity-row .team-section-eyebrow {
   margin-bottom: 0;
 }
+/* Scarcity-toned capacity pill — bold X/N count in white above a small
+   mono-caps "N of 10 spots left" line in mint. Reads like a finite-
+   inventory tag rather than a passive counter. Pill flips pink at full. */
 .team-capacity-pill {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  font-weight: 600;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 6px 12px 7px;
+  border-radius: 12px;
   background: rgba(34, 230, 168, 0.08);
   border: 1px solid rgba(34, 230, 168, 0.32);
-  color: var(--mint);
   white-space: nowrap;
+  line-height: 1;
+  text-align: right;
 }
-.team-capacity-pill strong {
-  color: var(--mint);
+.team-capacity-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
   font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  line-height: 1;
 }
-.team-capacity-pill svg {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
+.team-capacity-scarce {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--mint);
+  line-height: 1.1;
 }
 .team-capacity-pill.full {
-  background: rgba(255, 94, 132, 0.08);
-  border-color: rgba(255, 94, 132, 0.32);
-  color: var(--pink);
+  background: rgba(255, 94, 132, 0.10);
+  border-color: rgba(255, 94, 132, 0.40);
 }
-.team-capacity-pill.full strong { color: var(--pink); }
+.team-capacity-pill.full .team-capacity-scarce { color: var(--pink); }
 
 /* Count row that sits between section lede and the teammate grid */
 .team-section-count-row {

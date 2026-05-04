@@ -1132,8 +1132,14 @@ function renderTeammateCard(m, index) {
   const joinedDate = new Date(m.joined_at);
   const joinedStr = isNaN(joinedDate) ? '' : `Joined · ${joinedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
 
+  const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'this teammate';
   return `
     <div class="teammate ${isMe ? 'me' : ''}">
+      ${!isMe ? `<button class="teammate-quiet-remove" type="button"
+        onclick="planConfirmRemoveTeamMember('${escHtml(u.id)}', '${escHtml(fullName)}')"
+        aria-label="Remove from team" title="Remove from team">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>` : ''}
       <div class="teammate-top">
         <div class="teammate-avatar ${avatarClass}">${escHtml(initials)}</div>
         <div class="teammate-info">
@@ -1167,11 +1173,6 @@ function renderTeammateCard(m, index) {
         </div>
         <div class="teammate-footer-joined">${escHtml(joinedStr)}</div>
       </div>
-      ${!isMe ? `
-        <button class="teammate-remove-btn" onclick="planRemoveTeamMember('${escHtml(u.id)}')" type="button">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Remove from team
-        </button>` : ''}
     </div>
   `;
 }
@@ -1254,10 +1255,13 @@ function renderTeamTab() {
   const isFull      = memberCount >= MAX_TEAM_MEMBERS;
   const pillTone    = isFull ? 'full' : (memberCount > 1 ? 'team' : 'solo');
 
+  const spotsLeftLine = isFull
+    ? 'Team full'
+    : `${remaining} of ${MAX_TEAM_MEMBERS} spots left`;
   const capacityPill = `
     <div class="team-capacity-pill ${pillTone}">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span><strong>${memberCount}</strong> of ${MAX_TEAM_MEMBERS}</span>
+      <span class="team-capacity-count">${memberCount}/${MAX_TEAM_MEMBERS}</span>
+      <span class="team-capacity-scarce">${escHtml(spotsLeftLine)}</span>
     </div>
   `;
 
@@ -1289,8 +1293,8 @@ function renderTeamTab() {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </div>
         <div class="teammate-placeholder-text">
-          Each teammate's brief lands here.<br>
-          <strong>Tap to invite by email.</strong>
+          See your team's top pains and tool wants all in one place. Invite them in to see.<br>
+          <strong>Tap here to invite by email.</strong>
         </div>
       </div>
     </div>
@@ -1355,7 +1359,7 @@ function renderTeamTab() {
         Each teammate's onboarding answers, side by side. What they think are your firm's top problems and software to evaluate — invaluable intel to align before, during and after Accountex.
       </p>
       <div class="team-section-count-row">
-        <span class="team-section-count-label">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</span>
+        <span class="team-section-count-label">${memberCount} of ${MAX_TEAM_MEMBERS} members</span>
       </div>
       <div class="teammate-grid">
         ${_teamData.members.map((m, i) => renderTeammateCard(m, i)).join('')}
@@ -3272,6 +3276,20 @@ window.planMakeSlotFreeTime = function(sessionId) {
   _plan.sessions = (_plan.sessions || []).filter(x => x.session_id !== sessionId);
   savePlanSessions();
   renderApp();
+};
+
+// Routes the in-card × through the in-app confirm modal so the user
+// gets a clear "are you sure?" before the RPC fires. Note: any team
+// member can remove any other (including the lead) — that's how the
+// remove_team_member SECURITY DEFINER function is written.
+window.planConfirmRemoveTeamMember = function(userId, name) {
+  planShowConfirm({
+    title: 'Remove from team',
+    body: `Remove <strong>${escHtml(name || 'this teammate')}</strong> from your team workspace? They'll lose access to the team's plan, notes, and ratings. They can rejoin if you re-invite them.`,
+    confirmLabel: 'Remove',
+    confirmTone: 'danger',
+    onConfirm: () => window.planRemoveTeamMember(userId),
+  });
 };
 
 window.planRemoveTeamMember = async function(userId) {

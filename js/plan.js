@@ -3020,7 +3020,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
         <div class="slot-swap-row-title">Make this slot free time</div>
         <div class="slot-swap-row-meta">Skip a session — visit the floor, see booth recommendations instead</div>
       </div>
-      <button class="slot-swap-row-btn outlined" onclick="planMakeSlotFreeTime('${escHtml(currentId)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Free up slot →</button>
+      <button class="slot-swap-row-btn outlined" onclick="planMakeSlotFreeTime('${escHtml(currentId)}');document.getElementById('planSlotSwapModal')?.remove()" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg> Free up slot</button>
     </div>`;
 
   const candidatesHtml = scored.length === 0
@@ -3042,7 +3042,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
             </div>
             ${inPlan
               ? '<button class="slot-swap-row-btn disabled" disabled>In plan</button>'
-              : `<button class="slot-swap-row-btn outlined" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button">Swap →</button>`
+              : `<button class="slot-swap-row-btn outlined" onclick="planSwapSession('${escHtml(currentId)}','${escHtml(s.session_id)}');document.getElementById('planSlotSwapModal')?.remove()" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap</button>`
             }
           </div>`;
       }).join('');
@@ -3059,7 +3059,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
       </button>
       <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(current.start_time || '')}–${escHtml(current.end_time || '')}</div>
       <h2 class="login-modal-title">Edit this <em>slot.</em></h2>
-      <p class="login-modal-sub">Currently: <strong>${escHtml(current.title || '')}</strong>. Swap for another session, or free the slot for booth visits.</p>
+      <p class="login-modal-sub">Currently: <strong style="color:var(--text);">${escHtml(current.title || '')}</strong>. Swap for another session, or free the slot for booth visits.</p>
       <div class="slot-swap-list">${freeTimeRow}${candidatesHtml}</div>
     </div>`;
   document.body.appendChild(modal);

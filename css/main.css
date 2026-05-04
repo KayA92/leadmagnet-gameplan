@@ -9103,7 +9103,11 @@ button.app-pill.purple.clickable:hover {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
+.slot-swap-row-btn svg { flex-shrink: 0; }
 .slot-swap-row-btn:hover { opacity: 0.88; }
 .slot-swap-row-btn.disabled { background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: default; }
 /* Outlined variant — used on swap rows so the % match number can be

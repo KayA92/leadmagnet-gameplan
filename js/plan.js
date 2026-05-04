@@ -760,7 +760,7 @@ function renderChecklistTab() {
                           || member?.users?.last_name?.[0]?.toUpperCase() || '?';
             const name    = [member?.users?.first_name, member?.users?.last_name].filter(Boolean).join(' ') || 'Teammate';
             avatarColorIdx++; // bump for legacy compatibility (some places still read the index)
-            return `<div class="mini-av" style="background:${avatarGradient(name)};color:#fff;" title="${escHtml(name)}">${escHtml(initial)}</div>`;
+            return `<div class="mini-av" title="${escHtml(name)}">${avatarMarbleSvg(name, initial)}</div>`;
           })
           .join('')
       : '';
@@ -793,7 +793,7 @@ function renderChecklistTab() {
               <div class="row-team-wrap">
                 <div class="row-rate-caption">Going</div>
                 <div class="checklist-avatars">
-                  <div class="mini-av" style="background:${avatarGradient(_userProfile?.first_name || _authUser?.email || 'You')};color:#fff;" title="You">${userInitial}</div>
+                  <div class="mini-av" title="You">${avatarMarbleSvg(_userProfile?.first_name || _authUser?.email || 'You', userInitial)}</div>
                   ${teamAvatarHtml}
                   ${(_teamData?.members?.length ?? 0) < 2 ? `<button class="invite-pip" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button" aria-label="Invite a teammate" title="Invite a teammate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
@@ -870,7 +870,7 @@ function renderChecklistTab() {
                           || member?.users?.last_name?.[0]?.toUpperCase() || '?';
             const name    = [member?.users?.first_name, member?.users?.last_name].filter(Boolean).join(' ') || 'Teammate';
             avatarColorIdx++; // bump for legacy compatibility (some places still read the index)
-            return `<div class="mini-av" style="background:${avatarGradient(name)};color:#fff;" title="${escHtml(name)}">${escHtml(initial)}</div>`;
+            return `<div class="mini-av" title="${escHtml(name)}">${avatarMarbleSvg(name, initial)}</div>`;
           })
           .join('')
       : '';
@@ -902,7 +902,7 @@ function renderChecklistTab() {
               <div class="row-team-wrap">
                 <div class="row-rate-caption">Visiting</div>
                 <div class="checklist-avatars">
-                  <div class="mini-av" style="background:${avatarGradient(_userProfile?.first_name || _authUser?.email || 'You')};color:#fff;" title="You">${userInitial}</div>
+                  <div class="mini-av" title="You">${avatarMarbleSvg(_userProfile?.first_name || _authUser?.email || 'You', userInitial)}</div>
                   ${teamAvatarHtml}
                   ${(_teamData?.members?.length ?? 0) < 2 ? `<button class="invite-pip" onclick="planSwitchTab('team');window.scrollTo(0,0);" type="button" aria-label="Invite a teammate" title="Invite a teammate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
@@ -1117,7 +1117,7 @@ function renderTeammateCard(m, index) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>` : ''}
       <div class="teammate-top">
-        <div class="teammate-avatar" style="background:${avatarGradient(fullName)};color:#fff;">${escHtml(initials)}</div>
+        <div class="teammate-avatar">${avatarMarbleSvg(fullName, initials)}</div>
         <div class="teammate-info">
           <div class="teammate-name-row">
             <span class="teammate-name">${escHtml(u.first_name)} ${escHtml(u.last_name)}</span>
@@ -1153,28 +1153,71 @@ function renderTeammateCard(m, index) {
   `;
 }
 
-// Hash-based deterministic avatar gradient. Same name always produces
-// the same gradient; every distinct name produces a distinct one.
-// Two HSL stops chosen from a controlled range (vibrant saturation,
-// mid lightness) so every result is on-brand without muddy combos.
-// Replaces the cycling 4-colour t1/t2/t3/t4 class system — every
-// teammate now gets a unique recognisable visual identity without
-// any demographic assumptions.
-function avatarGradient(name) {
-  const s = String(name || '').trim();
-  if (!s) return 'linear-gradient(135deg, #6b6b8a, #4a4a6e)';
+// Boring Avatars "marble" style, vendored inline (MIT). Generates a
+// unique SVG per name — three brand-palette colours stacked as
+// transformed organic blobs and Gaussian-blurred so they bleed into
+// a soft swirl. Initials overlay on top in white with a subtle dark
+// stroke (paint-order: stroke) so the letter stays legible across
+// any colour combination underneath.
+const AVATAR_PALETTE = [
+  '#FF5E84', // pink
+  '#A855F7', // purple
+  '#22E6A8', // mint
+  '#FBBF24', // amber
+  '#FF8A5C', // coral
+  '#6AA9FF', // cool blue
+];
+
+function _avatarHash(s) {
+  const str = String(s || '');
   let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h) + s.charCodeAt(i);
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h) + str.charCodeAt(i);
     h |= 0;
   }
-  h = Math.abs(h);
-  const hue1 = h % 360;
-  const hue2 = (hue1 + 60 + ((h >> 8) % 100)) % 360; // 60–160° hue offset
-  const sat  = 68 + ((h >> 16) % 16);                 // 68–83%
-  const l1   = 56 + ((h >> 4)  % 9);                  // 56–64%
-  const l2   = Math.max(40, l1 - 12 - ((h >> 12) % 6));
-  return `linear-gradient(135deg, hsl(${hue1}, ${sat}%, ${l1}%), hsl(${hue2}, ${sat}%, ${l2}%))`;
+  return Math.abs(h);
+}
+function _avatarUnit(num, range, index) {
+  const v = num % range;
+  if (index && Math.floor((num / index) % 2) === 0) return -v;
+  return v;
+}
+
+function avatarMarbleSvg(name, initial) {
+  const SIZE = 80;
+  const num = _avatarHash(name);
+  const props = [];
+  for (let i = 0; i < 3; i++) {
+    props.push({
+      color: AVATAR_PALETTE[(num + i) % AVATAR_PALETTE.length],
+      translateX: _avatarUnit(num * (i + 1), SIZE / 10, 1),
+      translateY: _avatarUnit(num * (i + 1), SIZE / 10, 2),
+      scale: 1.2 + _avatarUnit(num * (i + 1), SIZE / 20) / 10,
+      rotate: _avatarUnit(num * (i + 1), 360, 1),
+    });
+  }
+  const uid = num.toString(36).slice(0, 8);
+  const maskId   = `mavm-${uid}`;
+  const filterId = `mavf-${uid}`;
+  const tx = (p) => `translate(${p.translateX} ${p.translateY}) rotate(${p.rotate} ${SIZE/2} ${SIZE/2}) scale(${p.scale})`;
+  const ini = String(initial || '').slice(0, 2).toUpperCase();
+  const fontSize = ini.length > 1 ? 30 : 38;
+  return `<svg class="avatar-svg" viewBox="0 0 ${SIZE} ${SIZE}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${SIZE}" height="${SIZE}">
+      <rect width="${SIZE}" height="${SIZE}" rx="${SIZE * 2}" fill="#FFF"/>
+    </mask>
+    <g mask="url(#${maskId})">
+      <rect width="${SIZE}" height="${SIZE}" fill="${props[0].color}"/>
+      <path filter="url(#${filterId})" d="M32.414 59.35L50.376 70.5H72.5v-71H33.728L26.5 13.381l19.057 27.08L32.414 59.35z" fill="${props[1].color}" transform="${tx(props[1])}"/>
+      <path filter="url(#${filterId})" style="mix-blend-mode:overlay;" d="M22.216 24L0 46.75l14.108 38.129L78 86l-3.081-59.276-22.378 4.005 12.972 20.186-23.35 27.395L22.215 24z" fill="${props[2].color}" transform="${tx(props[2])}"/>
+      <text x="${SIZE/2}" y="${SIZE/2}" text-anchor="middle" dominant-baseline="central" font-family="'IBM Plex Sans', system-ui, sans-serif" font-size="${fontSize}" font-weight="800" fill="#fff" letter-spacing="-1" style="paint-order:stroke;stroke:rgba(0,0,0,0.45);stroke-width:2.5px;stroke-linejoin:round;">${escHtml(ini)}</text>
+    </g>
+    <defs>
+      <filter id="${filterId}" filterUnits="userSpaceOnUse" x="0" y="0" width="${SIZE}" height="${SIZE}">
+        <feGaussianBlur stdDeviation="7" result="b"/>
+      </filter>
+    </defs>
+  </svg>`;
 }
 
 // Pending team invites — UX-only memory of recently-sent emails. Lives
@@ -1319,9 +1362,9 @@ function renderTeamPreview() {
                 <div class="row-team-wrap">
                   <div class="row-rate-caption">Going</div>
                   <div class="checklist-avatars">
-                    <div class="mini-av" style="background:${avatarGradient('You')};color:#fff;" title="You">Y</div>
-                    <div class="mini-av" style="background:${avatarGradient('Sarah Reid')};color:#fff;" title="Sarah">S</div>
-                    <div class="mini-av" style="background:${avatarGradient("James O'Connor")};color:#fff;" title="James">J</div>
+                    <div class="mini-av" title="You">${avatarMarbleSvg('You', 'Y')}</div>
+                    <div class="mini-av" title="Sarah">${avatarMarbleSvg('Sarah Reid', 'S')}</div>
+                    <div class="mini-av" title="James">${avatarMarbleSvg("James O'Connor", 'J')}</div>
                   </div>
                 </div>
               </div>
@@ -1763,7 +1806,7 @@ function renderDebriefTab() {
           const ini  = initials(u);
           return `
             <div class="debrief-hot-note">
-              <div class="mini-av" style="flex-shrink:0;background:${avatarGradient(name)};color:#fff;">${escHtml(ini)}</div>
+              <div class="mini-av" style="flex-shrink:0;">${avatarMarbleSvg(name, ini)}</div>
               <div class="debrief-hot-note-body">
                 <div class="debrief-hot-note-head"><strong>${escHtml(name)}</strong></div>
                 <div class="debrief-hot-note-text">${escHtml(n.note_text)}</div>
@@ -2442,7 +2485,7 @@ function _renderSponsorPainsBlock(sponsorKey, plan) {
           const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Teammate';
           return `
           <span class="sponsor-felt-pill">
-            <span class="mini-av" style="background:${avatarGradient(fullName)};color:#fff;">${escHtml((u.first_name?.[0] || '?').toUpperCase())}</span>
+            <span class="mini-av">${avatarMarbleSvg(fullName, (u.first_name?.[0] || '?'))}</span>
             <span class="sponsor-felt-name">${escHtml(u.first_name || 'Teammate')}</span>
           </span>`;
         }).join('')}

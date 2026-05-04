@@ -127,20 +127,10 @@ async function loadTeamData(teamId) {
   };
 }
 
-// ── Onboarding label maps (mirror wizard.js / index.html) ─────────────────────
-// PAIN_LABELS isn't strictly needed because plan.problem is already saved as a
-// humanised comma-joined string of pain labels — we split that for the pills.
-// These cover role + firm size + firm mode + categories (incl. legacy slugs).
-
-const ROLE_LABELS = {
-  founder: 'Founder', partner: 'Partner', director: 'Director',
-  senior: 'Senior accountant / manager', accountant: 'Accountant',
-  'ops-admin': 'Practice manager / ops', bookkeeper: 'Bookkeeper',
-  advisor: 'Tax advisor', industry: 'CFO / Finance Director',
-  'finance-manager': 'Finance manager', controller: 'Controller',
-  other: 'Something else',
-};
-
+// Firm-size + firm-mode labels used by the team card identity row.
+// (ROLE_LABELS and CATEGORY_LABELS are declared further down — the
+// originals from before the team-card work, with broader legacy-slug
+// coverage. Don't redeclare them here.)
 const FIRM_SIZE_LABELS = {
   'solo':     'Solo',
   '2-10':     '2–10 firm',
@@ -153,32 +143,6 @@ const FIRM_MODE_LABELS = {
   grow: 'Growing fast', optimise: 'Optimising', niche: 'Niching',
   exit: 'Exit / succession', explore: 'Exploring',
 };
-
-const CATEGORY_LABELS = {
-  // Current Stage-2 slugs (index.html)
-  'cloud-accounting':   'Cloud accounting',
-  'practice-mgmt':      'Practice management',
-  'tax-mtd':            'Tax & MTD software',
-  'audit':              'Audit & assurance',
-  'bookkeeping':        'Bookkeeping & data capture',
-  'payroll':            'Payroll',
-  'doc-mgmt':           'Document management',
-  'portals-esign':      'Client portals & e-signatures',
-  'aml-onboarding':     'AML / KYC & onboarding',
-  'forecasting':        'Forecasting & advisory',
-  'reporting':          'Reporting & analytics',
-  'proposals':          'Proposals & engagement',
-  'payments':           'Payments & fee collection',
-  'lending':            'Lending & client finance',
-  'outsourcing':        'Outsourcing & offshore',
-  'cyber':              'Cyber security & IT',
-  // Legacy slugs (kept so old plans still resolve)
-  'practice-management':'Practice management',
-  'ai-automation':      'AI & automation',
-  'doc-management':     'Document management',
-};
-
-// ── AI match helpers ──────────────────────────────────────────────────────────
 
 // ── Match bucket + ranking display model ─────────────────────────────────
 // Replaces raw "% AI Match Confidence" everywhere. Two-part display:

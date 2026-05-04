@@ -2474,6 +2474,8 @@ async function saveNote(planId, itemId, itemType, noteText, createdBy) {
 // ── Auth flow ─────────────────────────────────────────────────────────────────
 
 async function handleSignIn(authUser, teamToken) {
+  const log = (step, detail) => console.log(`[plan/signin] ${step}` + (detail ? ` — ${detail}` : ''));
+  log('start', `userId=${authUser?.id} anon=${authUser?.is_anonymous} teamToken=${teamToken || 'none'}`);
   try {
     if (!authUser.is_anonymous) {
       // Recover pending plan from localStorage only if no plan already exists in DB.
@@ -2577,11 +2579,13 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
+    log('loadPlan', 'fetching plan + programme + exhibitors');
     const [full, allSessions, allExhibitors] = await Promise.all([
       loadLatestPlan(authUser.id),
       fetch('/data/programme.json').then(r => r.json()).catch(() => []),
       fetch('/data/exhibitors.json').then(r => r.json()).catch(() => []),
     ]);
+    log('loadPlan', `plan=${full ? full.id : 'none'} sessions=${allSessions.length} booths=${allExhibitors.length}`);
 
     if (!full) {
       if (teamToken) {
@@ -2636,7 +2640,9 @@ async function handleSignIn(authUser, teamToken) {
 
     let teamData = null;
     if (full.team_id) {
+      log('loadTeamData', `team=${full.team_id}`);
       teamData = await loadTeamData(full.team_id);
+      log('loadTeamData', `members=${teamData?.members?.length ?? 0}`);
     }
 
     // Re-hydrate booth metadata from current exhibitors data so name/description
@@ -2667,10 +2673,15 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
+    log('renderApp', 'all data ready');
+    showLoading(false);
     renderApp();
+    log('done');
   } catch (err) {
     const detail = err?.message || err?.details || String(err);
-    showError(`Could not load your plan: ${detail} — <a href="/" style="color:var(--mint)">Start again →</a>`);
+    console.error('[plan/signin] error:', err);
+    showLoading(false);
+    showError(`Could not load your plan: ${detail} — <a href="/" style="color:var(--mint)">Start again →</a> · <a href="/plan/?reset=1" style="color:var(--mint)">Reset session</a>`);
   }
 }
 
@@ -3190,12 +3201,15 @@ window.planSendInvite = async function() {
 
 // ── Demo mode (no auth, no DB) ────────────────────────────────────────────────
 async function initDemoMode() {
+  const log = (step, detail) => console.log(`[plan/demo] ${step}` + (detail ? ` — ${detail}` : ''));
   try {
+    log('start');
     showLoading(true);
     const [allSessions, allExhibitors] = await Promise.all([
-      fetch('/data/programme.json').then(r => r.json()).catch(() => []),
-      fetch('/data/exhibitors.json').then(r => r.json()).catch(() => []),
+      fetch('/data/programme.json').then(r => r.json()).catch(e => { log('programme.json fetch failed', e.message); return []; }),
+      fetch('/data/exhibitors.json').then(r => r.json()).catch(e => { log('exhibitors.json fetch failed', e.message); return []; }),
     ]);
+    log('fetched', `sessions=${allSessions.length} booths=${allExhibitors.length}`);
 
     // Pick the first 11 sessions across both days (chronological), and the
     // first 8 booths. Matches the dummy ranking arrays so the bucket badges
@@ -3233,9 +3247,13 @@ async function initDemoMode() {
     };
     _teamData = null;
 
+    log('renderApp');
     showLoading(false);
     renderApp();
+    log('done');
   } catch (err) {
+    console.error('[plan/demo] error:', err);
+    showLoading(false);
     showError(`Demo mode failed: ${err?.message || err}`);
   }
 }
@@ -3249,11 +3267,30 @@ export async function initPlan() {
   const errDesc    = hashParams.get('error_description') || qpParams.get('error_description');
   const teamToken  = qpParams.get('team') || localStorage.getItem('pendingTeamToken') || null;
 
-  // Demo mode: /plan/?demo=1 — bypasses auth + DB and renders the live app
-  // with a stubbed plan built from the static programme + exhibitor data.
-  // Lets devs (and Matty) eyeball UI changes without going through wizard +
-  // magic-link auth on every browser session.
-  if (qpParams.get('demo') === '1') {
+  // Visible step trace in the console — open DevTools to see where load
+  // hangs if something goes wrong. Each step logs as `[plan] STEP — detail`.
+  const log = (step, detail) => console.log(`[plan] ${step}` + (detail ? ` — ${detail}` : ''));
+  log('init', `pathname=${window.location.pathname} search=${window.location.search}`);
+
+  // Reset escape hatch: /plan/?reset=1 clears local state + signs out so a
+  // user can recover from a borked session. Useful when a stale anon
+  // session or pending-plan blob is messing with the auth flow.
+  if (qpParams.has('reset')) {
+    log('reset', 'clearing localStorage + signing out');
+    try { await supabase.auth.signOut(); } catch (e) { /* ignore */ }
+    localStorage.removeItem('pendingPlan');
+    localStorage.removeItem('pendingPlanId');
+    localStorage.removeItem('pendingTeamToken');
+    window.location.replace('/plan/');
+    return;
+  }
+
+  // Demo mode: /plan/?demo (any value, or no value) — bypasses auth + DB
+  // and renders the live app with a stubbed plan built from the static
+  // programme + exhibitor data. Lets devs (and Matty) eyeball UI changes
+  // without going through wizard + magic-link auth on every browser session.
+  if (qpParams.has('demo')) {
+    log('demo', 'entering initDemoMode');
     await initDemoMode();
     return;
   }
@@ -3284,10 +3321,7 @@ export async function initPlan() {
 
   const tokenHash = qpParams.get('token_hash');
   if (tokenHash) {
-    // Race verifyOtp against an 8s timeout so a hung Supabase call can't
-    // pin the spinner. Also handles the case where the token was already
-    // consumed (email pre-scanner / second click) — fall through to a
-    // session-existence check before bailing.
+    log('token_hash', 'calling verifyOtp');
     let verifyResult;
     try {
       verifyResult = await Promise.race([
@@ -3297,40 +3331,42 @@ export async function initPlan() {
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('verify_timeout')), 8000)),
       ]);
+      log('verifyOtp', verifyResult?.error ? `error=${verifyResult.error.message}` : 'ok');
     } catch (e) {
-      console.warn('verifyOtp failed/timeout:', e?.message);
+      console.warn('[plan] verifyOtp failed/timeout:', e?.message);
       verifyResult = { data: null, error: e };
     }
 
     let resolvedUser = verifyResult?.data?.user || null;
-    // Fallback: maybe Supabase already auto-detected the session from a
-    // URL fragment (older flow), or the user is bouncing between tabs and
-    // already has a live session. Use it before showing the re-auth screen.
     if (!resolvedUser) {
+      log('fallback', 'verifyOtp empty → checking existing session');
       const existing = await getUser();
       if (existing && !existing.is_anonymous) resolvedUser = existing;
     }
 
     if (!resolvedUser) {
+      log('reauth', 'no user resolved');
       showReauthForm('Your link has expired or was already used. Enter your email below to get a fresh one.');
       return;
     }
 
-    // Remove token from URL so it doesn't sit in browser history
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete('token_hash');
     cleanUrl.searchParams.delete('type');
     history.replaceState(null, '', cleanUrl.toString());
     showLoading(false);
+    log('handleSignIn', `userId=${resolvedUser.id} anon=${resolvedUser.is_anonymous}`);
     await handleSignIn(resolvedUser, teamToken);
     return;
   }
 
+  log('getUser', 'no token_hash, checking existing session');
   const user = await getUser();
+  log('getUser', user ? `id=${user.id} anon=${user.is_anonymous}` : 'no user');
 
   if (user && !user.is_anonymous) {
-    // Fully authenticated — load immediately and we're done.
     showLoading(false);
+    log('handleSignIn', 'authenticated user');
     await handleSignIn(user, teamToken);
     return;
   }

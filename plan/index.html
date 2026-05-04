@@ -25,10 +25,10 @@
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 22px; background: var(--ink);
 }
-.autoevent-loader { width: 96px; height: 60px; }
+.autoevent-loader { width: 132px; height: 82px; }
 .autoevent-loader .ae-frame {
   fill: none;
-  stroke: url(#aeLoaderGrad);
+  stroke: url(#aeLoaderFrame);
   stroke-width: 5;
 }
 .autoevent-loader .ae-sq-base { fill: #5A3F65; }
@@ -190,26 +190,30 @@
 <div id="plan-loading">
   <svg class="autoevent-loader" viewBox="0 0 110 68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
+      <linearGradient id="aeLoaderFrame" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"   stop-color="#FF5E84"/>
+        <stop offset="100%" stop-color="#A855F7"/>
+      </linearGradient>
       <linearGradient id="aeLoaderGrad" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%"   stop-color="#66ffae"/>
         <stop offset="100%" stop-color="#00d978"/>
       </linearGradient>
     </defs>
-    <rect class="ae-frame" x="2.5" y="2.5" width="105" height="63" rx="14"/>
+    <rect class="ae-frame" x="2.5" y="2.5" width="105" height="63" rx="16"/>
     <!-- Top row: TL, TM, TR -->
-    <rect class="ae-sq-base"   x="19" y="16" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-lit s1" x="19" y="16" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-base"   x="49" y="16" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-lit s2" x="49" y="16" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-base"   x="79" y="16" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-lit s3" x="79" y="16" width="12" height="12" rx="2"/>
+    <rect class="ae-sq-base"   x="17" y="14" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-lit s1" x="17" y="14" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-base"   x="47" y="14" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-lit s2" x="47" y="14" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-base"   x="77" y="14" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-lit s3" x="77" y="14" width="16" height="16" rx="3"/>
     <!-- Bottom row: BL, BM, BR -->
-    <rect class="ae-sq-base"   x="19" y="42" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-lit s4" x="19" y="42" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-base"   x="49" y="42" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-lit s5" x="49" y="42" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-base"   x="79" y="42" width="12" height="12" rx="2"/>
-    <rect class="ae-sq-lit s6" x="79" y="42" width="12" height="12" rx="2"/>
+    <rect class="ae-sq-base"   x="17" y="38" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-lit s4" x="17" y="38" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-base"   x="47" y="38" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-lit s5" x="47" y="38" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-base"   x="77" y="38" width="16" height="16" rx="3"/>
+    <rect class="ae-sq-lit s6" x="77" y="38" width="16" height="16" rx="3"/>
   </svg>
   <span class="loading-label">Loading your plan…</span>
 </div>

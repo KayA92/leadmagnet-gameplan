@@ -4272,8 +4272,9 @@ window.planSwapBooth = function(currentStandNumber, newStandNumber) {
   if (!_plan) return;
   const newBooth = (_allExhibitors || []).find(e => String(e.stand_number) === String(newStandNumber));
   if (!newBooth) return;
-  _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(currentStandNumber));
-  _plan.booths.push(newBooth);
+  _plan.booths = (_plan.booths || []).map(b =>
+    String(b.stand_number) === String(currentStandNumber) ? newBooth : b,
+  );
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
 };

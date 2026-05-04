@@ -93,6 +93,8 @@
     }
 
     document.getElementById('open-plan-btn').addEventListener('click', function () {
+      this.textContent = 'Opening…';
+      this.disabled = true;
       window.location.href = '/plan/' + window.location.search + window.location.hash;
     });
   })();

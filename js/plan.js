@@ -4620,7 +4620,6 @@ export async function initPlan() {
     cleanUrl.searchParams.delete('token_hash');
     cleanUrl.searchParams.delete('type');
     history.replaceState(null, '', cleanUrl.toString());
-    showLoading(false);
     log('handleSignIn', `userId=${resolvedUser.id} anon=${resolvedUser.is_anonymous}`);
     await handleSignIn(resolvedUser, teamToken);
     return;
@@ -4631,7 +4630,6 @@ export async function initPlan() {
   log('getUser', user ? `id=${user.id} anon=${user.is_anonymous}` : 'no user');
 
   if (user && !user.is_anonymous) {
-    showLoading(false);
     log('handleSignIn', 'authenticated user');
     await handleSignIn(user, teamToken);
     return;
@@ -4643,7 +4641,6 @@ export async function initPlan() {
   const unsubscribe = onAuthChange(async (event, authUser) => {
     if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && authUser) {
       unsubscribe();
-      showLoading(false);
       await handleSignIn(authUser, teamToken);
     }
   });
@@ -4651,7 +4648,6 @@ export async function initPlan() {
   if (user && user.is_anonymous) {
     // Show the anonymous user's plan right away (team tab won't show until
     // they authenticate, but the checklist is visible immediately).
-    showLoading(false);
     await handleSignIn(user, teamToken);
   }
 }

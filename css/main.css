@@ -8875,15 +8875,45 @@ button.app-pill.purple.clickable:hover {
   font-weight: 700;
   margin-bottom: 10px;
 }
+/* Each row gets a status-driven tint (amber while pending, mint once
+   the invitee has joined the team). Status icon on the left, email +
+   time stack in the middle, actions on the right. */
 .team-invite-pending-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 0;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  border: 1px solid;
+  transition: background 0.2s, border-color 0.2s;
 }
-.team-invite-pending-row:first-of-type { border-top: none; padding-top: 4px; }
+.team-invite-pending-row:last-child { margin-bottom: 0; }
+.team-invite-pending-row.status-pending {
+  background: rgba(251,191,36,0.06);
+  border-color: rgba(251,191,36,0.30);
+}
+.team-invite-pending-row.status-accepted {
+  background: rgba(34,230,168,0.06);
+  border-color: rgba(34,230,168,0.30);
+}
+.team-invite-pending-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.team-invite-pending-icon svg { width: 22px; height: 22px; }
+.team-invite-pending-row.status-pending .team-invite-pending-icon {
+  color: var(--amber);
+  filter: drop-shadow(0 0 4px rgba(251,191,36,0.40));
+}
+.team-invite-pending-row.status-accepted .team-invite-pending-icon {
+  color: var(--mint);
+  filter: drop-shadow(0 0 5px rgba(34,230,168,0.50));
+}
 .team-invite-pending-meta {
   display: flex;
   flex-direction: column;
@@ -8894,7 +8924,7 @@ button.app-pill.purple.clickable:hover {
 .team-invite-pending-email {
   font-size: 13.5px;
   color: var(--text);
-  font-weight: 500;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -8903,8 +8933,9 @@ button.app-pill.purple.clickable:hover {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   letter-spacing: 0.06em;
-  color: var(--text-faint, rgba(255,255,255,0.40));
 }
+.team-invite-pending-row.status-pending  .team-invite-pending-time { color: var(--amber); }
+.team-invite-pending-row.status-accepted .team-invite-pending-time { color: var(--mint);  }
 .team-invite-pending-actions {
   display: inline-flex;
   align-items: center;

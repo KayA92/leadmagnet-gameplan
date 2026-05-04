@@ -99,7 +99,7 @@ async function loadTeamData(teamId) {
   const [{ data: members }, { data: teamPlans }, { data: teamRow }] = await Promise.all([
     supabase
       .from('team_members')
-      .select('role, joined_at, users(id, first_name, last_name, company)')
+      .select('role, joined_at, users(id, first_name, last_name, company, email)')
       .eq('team_id', teamId),
     supabase
       .from('plans')
@@ -1198,23 +1198,42 @@ function _formatRelativeTime(ms) {
 function renderPendingInvitesBlock() {
   const list = _readPendingInvites();
   if (!list.length) return '';
+  // Build a lookup of teammate emails (lowercased) so we can detect
+  // which pending invites have actually accepted. Once accepted, the
+  // row flips to a green "Joined" state with a check icon.
+  const teamEmails = new Set(
+    (_teamData?.members || [])
+      .map(m => (m.users?.email || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
+  const lc = (s) => (s || '').trim().toLowerCase();
+  const PENDING_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>';
+  const ACCEPTED_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
   return `
     <div class="team-invite-pending">
-      <div class="team-invite-pending-label">Pending invites</div>
-      ${list.map(e => `
-        <div class="team-invite-pending-row" data-email="${escHtml(e.email)}">
+      <div class="team-invite-pending-label">Sent invites</div>
+      ${list.map(e => {
+        const accepted = teamEmails.has(lc(e.email));
+        const status = accepted ? 'accepted' : 'pending';
+        const icon = accepted ? ACCEPTED_ICON : PENDING_ICON;
+        const timeText = accepted
+          ? 'Joined the team'
+          : `Sent ${_formatRelativeTime(e.sentAt)} · awaiting acceptance`;
+        return `
+        <div class="team-invite-pending-row status-${status}" data-email="${escHtml(e.email)}">
+          <span class="team-invite-pending-icon">${icon}</span>
           <div class="team-invite-pending-meta">
             <span class="team-invite-pending-email">${escHtml(e.email)}</span>
-            <span class="team-invite-pending-time">Sent ${escHtml(_formatRelativeTime(e.sentAt))}</span>
+            <span class="team-invite-pending-time">${escHtml(timeText)}</span>
           </div>
           <div class="team-invite-pending-actions">
-            <button class="team-invite-pending-btn resend" type="button" data-email="${escHtml(e.email)}" onclick="planResendInvite(this.dataset.email)">Resend</button>
-            <button class="team-invite-pending-btn cancel" type="button" aria-label="Remove from list" data-email="${escHtml(e.email)}" onclick="planCancelPendingInvite(this.dataset.email)">
+            ${accepted ? '' : `<button class="team-invite-pending-btn resend" type="button" data-email="${escHtml(e.email)}" onclick="planResendInvite(this.dataset.email)">Resend</button>`}
+            <button class="team-invite-pending-btn cancel" type="button" aria-label="${accepted ? 'Remove from list' : 'Cancel pending'}" data-email="${escHtml(e.email)}" onclick="planCancelPendingInvite(this.dataset.email)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
-      `).join('')}
+      `;}).join('')}
     </div>
   `;
 }
@@ -3677,11 +3696,11 @@ async function initDemoMode() {
       inviteToken: 'demo-invite-token',
       members: [
         { role: 'lead',   joined_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-          users: { id: 'demo-user', first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' } },
+          users: { id: 'demo-user', first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd', email: 'demo@autoevent.io' } },
         { role: 'member', joined_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-          users: { id: 'demo-sarah', first_name: 'Sarah', last_name: 'Reid', company: 'Demo Firm Ltd' } },
+          users: { id: 'demo-sarah', first_name: 'Sarah', last_name: 'Reid', company: 'Demo Firm Ltd', email: 'sarah@demofirm.co.uk' } },
         { role: 'member', joined_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-          users: { id: 'demo-james', first_name: 'James', last_name: 'O’Connor', company: 'Demo Firm Ltd' } },
+          users: { id: 'demo-james', first_name: 'James', last_name: 'O’Connor', company: 'Demo Firm Ltd', email: 'james@demofirm.co.uk' } },
       ],
       teamPlans: [
         _plan,

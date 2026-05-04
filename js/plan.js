@@ -4164,6 +4164,12 @@ async function _sendTeamInvite(email, opts = {}) {
     return false;
   }
 
+  const existingEmails = (_teamData.members || []).map(m => (m.users?.email || '').trim().toLowerCase());
+  if (existingEmails.includes(email)) {
+    if (status) { status.textContent = 'That person is already in your team.'; status.className = 'team-invite-status error'; }
+    return false;
+  }
+
   if (opts.fromInputBtn && btn) {
     btn.disabled = true;
     btn.classList.add('sending');

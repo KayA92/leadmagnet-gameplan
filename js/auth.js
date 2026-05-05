@@ -38,3 +38,7 @@ export async function updateUserEmail(email, redirectTo) {
     options: { emailRedirectTo: redirectTo },
   });
 }
+
+export async function checkEmailStatus(email) {
+  return supabase.rpc('check_email_status', { p_email: email.toLowerCase().trim() });
+}

@@ -1,5 +1,5 @@
 import { selectSessions, selectBooths } from './selection.js';
-import { signInAnon, getUser, sendMagicLink } from './auth.js';
+import { signInAnon, getUser, sendMagicLink, checkEmailStatus } from './auth.js';
 import { supabase } from './supabase.js';
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -612,6 +612,18 @@ async function handleSaveSubmit(e) {
   const marketingOptIn = $('inp-marketing')?.checked ?? false;
 
   state.user = { firstName, lastName, email, company, marketingOptIn };
+
+  const { data: emailStatus } = await checkEmailStatus(email);
+  if (emailStatus?.has_account) {
+    const errEl = $('save-error');
+    if (errEl) {
+      errEl.innerHTML = 'This email already has a game plan. <a href="/login/">Sign in to your existing plan →</a>';
+      errEl.style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Unlock my game plan';
+    return;
+  }
 
   const enrichedSessions = (state.plan?.sessions || []).map(ranked => {
     const full = state.allSessions.find(s => s.session_id === ranked.session_id);

@@ -139,7 +139,7 @@
 </div>
 
 <script type="module">
-  import { sendMagicLink } from '../js/auth.js';
+  import { sendMagicLink, checkEmailStatus } from '../js/auth.js';
 
   const form = document.getElementById('login-form');
   const emailInput = document.getElementById('login-email');
@@ -187,6 +187,14 @@
       msg.style.display = 'block';
       msg.className = 'login-page-msg error';
       msg.textContent = 'Please enter a valid email address.';
+      return;
+    }
+
+    const { data: emailStatus } = await checkEmailStatus(email);
+    if (!emailStatus?.has_plan) {
+      msg.style.display = 'block';
+      msg.className = 'login-page-msg error';
+      msg.innerHTML = `We don't have a plan saved for that email. <a href="/">Build your game plan first →</a>`;
       return;
     }
 

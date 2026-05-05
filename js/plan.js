@@ -2541,7 +2541,10 @@ function renderPlanEditorFilters() {
           <button class="editor-filter-pill${_planEditorTime === v ? ' active' : ''}"
             onclick="setPlanEditorFilter('time','${v}')" type="button">${l}</button>`).join('')}
       </div>
-    </div>
+    </div>`;
+  }
+
+  html += `
     <div class="editor-filter-row">
       <span class="editor-filter-label">AI Match</span>
       <div class="editor-filter-pills">
@@ -2550,7 +2553,6 @@ function renderPlanEditorFilters() {
             onclick="setPlanEditorFilter('bucket','${v}')" type="button">${l}</button>`).join('')}
       </div>
     </div>`;
-  }
 
   const userPains = _plan?.pains || [];
   if (userPains.length) {
@@ -2723,6 +2725,11 @@ function renderPlanEditorBooths(container) {
       const matchesCat   = wantedCats && (e.canonical_categories || []).some(c => wantedCats.has(c));
       const matchesOther = wantOther && !hasCats;
       if (!matchesCat && !matchesOther) return false;
+    }
+    if (_planEditorBucket.size > 0 && !_planEditorBucket.has(matchForBooth(e).bucket)) return false;
+    if (_planEditorPains.size > 0) {
+      const scores = e.pain_scores || {};
+      if (![..._planEditorPains].some(id => (scores[id]?.score || 0) > 0.4)) return false;
     }
     if (q) {
       const hay = [

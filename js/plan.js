@@ -433,6 +433,16 @@ function bestAlternativeScore(item) {
 // Excludes the current session and anything else already in the user's
 // plan. Click on the count line opens the same swap modal as the SWAP
 // button — the user picks for themselves from the full list.
+// Sessions that start in one clock-hour and end in another with a non-zero
+// end minute (e.g. 12:50–13:10) can't sit cleanly in the hourly plan.
+// Excluded from modals and notifications — they keep their slot in _allSessions
+// so the global "of 384" total stays accurate.
+function isCrossBoundary(s) {
+  const [startH] = (s.start_time || '').split(':').map(Number);
+  const [endH, endM] = (s.end_time || '').split(':').map(Number);
+  return !isNaN(startH) && !isNaN(endH) && !isNaN(endM) && endH !== startH && endM !== 0;
+}
+
 // Returns the best available { bucket, count } for the same hour slot, but
 // only if the best bucket is at least as good as the current session's bucket.
 // Returning null suppresses the notification — no point surfacing
@@ -452,6 +462,7 @@ function bestHourAlternative(item, currentBucket) {
     const sHour = parseInt((s.start_time || '').split(':')[0], 10);
     if (sHour !== itemHour) continue;
     if (planIds.has(s.session_id)) continue;
+    if (isCrossBoundary(s)) continue;
     const b = matchForSession(s).bucket;
     if (b in counts) counts[b]++;
   }
@@ -4031,6 +4042,7 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
   const slotEndMin   = parseTimeToMinutes(slotEnd);
   const candidates = (_allSessions || []).filter(s => {
     if (s.day !== day || !s.start_time) return false;
+    if (isCrossBoundary(s)) return false;
     const sStart = parseTimeToMinutes(s.start_time);
     if (sStart < slotStartMin || sStart >= slotEndMin) return false;
     if (s.end_time) {
@@ -4102,6 +4114,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
   const candidates = (_allSessions || []).filter(s => {
     if (s.session_id === currentId) return false;
     if (s.day !== current.day) return false;
+    if (isCrossBoundary(s)) return false;
     const sHour = parseInt((s.start_time || '').split(':')[0], 10);
     return sHour === currentHour;
   });

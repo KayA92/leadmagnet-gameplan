@@ -16,16 +16,50 @@
 <link rel="stylesheet" href="../css/main.css">
 <style>
   .about-logo { height: 56px; width: auto; display: block; margin: 0 auto 32px; }
-  .about-email-block { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 10px; }
-  .about-email-text {
+  .about-email-block { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
+  /* Email shown in a real read-only <input> so users can:
+     - drag-select the text without parent click handlers swallowing the gesture
+     - click once to focus + auto-select-all (handled in JS)
+     - tap the bright "Copy" CTA below if they prefer one-click copy
+     Mint accent reads as a 'value' chip rather than a passive label. */
+  .about-email-field {
+    width: 100%;
+    max-width: 380px;
+    padding: 16px 18px;
+    background: rgba(34,230,168,0.06);
+    border: 1px solid rgba(34,230,168,0.30);
+    border-radius: 12px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 19px;
+    font-weight: 700;
     letter-spacing: -0.01em;
-    color: var(--text);
-    user-select: all;
+    color: var(--mint);
+    text-align: center;
+    box-sizing: border-box;
+    transition: border-color 0.15s, background 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: text;
   }
-  @media (max-width: 600px) { .about-email-text { font-size: 18px; } }
+  .about-email-field:hover { border-color: rgba(34,230,168,0.50); }
+  .about-email-field:focus {
+    outline: none;
+    border-color: var(--mint);
+    background: rgba(34,230,168,0.10);
+    box-shadow: 0 0 0 3px rgba(34,230,168,0.15);
+  }
+  .about-email-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint, rgba(255,255,255,0.45));
+    font-weight: 700;
+    margin-top: -4px;
+  }
+  @media (max-width: 600px) {
+    .about-email-field { font-size: 16px; padding: 14px 14px; }
+  }
 </style>
 </head>
 <body>
@@ -60,7 +94,8 @@
     </p>
 
     <div class="about-email-block">
-      <div class="about-email-text" id="about-email-text">hello@autoevent.io</div>
+      <input class="about-email-field" id="about-email-field" type="text" value="hello@autoevent.io" readonly aria-label="AutoEvent contact email">
+      <span class="about-email-hint">Click to select · or use the button</span>
       <button class="cta-primary" type="button" id="about-email-copy">
         <span id="about-email-copy-label">Copy email address</span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -91,28 +126,34 @@
 </div>
 
 <script>
-  // Copy-to-clipboard for the email address. Uses the modern clipboard
-  // API with a tiny fallback for older browsers, and shows a brief
-  // "Copied!" confirmation on the button label.
+  // Email block — two ways to copy:
+  //   1) Tap the input → it focuses + selects-all so the user can
+  //      Cmd+C / right-click → Copy / drag into another app.
+  //   2) Hit the bright "Copy email address" CTA → clipboard write
+  //      with a 1.8s "Copied!" flash on the button label.
   (function () {
-    const btn   = document.getElementById('about-email-copy');
-    const label = document.getElementById('about-email-copy-label');
-    const email = document.getElementById('about-email-text').textContent.trim();
-    if (!btn || !label) return;
+    const field  = document.getElementById('about-email-field');
+    const btn    = document.getElementById('about-email-copy');
+    const label  = document.getElementById('about-email-copy-label');
+    if (!field || !btn || !label) return;
+
+    // Tap-to-select-all. Focus event covers keyboard tab-into too.
+    // Wrapped in setTimeout so click can deselect afterwards if the
+    // user wants to reposition the cursor (mobile-friendly).
+    const selectAll = () => setTimeout(() => field.select(), 0);
+    field.addEventListener('focus', selectAll);
+    field.addEventListener('click', selectAll);
+
     btn.addEventListener('click', async () => {
+      const email = field.value.trim();
       try {
         if (navigator.clipboard?.writeText) {
           await navigator.clipboard.writeText(email);
         } else {
-          const ta = document.createElement('textarea');
-          ta.value = email;
-          ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
+          field.select();
           document.execCommand('copy');
-          document.body.removeChild(ta);
         }
-        const original = label.textContent;
+        const original = 'Copy email address';
         label.textContent = 'Copied!';
         setTimeout(() => { label.textContent = original; }, 1800);
       } catch (e) {

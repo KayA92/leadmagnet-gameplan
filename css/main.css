@@ -5127,6 +5127,8 @@ button.app-pill.purple.clickable:hover {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
   }
+  .mini-meta-theatre { display: none; }
+  .mini-meta-time { display: block; margin-top: 2px; }
 }
 
 /* Editor row + slot-swap row: small left-aligned badge under the title */

@@ -477,7 +477,8 @@ function renderPlanPreview() {
 
   const renderSession = (s, i) => {
     const dayNum = s.day === 'Day 1' ? 1 : 2;
-    const timeStr = s.start_time ? `Day ${dayNum} · ${s.start_time} · ${escHtml(s.theatre || '')}` : escHtml(s.theatre || '');
+    const timeStr    = s.start_time ? `Day ${dayNum} · ${s.start_time}` : '';
+    const theatreStr = s.theatre ? escHtml(s.theatre) : '';
     const bucket = s._bucket || (s.match && s.match.bucket) || 'neutral';
     const rank   = typeof s._rank === 'number' ? s._rank : (i + 1);
     const m = { bucket, rank };
@@ -485,7 +486,7 @@ function renderPlanPreview() {
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(s.title)}</div>
-        <div class="mini-meta"><span class="type-pill session">Session</span>${timeStr}</div>
+        <div class="mini-meta"><span class="type-pill session">Session</span><span class="mini-meta-time">${timeStr}</span>${theatreStr ? `<span class="mini-meta-theatre"> · ${theatreStr}</span>` : ''}</div>
       </div>
       ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session' })}
     </div>`;
@@ -502,7 +503,7 @@ function renderPlanPreview() {
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(b.company_name)}</div>
-        <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(standNum)}</div>
+        <div class="mini-meta"><span class="type-pill booth">Booth</span><span class="mini-meta-time">Stand ${escHtml(standNum)}</span></div>
         ${hostNote}
       </div>
       ${renderMatchBadge({ bucket, rank: displayRank, type: 'booth' })}

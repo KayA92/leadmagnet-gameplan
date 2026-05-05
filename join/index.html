@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<meta name="robots" content="noindex">
+<meta name="author" content="Workiro">
+<title>Join an Accountex 2026 team plan · AutoEvent</title>
+<meta name="description" content="You've been invited to join a team's Accountex 2026 planner on AutoEvent.">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+
+<!--
+  ════════════════════════════════════════════════════════════════════
+  TEAM-INVITE LANDING PAGE — TEMPLATE (HAND TO DEV)
+  ════════════════════════════════════════════════════════════════════
+
+  WHAT THIS PAGE IS FOR
+  ─────────────────────
+  When someone (e.g. Joe) clicks "Send invite" in the Team tab, the
+  Edge Function `supabase/functions/send-team-invite/index.ts` emails
+  the invitee (e.g. Sarah). Currently the CTA in that email points at
+  the homepage, which is a generic landing — Sarah doesn't get any
+  context that Joe specifically invited her.
+
+  This page sits between the email and the wizard. It reads URL
+  params, personalises a friendly headline ("Hey, Joe is inviting you
+  to plan Accountex 2026 together"), and a single big CTA button
+  forwards Sarah to the wizard with the team token preserved.
+
+  URL PARAMS THIS PAGE READS
+  ──────────────────────────
+    ?team=TOKEN          (REQUIRED) the invite token (UUID-ish string).
+                          Passed through verbatim to /?team=TOKEN.
+    &email=sarah@x.com   (optional) the invitee's email. Passed through
+                          verbatim to /?email= so the save form can
+                          pre-fill it. URL-decoded for display only.
+    &inviter=Joe         (optional) inviter's first name. Default
+                          "A colleague" if missing. Display only.
+    &company=Workiro     (optional) inviter's company. Default empty.
+                          Renders as " from Workiro" inline if present.
+
+  EDGE FUNCTION CHANGE NEEDED FOR THIS TO WORK
+  ────────────────────────────────────────────
+  In `supabase/functions/send-team-invite/index.ts`, the new-user CTA
+  URL is currently built like this (around line 329):
+
+    const ctaUrl = isNewUser
+      ? `${SITE_URL}/?team=${inviteToken}&email=${encodedEmail}`
+      : `${SITE_URL}/login/?team=${inviteToken}&email=${encodedEmail}`;
+
+  Update the new-user branch to point at /join/ and include the
+  inviter name + company so this page can personalise the welcome:
+
+    const encodedInviter = encodeURIComponent(inviterName || '');
+    const encodedCompany = encodeURIComponent(inviterCompany || '');
+    const ctaUrl = isNewUser
+      ? `${SITE_URL}/join/?team=${inviteToken}&email=${encodedEmail}` +
+        `&inviter=${encodedInviter}&company=${encodedCompany}`
+      : `${SITE_URL}/login/?team=${inviteToken}&email=${encodedEmail}`;
+
+  No DB changes, no RPC changes — just one URL build update.
+
+  Existing-user invitees (Sarah already has an AutoEvent account)
+  continue to go straight to /login/?team=TOKEN as before. We could
+  route them through /join/ too in a follow-up if useful — for now
+  the simpler path is fine.
+
+  WHAT HAPPENS WHEN SARAH CLICKS THE CTA HERE
+  ────────────────────────────────────────────
+  Button forwards to: /?team=TOKEN&email=ENCODED_EMAIL
+  That's the existing wizard entry — wizard.js already reads the
+  `team` query param and stores it as `state.teamInviteToken`, then
+  on save the team-join is wired automatically. NO new wiring needed
+  on the wizard side; the page just acts as a friendly intro.
+
+  EDGE CASES HANDLED
+  ──────────────────
+  - Missing `inviter` param        → headline reads "A colleague is
+                                       inviting you…"
+  - Missing `company` param        → " from {company}" segment is
+                                       omitted (no awkward dangling
+                                       phrase)
+  - Missing `team` param           → CTA falls back to / (home), so a
+                                       broken / share-stripped link
+                                       still gets the user somewhere
+                                       useful
+  - HTML-injection via URL params  → all values escape via textContent
+                                       (never innerHTML), so no XSS
+                                       risk from malicious params.
+
+  STYLING
+  ───────
+  Uses the existing `.login-page-*` class system from css/main.css —
+  same H1, sub, CTA, divider, secondary row, and footer treatments
+  as /login/ and /about/ so it visually slots into the rest of the
+  site without a stylesheet bump.
+-->
+</head>
+<body>
+
+<div class="ambient-glow g1"></div>
+<div class="ambient-glow g2"></div>
+<div class="ambient-glow g3"></div>
+
+<nav class="top-bar">
+  <a class="brand" href="/">
+    <img src="../images/AutoEvent.svg" alt="AutoEvent" class="brand-logo">
+    <span class="brand-divider"></span>
+    <span class="brand-event">Accountex 2026</span>
+  </a>
+</nav>
+
+<main class="login-page">
+  <div class="login-page-inner">
+
+    <div class="hero-brand-lockup">
+      <div class="hero-brand-wordmark"><span class="hero-brand-free">Free</span> <em>Accountex 2026 AI Planner</em></div>
+    </div>
+
+    <h1 class="login-page-title">
+      <span data-token="inviter">A colleague</span><span data-token="company-line"></span> is inviting you to plan<br><em>Accountex 2026 together.</em>
+    </h1>
+
+    <p class="login-page-sub">
+      <strong><span data-token="inviter">A colleague</span> has built a free AI-matched plan</strong> for Accountex 2026 — sessions, booths, schedule — and wants you in their workspace so you can see each other's picks, spot overlaps, and split coverage on the day.
+    </p>
+
+    <a id="join-cta" class="cta-primary login-page-submit" href="/" style="text-decoration:none;">
+      <span>Plan Accountex with <span data-token="inviter">your colleague</span></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+
+    <div class="hero-footnote login-page-footnote">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Free, no payment</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 60 seconds · no password</span>
+    </div>
+
+    <div class="login-page-divider"></div>
+
+    <div class="login-page-secondary">
+      <div class="login-page-secondary-row">
+        <span class="login-page-secondary-label">Already use AutoEvent?</span>
+        <a id="join-existing" class="login-page-secondary-link" href="/login/">Log in to join from your account →</a>
+      </div>
+      <div class="login-page-secondary-row">
+        <span class="login-page-secondary-label">Wasn't expecting this?</span>
+        <a class="login-page-secondary-link" href="mailto:help@autoevent.io">help@autoevent.io</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="autoevent-foot">
+  <div class="autoevent-foot-line">
+    <span class="autoevent-foot-label">Powered by</span>
+    <img class="autoevent-foot-logo" src="../images/AutoEvent.svg" alt="AutoEvent">
+    <span class="autoevent-foot-built">— a free tool by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></span>
+  </div>
+  <div class="autoevent-foot-cta">
+    Want this AI-planner for your next event? <a href="/about/">About AutoEvent&nbsp;→</a>
+  </div>
+  <div class="autoevent-foot-legal">
+    <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+  </div>
+</div>
+
+<script>
+  // Personalisation — reads URL params, fills tokens, builds CTA URLs.
+  // Pure DOM textContent / href manipulation (never innerHTML), so URL
+  // params can't inject HTML even if a malicious link is crafted.
+  (function () {
+    const params  = new URLSearchParams(window.location.search);
+    const team    = params.get('team') || '';
+    const email   = params.get('email') || '';
+    const inviter = (params.get('inviter') || '').trim();
+    const company = (params.get('company') || '').trim();
+
+    // Display name fallback. Avoid "A colleague's planner" reading
+    // weirdly — switch the possessive variant separately.
+    const displayName       = inviter || 'A colleague';
+    const displayPossessive = inviter ? `${inviter}'s` : 'their';
+    const companyLine       = company ? ` from ${company}` : '';
+
+    // Substitute every [data-token] placeholder with the real value.
+    document.querySelectorAll('[data-token="inviter"]').forEach(el => {
+      el.textContent = displayName;
+    });
+    document.querySelectorAll('[data-token="inviter-possessive"]').forEach(el => {
+      el.textContent = displayPossessive;
+    });
+    document.querySelectorAll('[data-token="company-line"]').forEach(el => {
+      el.textContent = companyLine;
+    });
+
+    // Build forwarding URLs. The wizard already handles ?team= and
+    // ?email= — no other wiring needed.
+    const teamPart  = team  ? `team=${encodeURIComponent(team)}`   : '';
+    const emailPart = email ? `email=${encodeURIComponent(email)}` : '';
+    const qs        = [teamPart, emailPart].filter(Boolean).join('&');
+
+    const ctaJoin   = document.getElementById('join-cta');
+    const ctaLogin  = document.getElementById('join-existing');
+    if (ctaJoin)  ctaJoin.href  = qs ? `/?${qs}`        : '/';
+    if (ctaLogin) ctaLogin.href = qs ? `/login/?${qs}` : '/login/';
+
+    // Update the document title so the browser tab also reflects the
+    // inviter's name. Falls back to the static title if no inviter.
+    if (inviter) {
+      document.title = `${inviter} invited you to Accountex 2026 · AutoEvent`;
+    }
+  })();
+</script>
+
+</body>
+</html>

@@ -221,7 +221,45 @@
       </span>
     </a>
 
-    <!-- TEAM INVITE NUDGE -->
+    <!-- TEAM INVITE → NEW USER (sent to invited teammate) -->
+    <a class="email-card" href="team-invite-new-user.html" target="_blank" rel="noopener">
+      <span class="email-card-tag transactional">Transactional · Sent to invited teammate (new user)</span>
+      <div class="email-card-name">Team invite → new user</div>
+      <div class="email-card-subject">{{inviterName}} has invited you to their Accountex 2026 plan</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> lead clicks "Send invite" in the Team tab AND invitee email is NOT yet a user</div>
+        <div class="email-card-meta-item"><strong>Sender:</strong> Resend (api.resend.com/emails) via supabase/functions/send-team-invite</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> inviterName, inviterCompanyLine, ctaUrl (?team=TOKEN&amp;email=ENCODED)</div>
+      </div>
+      <div class="email-card-body">
+        The invite-recipient email when the invitee doesn't yet have a plan. CTA opens the wizard with the team token attached so saving the plan auto-joins the inviter's workspace. <strong>Template lives inlined inside the Edge Function — this file is for preview only.</strong>
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- TEAM INVITE → EXISTING USER (sent to invited teammate) -->
+    <a class="email-card" href="team-invite-existing-user.html" target="_blank" rel="noopener">
+      <span class="email-card-tag transactional">Transactional · Sent to invited teammate (existing user)</span>
+      <div class="email-card-name">Team invite → existing user</div>
+      <div class="email-card-subject">{{inviterName}} wants you in their Accountex team</div>
+      <div class="email-card-meta">
+        <div class="email-card-meta-item"><strong>Trigger:</strong> lead clicks "Send invite" in the Team tab AND invitee email IS already a user</div>
+        <div class="email-card-meta-item"><strong>Sender:</strong> Resend (api.resend.com/emails) via supabase/functions/send-team-invite</div>
+        <div class="email-card-meta-item"><strong>Variables:</strong> inviterName, inviterCompanyLine, ctaUrl (/login/?team=TOKEN&amp;email=ENCODED)</div>
+      </div>
+      <div class="email-card-body">
+        The invite-recipient email when the invitee is already an AutoEvent user. CTA goes via the login page with the team token attached so the magic link drops them straight into the team workspace. <strong>Template lives inlined inside the Edge Function — this file is for preview only.</strong>
+      </div>
+      <span class="email-card-cta">
+        Open preview
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+    </a>
+
+    <!-- TEAM INVITE NUDGE (sent to lead) -->
     <a class="email-card" href="team-invite.html" target="_blank" rel="noopener">
       <span class="email-card-tag lifecycle">Lifecycle · 24h after signup if 0 teammates</span>
       <div class="email-card-name">Team-invite nudge</div>
@@ -267,7 +305,7 @@
         <div class="email-card-meta-item"><strong>Variables:</strong> firstName, loginUrl, teamInviteUrl, teamGreeting, teamBody, unsubscribeUrl</div>
       </div>
       <div class="email-card-body">
-        Final pre-show nudge. Two actions: add to home screen + bring the team. Conditional content for solo vs team workspaces.
+        Final pre-show nudge. Bring the team in. Conditional content for solo vs team workspaces.
       </div>
       <span class="email-card-cta">
         Open preview

@@ -1,0 +1,31 @@
+# robots.txt for autoevent.io
+# AutoEvent builds free AI planners for professional events.
+# Currently running for Accountex 2026 (13–14 May 2026, ExCeL London).
+
+User-agent: *
+Allow: /
+Disallow: /login/
+Disallow: /plan/
+Disallow: /magic-link-confirm/
+Disallow: /emails/
+
+# AI / LLM crawlers — explicitly allowed (this is a public app guide).
+User-agent: GPTBot
+Allow: /
+Disallow: /login/
+Disallow: /plan/
+Disallow: /magic-link-confirm/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /login/
+Disallow: /plan/
+Disallow: /magic-link-confirm/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /login/
+Disallow: /plan/
+Disallow: /magic-link-confirm/
+
+Sitemap: https://autoevent.io/sitemap.xml

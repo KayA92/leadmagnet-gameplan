@@ -3549,6 +3549,21 @@ button.app-pill.purple.clickable:hover {
   color: #e8d4ff;
   font-weight: 600;
 }
+.checklist-gap-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.checklist-gap-vendors-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(168,85,247,0.8);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.checklist-gap-vendors-link:hover { color: #e0b0ff; }
 .checklist-gap-cta {
   display: inline-flex;
   align-items: center;

@@ -605,9 +605,14 @@ function renderGapCard(day, startTime, endTime, _gapIndex) {
         </div>
         <div class="checklist-gap-body">Free time — visit booths or pick a session for this slot.</div>
       </div>
-      <button class="checklist-gap-cta" onclick="planFillSlot('${escHtml(day)}','${escHtml(startTime)}','${escHtml(endTime)}', event)" type="button">
-        + Pick a session
-      </button>
+      <div class="checklist-gap-actions">
+        <button class="checklist-gap-cta" onclick="planFillSlot('${escHtml(day)}','${escHtml(startTime)}','${escHtml(endTime)}', event)" type="button">
+          + Pick a session
+        </button>
+        <a class="checklist-gap-vendors-link" href="#booths-anchor" onclick="document.getElementById('booths-anchor')?.scrollIntoView({behavior:'smooth'});return false;">
+          See vendors →
+        </a>
+      </div>
     </div>`;
 }
 

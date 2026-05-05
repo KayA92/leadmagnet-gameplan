@@ -182,7 +182,7 @@ const EXHIBITOR_BUCKETS = {
 const SESSION_BUCKETS = {
   thresholds: { top: 0.70,  high: 0.575, medium: 0.45  },
   maximums:   { top: 5,     high: 20,    medium: 20    },
-  minimums:   { top: 3,     high: 7,     medium: 7     },
+  minimums:   { top: 3,     high: 10,    medium: 10    },
 };
 function assignBuckets(ranked, config = EXHIBITOR_BUCKETS) {
   const { thresholds: THRESHOLDS, maximums: MAXIMUMS, minimums: MINIMUMS } = config;

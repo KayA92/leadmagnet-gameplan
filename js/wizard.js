@@ -455,18 +455,18 @@ function renderPlanPreview() {
     .map((b, i) => renderBooth(b, i, sessionItems.length + i))
     .join('');
 
-  const topPickCount  = rankedSessions.length;
-  const sessionsTotal = state.allSessions?.length    || 240;
-  const boothsTotal   = state.allExhibitors?.length  || 90;
-  const otherSessions = Math.max(0, sessionsTotal - topPickCount);
+  const topPickCount      = rankedSessions.length;
+  const sessionsTotal     = state.allSessions?.length    || 240;
+  const boothsTotal       = state.allExhibitors?.length  || 90;
+  const highRankedCount   = (state.filteredSessions || []).filter(s => s._bucket !== 'neutral').length;
   const hiddenAlternativesHtml = `
     <div class="hidden-alternatives">
       <div class="hidden-alt-eyebrow">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
-        All ${sessionsTotal} sessions are ranked to you — activate plan for full access
+        All ${sessionsTotal} sessions are ranked for you — activate your plan for full access
       </div>
       <p class="hidden-alt-body">
-        You're seeing the top <strong>${topPickCount}</strong>. The other <strong>${otherSessions} sessions</strong> and all <strong>${boothsTotal} booths</strong> are ranked the same way, in your active plan. Every slot has ranked alternatives too — ready to swap.
+        You're seeing <strong>${topPickCount}</strong> of the <strong>${highRankedCount} sessions</strong> AI ranked highly for your practice. Every session and booth is scored and ranked — all waiting in your active plan, ready to explore and share with your team.
       </p>
       <button class="hidden-alt-cta" type="button" onclick="document.getElementById('preview-save')?.click()">
         Activate my plan

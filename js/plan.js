@@ -1467,10 +1467,11 @@ function renderTeamTab() {
   if (!_teamData) return '<p style="color:var(--text-muted);padding:32px 0;">Team data not available.</p>';
 
   const MAX_TEAM_MEMBERS = 12;
-  const memberCount = _teamData.members.length;
-  const isSolo      = memberCount < 2;
-  const remaining   = Math.max(0, MAX_TEAM_MEMBERS - memberCount);
-  const isFull      = memberCount >= MAX_TEAM_MEMBERS;
+  const memberCount  = _teamData.members.length;
+  const pendingCount = (_pendingInvites || []).length;
+  const isSolo       = memberCount < 2;
+  const remaining    = Math.max(0, MAX_TEAM_MEMBERS - memberCount - pendingCount);
+  const isFull       = (memberCount + pendingCount) >= MAX_TEAM_MEMBERS;
   const pillTone    = isFull ? 'full' : (memberCount > 1 ? 'team' : 'solo');
 
   const spotsLeftLine = isFull

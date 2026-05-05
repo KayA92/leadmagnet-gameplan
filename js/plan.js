@@ -1642,17 +1642,25 @@ function _cpdFormatSlot(s) {
   return [datePart, time, s.theatre].filter(Boolean).join(' · ');
 }
 
+function _cpdSessionHours(s) {
+  if (s.start_time && s.end_time) {
+    const [sh, sm] = s.start_time.split(':').map(Number);
+    const [eh, em] = s.end_time.split(':').map(Number);
+    const mins = (eh * 60 + em) - (sh * 60 + sm);
+    if (mins > 0) return mins / 60;
+  }
+  return 40 / 60;
+}
+
 function renderCpdTab() {
   const allSessions = _plan?.sessions || [];
   const excluded = _cpdGetExcluded();
   const included = allSessions.filter(s => !excluded.has(String(s.session_id)));
   const removed  = allSessions.filter(s =>  excluded.has(String(s.session_id)));
 
-  // 40-minute Accountex sessions → 0.67 CPD hours each. Per-row rounded
-  // to 1 decimal for clean reading; total summed from the unrounded
-  // raw value so totals don't drift due to per-row rounding.
-  const HOURS_PER_SESSION = 40 / 60;
-  const totalHours = (included.length * HOURS_PER_SESSION).toFixed(1);
+  // Total summed from raw (unrounded) per-session values so it doesn't
+  // drift due to per-row rounding.
+  const totalHours = included.reduce((sum, s) => sum + _cpdSessionHours(s), 0).toFixed(1);
 
   const byDayThenTime = (a, b) => {
     const da = a.day === 'Day 1' ? 1 : 2;
@@ -1676,7 +1684,7 @@ function renderCpdTab() {
             <div class="cpd-row-title">${escHtml(s.title || s.session_id || 'Session')}</div>
             <div class="cpd-row-meta">${escHtml(_cpdFormatSlot(s))}</div>
           </div>
-          <div class="cpd-row-hours">${HOURS_PER_SESSION.toFixed(1)} <span>hrs</span></div>
+          <div class="cpd-row-hours">${_cpdSessionHours(s).toFixed(1)} <span>hrs</span></div>
           <button class="cpd-row-remove" type="button" aria-label="Remove from CPD log"
                   onclick="planConfirmRemoveCpd('${escHtml(id)}', '${escHtml(titleAttr)}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

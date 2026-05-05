@@ -2923,13 +2923,13 @@ button.app-pill.purple.clickable:hover {
   gap: 6px;
 }
 .editor-filter-pill {
-  padding: 6px 14px;
+  padding: 5px 11px;
   background: transparent;
   border: 1px solid rgba(34,230,168,0.30);
   border-radius: 100px;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -2945,6 +2945,19 @@ button.app-pill.purple.clickable:hover {
   border-color: var(--mint);
   color: #0a1a12;
 }
+/* Bucket-coloured AI Match filter pills */
+.editor-filter-pill--bucket-top    { border-color: rgba(255,94,132,0.35);  color: var(--pink); }
+.editor-filter-pill--bucket-high   { border-color: rgba(255,138,92,0.35);  color: var(--coral); }
+.editor-filter-pill--bucket-medium { border-color: rgba(251,191,36,0.35);  color: var(--amber); }
+.editor-filter-pill--bucket-neutral{ border-color: rgba(106,169,255,0.35); color: var(--cool-blue); }
+.editor-filter-pill--bucket-top:hover     { background: rgba(255,94,132,0.08);  border-color: var(--pink);      color: var(--pink); }
+.editor-filter-pill--bucket-high:hover    { background: rgba(255,138,92,0.08);  border-color: var(--coral);     color: var(--coral); }
+.editor-filter-pill--bucket-medium:hover  { background: rgba(251,191,36,0.08);  border-color: var(--amber);     color: var(--amber); }
+.editor-filter-pill--bucket-neutral:hover { background: rgba(106,169,255,0.08); border-color: var(--cool-blue); color: var(--cool-blue); }
+.editor-filter-pill--bucket-top.active     { background: rgba(255,94,132,0.15);  border-color: var(--pink);      color: var(--pink);      font-weight: 600; }
+.editor-filter-pill--bucket-high.active    { background: rgba(255,138,92,0.12);  border-color: var(--coral);     color: var(--coral);     font-weight: 600; }
+.editor-filter-pill--bucket-medium.active  { background: rgba(251,191,36,0.10);  border-color: var(--amber);     color: var(--amber);     font-weight: 600; }
+.editor-filter-pill--bucket-neutral.active { background: rgba(106,169,255,0.08); border-color: var(--cool-blue); color: var(--cool-blue); font-weight: 600; }
 /* Hidden legacy chip — kept as no-op so no orphan references break. */
 .editor-filter-chip {
   display: none;

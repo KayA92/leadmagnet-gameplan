@@ -24,6 +24,8 @@ let _currentTab  = 'checklist';
 let _planEditorMode      = null;
 let _planEditorDay       = 'all';
 let _planEditorTime      = 'all';
+let _planEditorBucket    = new Set(['top', 'high', 'medium']);
+let _planEditorPains     = new Set();
 let _planEditorCategories = new Set();
 let _planEditorQuery     = '';
 let _planEditorShowMore  = false;
@@ -2381,7 +2383,9 @@ window.openPlanEditor = function(mode) {
   _planEditorQuery      = '';
   _planEditorDay        = 'all';
   _planEditorTime       = 'all';
-  _planEditorCategories = new Set(_plan?.categories || []);
+  _planEditorBucket     = new Set(['top', 'high', 'medium']);
+  _planEditorPains      = new Set();
+  _planEditorCategories = new Set();
   _planEditorShowMore   = false;
 
   const overlay = document.getElementById('planEditorOverlay');
@@ -2423,7 +2427,9 @@ window.openPlanEditorWithProblem = function(cat) {
   _planEditorQuery      = '';
   _planEditorDay        = 'all';
   _planEditorTime       = 'all';
-  _planEditorCategories = new Set([cat]);
+  _planEditorBucket     = new Set(['top', 'high', 'medium']);
+  _planEditorPains      = new Set();
+  _planEditorCategories = new Set();
   _planEditorShowMore   = false;
 
   const overlay = document.getElementById('planEditorOverlay');
@@ -2469,11 +2475,15 @@ window.planEditorOnSearch = function(value) {
 };
 
 window.setPlanEditorFilter = function(type, value) {
-  if (type === 'day')  _planEditorDay  = value;
-  if (type === 'time') _planEditorTime = value;
-  if (type === 'category') {
-    if (_planEditorCategories.has(value)) _planEditorCategories.delete(value);
-    else _planEditorCategories.add(value);
+  if (type === 'day')    _planEditorDay    = value;
+  if (type === 'time')   _planEditorTime   = value;
+  if (type === 'bucket') {
+    if (_planEditorBucket.has(value)) _planEditorBucket.delete(value);
+    else _planEditorBucket.add(value);
+  }
+  if (type === 'pain') {
+    if (_planEditorPains.has(value)) _planEditorPains.delete(value);
+    else _planEditorPains.add(value);
   }
   renderPlanEditorFilters();
   renderPlanEditorResults();
@@ -2481,6 +2491,12 @@ window.setPlanEditorFilter = function(type, value) {
 
 window.clearPlanEditorCategories = function() {
   _planEditorCategories.clear();
+  renderPlanEditorFilters();
+  renderPlanEditorResults();
+};
+
+window.clearPlanEditorPains = function() {
+  _planEditorPains.clear();
   renderPlanEditorFilters();
   renderPlanEditorResults();
 };
@@ -2506,26 +2522,7 @@ function renderPlanEditorFilters() {
   const el = document.getElementById('planEditorFilters');
   if (!el) return;
 
-  const userCats   = _plan?.categories || [];
-  const unpicked   = Object.keys(_EDITOR_CATEGORY_LABELS).filter(c => !userCats.includes(c));
-  const userPains  = (_plan?.problem || '').split(/\s*,\s*/).filter(Boolean);
-
-  // Locked context — readonly mint chips of the user's pains AND tools
-  // they picked at onboarding. Shows what's filtering this list without
-  // making it editable on this surface (clear single-purpose UI).
-  const contextChips = [
-    ...userPains.map(label => `<span class="editor-context-chip">${escHtml(label)}</span>`),
-    ...userCats.map(c => `<span class="editor-context-chip">${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}</span>`),
-  ].join('');
-
   let html = '';
-
-  if (contextChips) {
-    html += `<div class="editor-filter-row">
-      <span class="editor-filter-label">Filtered to your context</span>
-      <div class="editor-context-chips">${contextChips}</div>
-    </div>`;
-  }
 
   if (_planEditorMode === 'sessions') {
     html += `
@@ -2544,27 +2541,33 @@ function renderPlanEditorFilters() {
           <button class="editor-filter-pill${_planEditorTime === v ? ' active' : ''}"
             onclick="setPlanEditorFilter('time','${v}')" type="button">${l}</button>`).join('')}
       </div>
+    </div>
+    <div class="editor-filter-row">
+      <span class="editor-filter-label">AI Match</span>
+      <div class="editor-filter-pills">
+        ${[['top','Top'],['high','High'],['medium','Medium'],['neutral','Neutral']].map(([v,l]) => `
+          <button class="editor-filter-pill editor-filter-pill--bucket-${v}${_planEditorBucket.has(v) ? ' active' : ''}"
+            onclick="setPlanEditorFilter('bucket','${v}')" type="button">${l}</button>`).join('')}
+      </div>
     </div>`;
   }
 
-  // Refine link — opens the deeper category filter panel. Only render
-  // when there are unpicked categories to surface (always true unless
-  // user picked every one at onboarding).
-  if (unpicked.length) {
-    const activeAdditional = [..._planEditorCategories].filter(c => !userCats.includes(c));
+  const userPains = _plan?.pains || [];
+  if (userPains.length) {
     const refineLabel = _planEditorShowMore
-      ? 'Hide category filters ↑'
-      : `Refine with category filters →${activeAdditional.length ? ` <span class="editor-filter-refine-count">${activeAdditional.length}</span>` : ''}`;
+      ? 'Hide pain point filters ↑'
+      : `Address your pain points →${_planEditorPains.size ? ` <span class="editor-filter-refine-count">${_planEditorPains.size}</span>` : ''}`;
     html += `<button class="editor-filter-refine" onclick="togglePlanEditorMoreFilters()" type="button">${refineLabel}</button>`;
     if (_planEditorShowMore) {
-      const moreChips = unpicked.map(c => {
-        const on = _planEditorCategories.has(c);
+      const painPills = userPains.map(id => {
+        const label = PAIN_LABELS[id] || id;
+        const on = _planEditorPains.has(id);
         return `<button class="editor-filter-pill${on ? ' active' : ''}"
-          onclick="setPlanEditorFilter('category','${escHtml(c)}')" type="button">${escHtml(_EDITOR_CATEGORY_LABELS[c] || c)}</button>`;
+          onclick="setPlanEditorFilter('pain','${escHtml(id)}')" type="button">${escHtml(label)}</button>`;
       }).join('');
       html += `<div class="editor-filter-row editor-filter-refine-panel">
-        <div class="editor-filter-pills">${moreChips}</div>
-        ${activeAdditional.length ? `<button class="editor-filter-clear" onclick="clearPlanEditorCategories()" type="button">Clear</button>` : ''}
+        <div class="editor-filter-pills">${painPills}</div>
+        ${_planEditorPains.size ? `<button class="editor-filter-clear" onclick="clearPlanEditorPains()" type="button">Clear</button>` : ''}
       </div>`;
     }
   }
@@ -2597,12 +2600,8 @@ function _updateEditorSub(filteredCount, total) {
 }
 
 function renderPlanEditorSessions(container) {
-  const q         = (_planEditorQuery || '').toLowerCase();
-  const planIds   = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
-  const wantOther  = _planEditorCategories.has('other');
-  const wantedCats = [..._planEditorCategories].filter(c => c !== 'other').length > 0
-    ? new Set([..._planEditorCategories].filter(c => c !== 'other').flatMap(c => PLAN_CATEGORY_MATCH[c] || []))
-    : null;
+  const q       = (_planEditorQuery || '').toLowerCase();
+  const planIds = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
 
   const filtered = (_allSessions || []).filter(s => {
     if (_planEditorDay !== 'all' && s.day !== _planEditorDay) return false;
@@ -2611,11 +2610,10 @@ function renderPlanEditorSessions(container) {
       if (_planEditorTime === 'morning'   && mins >= 13 * 60) return false;
       if (_planEditorTime === 'afternoon' && mins <  13 * 60) return false;
     }
-    if (wantedCats || wantOther) {
-      const hasCats    = (s.canonical_categories || []).length > 0;
-      const matchesCat = wantedCats && (s.canonical_categories || []).some(c => wantedCats.has(c));
-      const matchesOther = wantOther && !hasCats;
-      if (!matchesCat && !matchesOther) return false;
+    if (_planEditorBucket.size > 0 && !_planEditorBucket.has(matchForSession(s).bucket)) return false;
+    if (_planEditorPains.size > 0) {
+      const scores = s.pain_scores || {};
+      if (![..._planEditorPains].some(id => (scores[id]?.score || 0) > 0.4)) return false;
     }
     if (q) {
       const speakers = (s.speakers || []).map(sp => `${sp.name || ''} ${sp.company || ''}`).join(' ');
@@ -2677,8 +2675,14 @@ function renderPlanEditorSessions(container) {
     for (const { s, m } of enriched) {
       const inPlan  = planIds.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`);
       const speaker = (s.speakers || [])[0];
+      const durationMins = s.start_time && s.end_time
+        ? parseTimeToMinutes(s.end_time) - parseTimeToMinutes(s.start_time) : 0;
+      const durationStr = durationMins > 0
+        ? (durationMins >= 60 ? `${Math.floor(durationMins/60)}h${durationMins%60 ? ` ${durationMins%60}m` : ''}` : `${durationMins} min`)
+        : '';
       const metaParts = [
         s.theatre ? `<span>${escHtml(s.theatre)}</span>` : '',
+        durationStr ? `<span>${durationStr}</span>` : '',
         speaker ? `<span class="editor-row-speaker">${escHtml(speaker.name || '')}${speaker.company ? ' · ' + escHtml(speaker.company) : ''}</span>` : '',
       ].filter(Boolean).join('');
       const blurb = s.description ? truncateBoothDesc(s.description) : '';

@@ -354,53 +354,42 @@ const ROLE_LABELS = {
   'other':           'Other',
 };
 
-// Tag rules:
-// - Only TOP and HIGH bucket matches get "why matched" tags. Medium and
-//   neutral cards stay clean — the bucket label alone is honest enough.
-// - Caller passes the resolved bucket so we don't double-compute. If
-//   omitted, fall back to dummyMatchByHash (browse contexts).
-// - Surface every onboarding answer the matcher would have weighted, using
-//   the user's full labels (never extracted fragments). Sources:
-//     · Selected categories that overlap session.canonical_categories
-//     · Pains whose label keywords land in session title/description
-//     · Role (always shown — it shapes every match)
-//     · TODO: firm_size / mode / role_bucket once persisted in plans table
-//       (currently only `role` is stored alongside categories + problem)
-// - Cap at 6 tags so cards stay legible on mobile.
+const PAIN_LABELS = {
+  'ai-start':'AI — where to even start','ai-data-mess':'Data mess blocking AI',
+  'mtd-volume':'MTD volume problem','mtd-clients':'Clients not MTD-ready',
+  'margin':'Margin squeeze','hiring':"Can't find good staff",
+  'retention':'Losing staff to other firms','burnout':'Workload & burnout',
+  'docs':'Document chaos','chasing':'Chasing clients for records',
+  'defensible-files':'Audit-ready client files','aml':'AML / KYC pressure',
+  'disconnected':'Disconnected tech stack','ai-roi':'AI — proving the ROI',
+  'advisory':'Stuck in compliance','advisory-charge':'Charging for advice',
+  'winning':'Winning new clients','ai-team':'AI — team adoption',
+  'cyber':'Cyber threats / phishing','penalties':'MTD penalty regime',
+  'frs102':'FRS 102 transition','portal':'Portal adoption / clients hate it',
+  'ai-govern':'AI governance & risk','ai-skills':'AI skills gap',
+  'onboarding':'Slow client onboarding','month-end':'Month-end close is brutal',
+  'bankfeeds':'Unreliable bank feeds','cpd':'CPD & team development',
+  'career':'Murky career path','leadership':'Leadership skills gap',
+  'cashflow':'Late payments / debtor days','pe':'PE consolidation closing in',
+  'exit':'Exit / succession planning','outsource':'Outsourcing & offshore',
+  'niche':'Should I niche?','cross-border':'Cross-border clients',
+  'rd':'R&D claims / specialist tax',
+};
+
+// Only shown on top and high bucket matches. Shows pains the user selected
+// in the wizard where the session's pre-baked AI pain score exceeds 0.5.
+// Capped at 6 pills so cards stay legible on mobile.
 function whyMatched(session, plan, bucket) {
   const resolved = bucket || dummyMatchByHash(session.session_id, 'session').bucket;
   if (resolved !== 'top' && resolved !== 'high') return [];
 
-  const tags = [];
-  const sessionCats = session.canonical_categories || [];
-  const userCats    = plan.categories || [];
+  const userPains  = plan.pains || [];
+  const painScores = session.pain_scores || {};
 
-  // Category matches — every user-picked category that overlaps this session.
-  for (const cat of userCats) {
-    const wanted = PLAN_CATEGORY_MATCH[cat] || [cat];
-    if (wanted.some(w => sessionCats.includes(w))) {
-      tags.push({ text: CATEGORY_LABELS[cat] || cat });
-    }
-  }
-
-  // Pain matches — heuristic keyword check (4+ char) against title/desc.
-  // Tags every pain that genuinely appears related, not just the first.
-  const haystack = `${session.title || ''} ${session.description || ''}`.toLowerCase();
-  const painLabels = (plan.problem || '').split(/\s*,\s*/).filter(Boolean);
-  for (const painLabel of painLabels) {
-    const sigWords = painLabel.toLowerCase().split(/\W+/).filter(w => w.length >= 4);
-    if (sigWords.some(w => haystack.includes(w))) {
-      tags.push({ text: painLabel });
-    }
-  }
-
-  // Role tag — always include for 80%+ matches. Role is a per-user
-  // dimension the matcher weights on every session.
-  if (plan.role && ROLE_LABELS[plan.role]) {
-    tags.push({ text: ROLE_LABELS[plan.role] });
-  }
-
-  return tags.slice(0, 6);
+  return userPains
+    .filter(id => (painScores[id]?.score || 0) > 0.5)
+    .map(id => ({ text: PAIN_LABELS[id] || id }))
+    .slice(0, 6);
 }
 
 const PLAN_CATEGORY_MATCH = {
@@ -906,7 +895,9 @@ function renderChecklistTab() {
     const ratingLabel = (item.rating || 0) > 0 ? 'You rated' : 'Rate this';
     const boothPlanRank = displayRank || item.rank || (i + 1);
     const boothMatch    = matchForBooth(item, boothPlanRank);
-    const truncatedDesc = truncateBoothDesc(desc);
+    const truncatedDesc = isWorkiro
+      ? 'Workiro is cloud document management built for UK accountants – trusted by 65,000 professionals.'
+      : truncateBoothDesc(desc);
     const userInitial = (_userProfile?.first_name || _authUser?.email || 'Y')[0].toUpperCase();
 
     // Team avatars — teammates with this booth in their plan. Mirrors

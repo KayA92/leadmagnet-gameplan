@@ -4435,21 +4435,13 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
       .sort((a, b) => (a._rank || 0) - (b._rank || 0));
   }
 
-  const boothTotal = candidates.length;
-  // Assign local buckets relative to this candidate pool — mirrors session swap
-  // behaviour. Global _bucket is useless here (a #1 in tax could be globally
-  // 'medium' because AI-category booths outscored it across the full set).
-  const scored = candidates.map((e, i) => {
-    const pct = (i + 1) / boothTotal;
-    return {
-      booth: e,
-      match: {
-        bucket: pct <= 0.25 ? 'high' : pct <= 0.6 ? 'medium' : 'neutral',
-        rank: i + 1,
-        localTotal: boothTotal,
-      },
-    };
-  });
+  const scored = candidates.map(e => ({
+    booth: e,
+    match: {
+      bucket: e._bucket || 'neutral',
+      rank: typeof e._rank === 'number' ? e._rank : 999,
+    },
+  }));
 
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other booths available to swap.</div>'
@@ -4462,7 +4454,7 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
               <div class="slot-swap-booth-info">
                 <div class="slot-swap-row-title">${escHtml(b.company_name || '')}</div>
                 <div class="slot-swap-row-meta">Stand ${escHtml(String(b.stand_number || ''))}</div>
-                ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', total: m.localTotal, compact: true })}
+                ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
               </div>
               <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentStandNumber))}','${escHtml(String(b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap

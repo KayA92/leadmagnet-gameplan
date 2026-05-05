@@ -2834,7 +2834,7 @@ function _renderSponsorPainsBlock(sponsorKey, plan) {
 function sponsorsFooterHtml(plan = _plan) {
   return `
     <section class="sponsors-footer" style="max-width:760px;">
-      <h2 class="sponsors-footer-heading">This free Accountex 2026 Planner <em>is brought to you by:</em></h2>
+      <h2 class="sponsors-footer-heading">This free Accountex 2026 Planner <span class="sponsors-footer-heading-line2"><em>is brought to you by:</em></span></h2>
       <div class="sponsors-grid">
         <div class="sponsor-card">
           <div class="sponsor-card-logo">

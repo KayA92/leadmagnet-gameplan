@@ -10134,6 +10134,13 @@ button.app-pill.purple.clickable:hover {
   display: inline-block;
   padding: 0 0.08em;
 }
+/* Force the second clause ('is brought to you by') onto its own line
+   on desktop. Mobile lets it flow naturally with the rest of the
+   heading so we don't waste vertical space on small screens. */
+.sponsors-footer-heading-line2 { display: block; }
+@media (max-width: 640px) {
+  .sponsors-footer-heading-line2 { display: inline; }
+}
 .sponsors-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -2876,10 +2876,9 @@ function sponsorsFooterHtml(plan = _plan) {
       <div class="autoevent-foot-cta">
         Want one of these for your next event? <a href="/about/" target="_blank" rel="noopener">About AutoEvent →</a>
       </div>
-    </div>
-
-    <div class="hero-page-footer">
-      Free · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+      <div class="autoevent-foot-legal">
+        Free · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+      </div>
     </div>
   `;
 }

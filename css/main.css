@@ -10347,10 +10347,30 @@ button.app-pill.purple.clickable:hover {
    a third sponsor block. */
 .autoevent-foot {
   max-width: 720px;
-  margin: 28px auto 18px;
-  padding: 16px 0;
+  margin: 64px auto 28px;
+  padding: 24px 0 8px;
   text-align: center;
   border-top: 1px solid rgba(255,255,255,0.08);
+}
+/* Legal line — sits at the bottom of the same block as 'Powered by'
+   + CTA so the whole footer reads as one section, not two. */
+.autoevent-foot-legal {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint, rgba(255,255,255,0.4));
+}
+.autoevent-foot-legal a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255,255,255,0.18);
+  transition: border-color 0.15s, color 0.15s;
+}
+.autoevent-foot-legal a:hover {
+  color: var(--text);
+  border-bottom-color: rgba(255,255,255,0.45);
 }
 .autoevent-foot-line {
   display: inline-flex;

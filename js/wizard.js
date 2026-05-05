@@ -173,24 +173,20 @@ function stopTicker() {
   if (el) el.innerHTML = '';
 }
 
-// Asymptote-style progress: bar creeps toward 95% indefinitely so it
-// never appears done before scoring finishes. Avoids the "bar's done but
-// I'm still waiting — is this broken?" feel.
-let _progressId = null;
 function startProgress() {
   const bar = $('reveal-progress-fill');
   if (!bar) return;
-  let pct = 0;
+  bar.style.transition = 'none';
   bar.style.width = '0%';
-  _progressId = setInterval(() => {
-    pct = pct + (95 - pct) * 0.015;
-    bar.style.width = pct + '%';
-  }, 100);
+  bar.offsetWidth; // force reflow so the reset lands before the transition starts
+  bar.style.transition = 'width 5s linear';
+  bar.style.width = '100%';
 }
 function stopProgress() {
-  if (_progressId) { clearInterval(_progressId); _progressId = null; }
   const bar = $('reveal-progress-fill');
-  if (bar) bar.style.width = '100%';
+  if (!bar) return;
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
 }
 
 

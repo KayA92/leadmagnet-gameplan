@@ -519,7 +519,8 @@ function renderPlanPreview() {
   };
 
   const sessionsListHtml = sessionItems.map(renderSession).join('');
-  const boothsListHtml = boothItems
+  const boothsListHtml = [...boothItems]
+    .sort((a, b) => (a._rank ?? 999) - (b._rank ?? 999))
     .map((b, i) => renderBooth(b, i, sessionItems.length + i))
     .join('');
 

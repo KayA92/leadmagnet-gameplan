@@ -294,8 +294,8 @@ body::before {
   .hero-brand-joining { font-size: 10px; letter-spacing: 0.18em; margin-top: 12px; }
 }
 @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
-.hero-title { font-family: 'Fraunces', serif; font-size: clamp(42px,7vw,84px); font-weight: 400; line-height: 1.02; letter-spacing: -0.025em; text-align: center; max-width: 980px; margin-bottom: 32px; font-variation-settings: 'SOFT' 30; text-wrap: balance; color: var(--text); }
-.hero-title em { font-style: italic; font-variation-settings: 'SOFT' 80; background: var(--grad-hero); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: gradient-shift 8s ease-in-out infinite; }
+.hero-title { font-family: 'Fraunces', serif; font-size: clamp(42px,7vw,84px); font-weight: 400; line-height: 1.08; letter-spacing: -0.025em; text-align: center; max-width: 980px; margin-bottom: 32px; padding: 4px 4px 8px; font-variation-settings: 'SOFT' 30; text-wrap: balance; color: var(--text); }
+.hero-title em { font-style: italic; font-variation-settings: 'SOFT' 80; background: var(--grad-hero); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: gradient-shift 8s ease-in-out infinite; padding: 0 0.04em; }
 @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 .hero-sub { font-size: clamp(17px,2vw,21px); color: var(--text-muted); text-align: center; max-width: 560px; line-height: 1.55; margin-bottom: 36px; font-weight: 400; text-wrap: pretty; }
 .hero-sub strong { color: var(--text); font-weight: 600; }
@@ -3739,13 +3739,15 @@ button.app-pill.purple.clickable:hover {
   font-size: clamp(30px, 4vw, 42px);
   font-weight: 400;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.16;
   color: var(--text);
   margin: 0 0 16px;
+  padding: 2px 0 6px;
   font-variation-settings: 'SOFT' 40;
 }
 .launch-card-title em {
   font-style: italic;
+  padding: 0 0.04em;
 }
 .launch-card.webinar-card .launch-card-title em { color: var(--mint); }
 .launch-card.plan-card .launch-card-title em {
@@ -9385,10 +9387,11 @@ button.app-pill.purple.clickable:hover {
   font-family: 'Fraunces', serif;
   font-size: clamp(30px, 4vw, 42px);
   font-weight: 400;
-  line-height: 1.1;
+  line-height: 1.16;
   letter-spacing: -0.02em;
   text-align: center;
   margin-bottom: 48px;
+  padding: 2px 4px 6px;
   font-variation-settings: 'SOFT' 40;
 }
 .how-it-works-title em {
@@ -9397,6 +9400,7 @@ button.app-pill.purple.clickable:hover {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  padding: 0 0.04em;
 }
 .hiw-cards {
   display: grid;
@@ -9456,9 +9460,10 @@ button.app-pill.purple.clickable:hover {
   font-size: 23px;
   font-weight: 500;
   letter-spacing: -0.015em;
-  line-height: 1.2;
+  line-height: 1.28;
   font-variation-settings: 'SOFT' 50;
   color: var(--text);
+  padding-bottom: 2px;
 }
 .hiw-card-body {
   font-size: 16px;
@@ -9503,11 +9508,12 @@ button.app-pill.purple.clickable:hover {
   font-family: 'Fraunces', serif;
   font-size: clamp(30px, 4vw, 42px);
   font-weight: 400;
-  line-height: 1.1;
+  line-height: 1.16;
   letter-spacing: -0.02em;
   text-align: center;
   margin: 0 auto 10px;
   max-width: 26ch;
+  padding: 2px 4px 6px;
   font-variation-settings: 'SOFT' 40;
   text-wrap: balance;
 }
@@ -9517,6 +9523,7 @@ button.app-pill.purple.clickable:hover {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  padding: 0 0.04em;
 }
 .panellists-sub {
   font-size: 16px;
@@ -10107,11 +10114,12 @@ button.app-pill.purple.clickable:hover {
   font-family: 'Fraunces', serif;
   font-weight: 400;
   font-size: clamp(36px, 5vw, 54px);
-  line-height: 1.08;
+  line-height: 1.14;
   letter-spacing: -0.02em;
   font-variation-settings: 'SOFT' 40;
   color: var(--text);
   margin: 0 0 36px;
+  padding: 2px 4px 6px;
   text-wrap: balance;
 }
 .sponsors-footer-heading em {
@@ -10123,6 +10131,7 @@ button.app-pill.purple.clickable:hover {
   background-clip: text;
   color: transparent;
   animation: gradient-shift 8s ease-in-out infinite;
+  padding: 0 0.04em;
 }
 .sponsors-grid {
   display: grid;
@@ -10486,9 +10495,10 @@ button.app-pill.purple.clickable:hover {
   font-family: 'Fraunces', serif;
   font-size: clamp(36px, 5.5vw, 56px);
   font-weight: 400;
-  line-height: 1.05;
+  line-height: 1.12;
   letter-spacing: -0.025em;
   margin: 24px 0 16px;
+  padding: 2px 4px 6px;
   font-variation-settings: 'SOFT' 30;
   text-wrap: balance;
   color: var(--text);
@@ -10503,6 +10513,7 @@ button.app-pill.purple.clickable:hover {
   color: transparent;
   animation: gradient-shift 8s ease-in-out infinite;
   white-space: nowrap;
+  padding: 0 0.04em;
 }
 .login-page-sub {
   font-size: 17px;

@@ -597,7 +597,7 @@ async function handleSaveSubmit(e) {
   e.preventDefault();
   const btn = $('save-btn');
   btn.disabled = true;
-  btn.textContent = 'Saving…';
+  btn.textContent = 'Activating…';
 
   const firstName     = $('inp-first').value.trim();
   const lastName      = $('inp-last').value.trim();
@@ -1056,6 +1056,20 @@ export async function initWizard() {
 
   // ── Stage 75: save form
   $('save-form')?.addEventListener('submit', handleSaveSubmit);
+  // Unlock-chips ('Rate sessions', 'CPD log', etc.) sit above the
+  // form looking interactive — users do tap them. Make those taps
+  // feel useful: focus the first name field so the form takes over
+  // and the user is one keystroke from completing the unlock.
+  document.querySelectorAll('.save-unlock-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const first = $('inp-first');
+      if (!first) return;
+      first.focus();
+      // Smooth scroll the form into view on mobile in case the chip
+      // tap happened above the fold and the input is below it.
+      first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
 
   // Handle browser back/forward
   window.addEventListener('popstate', () => {

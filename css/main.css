@@ -30,6 +30,10 @@ html, body {
 body.flow-active { overflow-y: auto; }
 /* Hide the top-bar's brand on the app stage — brand moves into the tab nav */
 body.app-active .top-bar { display: none; }
+/* Hide About + Log in links once the user is in the onboarding flow.
+   Keeps the hero (stage 0) untouched, but Q1 onwards strips the
+   top-right CTAs so users aren't tempted to bounce mid-funnel. */
+body.flow-active:not(.hero-active) .top-bar-right { display: none; }
 /* App stage has no top padding — tab bar IS the top chrome */
 body.app-active .stage.flow-mode { padding-top: 0; padding-left: 0; padding-right: 0; }
 body.app-active .app-shell { padding: 0 24px 40px; }
@@ -1158,12 +1162,12 @@ body::before {
     padding-left: 14px;
     padding-right: 14px;
   }
-  /* Launch card ("Get your plan in 60 seconds") — outer padding was eating
-     too much horizontal room on mobile, making the card feel cramped vs
-     the rest of the page. Pull both the bar gutter and the card padding
-     inward so the content matches the breadth of other mobile sections. */
+  /* Launch card ("Get your plan in 60 seconds") — drop the launch-bar
+     gutter on mobile so the card sits flush with the stage's edges,
+     matching the width of the panellists / how-it-works boxes above
+     it (the stage already provides 24px side padding). */
   .launch-bar {
-    padding: 0 14px;
+    padding: 0;
   }
   .launch-card {
     padding: 26px 20px 22px;
@@ -1261,6 +1265,25 @@ body::before {
 .btn-next { background: var(--grad); color: white; font-family: inherit; font-size: 16px; font-weight: 700; padding: 16px 32px; border: none; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 0.2s; box-shadow: 0 8px 24px rgba(255,94,132,0.35); }
 .btn-next:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 40px rgba(255,94,132,0.5), 0 10px 30px rgba(0,0,0,0.3); }
 .btn-next:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+/* ── Touch devices: kill hover-state transforms ──────────────────────
+   On iOS / Android, the first tap on a button activates :hover
+   (because there's no real hover, the browser fakes it on touchstart).
+   With transform: translateY(-2px) on hover, the button visually
+   jumps up — sometimes BEFORE the click event fires — and on iOS
+   Safari this can cause the click to register at the old position,
+   feel delayed, or even miss entirely until a second tap. Solution:
+   on devices that can't actually hover (hover: none), nullify the
+   transform. The colour/glow hover changes still apply — they're
+   harmless on touch — but the position shift is gone, so the first
+   tap lands cleanly every time. */
+@media (hover: none) {
+  .btn-next:hover:not(:disabled) { transform: none; }
+  .tag-pill:hover { transform: none; }
+  .cta-primary:hover { transform: none; }
+  .cta-primary:hover svg { transform: none; }
+  .continue-btn:hover { transform: none; }
+}
 .btn-next .keybind { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 3px 6px; background: rgba(255,255,255,0.18); border-radius: 4px; letter-spacing: 0.05em; }
 .btn-skip { background: transparent; border: 1px solid var(--ink-3); color: var(--text-muted); font-family: inherit; font-size: 14px; padding: 14px 20px; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
 .btn-skip:hover { border-color: var(--ink-4); color: var(--text); }
@@ -1738,56 +1761,6 @@ body::before {
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-}
-
-/* "Install as app" promo strip — sits above the tab bar on mobile only.
-   Dismissible (one-time, persisted in localStorage). Hidden when already
-   running standalone, hidden on desktop where install isn't a thing. */
-.install-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 18px;
-  background: rgba(34,230,168,0.06);
-  border-bottom: 1px solid rgba(34,230,168,0.22);
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-.install-strip-icon {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(34,230,168,0.14);
-  color: var(--mint);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.install-strip-body {
-  flex: 1;
-  min-width: 0;
-}
-.install-strip-body strong { color: var(--text); font-weight: 600; }
-.install-strip-dismiss {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s;
-}
-.install-strip-dismiss:hover { background: var(--ink-3); color: var(--text); }
-@media (max-width: 640px) {
-  .install-strip { padding: 10px 14px; font-size: 12px; gap: 10px; }
-  .install-strip-icon { width: 28px; height: 28px; }
 }
 
 /* Tab bar — two-row layout: brand row, then tabs row */
@@ -3170,9 +3143,12 @@ button.app-pill.purple.clickable:hover {
   background: rgba(34,230,168,0.04);
 }
 .editor-row-main { min-width: 0; }
+/* Mirror the Checklist row typography — same body font, weight, size,
+   line-height — so the editor reads as the same surface, not a
+   second design. */
 .editor-row-title {
-  font-family: 'Fraunces', serif;
-  font-size: 17px;
+  font-family: inherit;
+  font-size: 17.5px;
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -3184,16 +3160,20 @@ button.app-pill.purple.clickable:hover {
   gap: 10px;
   flex-wrap: wrap;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 6px;
 }
-.editor-row-speaker { color: var(--text-faint); }
+/* Speaker line was var(--text-faint) — too low-contrast to read at
+   ~10px caps. Bump to text-muted so it sits at the same legibility
+   level as the rest of the meta. */
+.editor-row-speaker { color: var(--text-muted); }
 .editor-row-blurb {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--text-muted);
+  font-style: italic;
   line-height: 1.5;
   margin: 0;
 }
@@ -8116,7 +8096,13 @@ button.app-pill.purple.clickable:hover {
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
+  /* Click → focuses the first-name input (handled in wizard.js).
+     Cursor change signals the chip is tappable so users get visual
+     confirmation when hovering on desktop. */
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
+.save-unlock-chip:hover { border-color: var(--ink-4); background: var(--ink-3); }
 .save-unlock-chip-icon {
   display: inline-flex;
   align-items: center;
@@ -8392,54 +8378,6 @@ button.app-pill.purple.clickable:hover {
 @keyframes magic-pulse {
   0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(34,230,168,0.2); }
   50% { transform: scale(1.04); box-shadow: 0 0 50px rgba(34,230,168,0.4); }
-}
-
-/* ═══ CHUNK 10: Install-as-app strip (mobile only) ═══ */
-.install-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  margin: 0 -24px;
-  background: rgba(34,230,168,0.06);
-  border-bottom: 1px solid rgba(34,230,168,0.2);
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-.install-strip-icon {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(34,230,168,0.12);
-  color: var(--mint);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.install-strip-body {
-  flex: 1;
-  min-width: 0;
-}
-.install-strip-body strong { color: var(--text); font-weight: 600; }
-.install-strip-dismiss {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s;
-}
-.install-strip-dismiss:hover { background: var(--ink-3); color: var(--text); }
-@media (max-width: 640px) {
-  .install-strip { margin: 0 -14px; padding: 10px 14px; font-size: 12px; }
 }
 
 /* ═══ CHUNK 10: Rebuilt magic-link confirmation screen ═══ */
@@ -9798,11 +9736,32 @@ button.app-pill.purple.clickable:hover {
   .stage { padding: 70px 20px 40px; }
   .stage.flow-mode { padding: 96px 18px 40px; }
   #stage-6 { justify-content: flex-start; padding-top: 84px; }
+  /* Save form stage ('Your plan is ready') needs extra bottom air on
+     mobile so the 'Unlock my game plan' CTA + Privacy line aren't
+     pinned against the viewport edge / Safari bottom toolbar.
+     Same goes for the role + firm-size stages — their q-actions are
+     fixed-bottom but the q-container itself needs more scroll runway
+     so the user can scroll the last role/firm options into view.
+     Stage-7 (preview) has the fixed Activate CTA covering ~100px of
+     the viewport bottom — the 'Start over' link + footer-micro need
+     scroll runway below that to clear it cleanly. */
+  #stage-75,
+  #stage-5,
+  #stage-5b { padding-bottom: 96px; }
+  #stage-5 .q-container,
+  #stage-5b .q-container { padding-bottom: 140px; }
+  #stage-7 { padding-bottom: 140px; }
   /* App stage on mobile: no top gap (the tab bar IS the top chrome), no horizontal
-     padding (the app-shell handles horizontal spacing). This closes the dead space
-     above the install-strip that made the page look shoved down the screen. */
+     padding (the app-shell handles horizontal spacing). */
   body.app-active .stage.flow-mode { padding: 0 0 40px; }
-  .hero-title { font-size: 42px; }
+  /* Mobile hero title: keep the FIRST <br> visible (between 'to'
+     and '<em>the problems') so the gradient italic clause starts on
+     its own line, but drop the inner <br> (between 'your' and
+     'accounting') so the em wraps naturally. The HTML now has a
+     space before each <br> so words can never run together when a
+     <br> is hidden. */
+  .hero-title { font-size: 36px; line-height: 1.16; margin-bottom: 24px; padding: 4px 4px 6px; }
+  .hero-title em br { display: none; }
   .q-title { font-size: 30px; }
   .option { padding: 16px 18px; font-size: 15px; }
   .confirm-preview-section { padding: 16px; }
@@ -10157,7 +10116,10 @@ button.app-pill.purple.clickable:hover {
 .sponsors-footer-heading {
   font-family: 'Fraunces', serif;
   font-weight: 400;
-  font-size: clamp(36px, 5vw, 54px);
+  /* Same size as .how-it-works-title / .panellists-title /
+     .launch-card-title so the sponsors block sits at the same
+     hierarchical level as the other section H2s on the page. */
+  font-size: clamp(30px, 4vw, 42px);
   line-height: 1.14;
   letter-spacing: -0.02em;
   font-variation-settings: 'SOFT' 40;
@@ -10181,8 +10143,10 @@ button.app-pill.purple.clickable:hover {
 /* Force the second clause ('is brought to you by') onto its own line
    on desktop. Mobile lets it flow naturally with the rest of the
    heading so we don't waste vertical space on small screens. */
+.sponsors-footer-heading-line1,
 .sponsors-footer-heading-line2 { display: block; }
 @media (max-width: 640px) {
+  .sponsors-footer-heading-line1,
   .sponsors-footer-heading-line2 { display: inline; }
 }
 .sponsors-grid {
@@ -10486,10 +10450,17 @@ button.app-pill.purple.clickable:hover {
 @media (max-width: 600px) {
   .autoevent-foot { margin: 22px 16px 14px; }
   .autoevent-foot-logo { height: 18px; }
+  /* Drop the 'About AutoEvent →' link onto its own line on mobile —
+     the parent question + link don't fit comfortably on one line at
+     12.5px, so block-level display gives a clean two-line stack:
+       Want this AI-planner for your next event?
+       About AutoEvent →
+     Desktop is unaffected — the link stays inline. */
+  .autoevent-foot-cta a { display: block; margin-top: 6px; }
 }
 @media (max-width: 600px) {
   .sponsors-footer { padding: 48px 20px 48px; margin-top: 60px; }
-  .sponsors-footer-heading { font-size: 34px; margin-bottom: 28px; }
+  .sponsors-footer-heading { font-size: 28px; margin-bottom: 28px; }
   .sponsors-grid { grid-template-columns: 1fr; }
   .sponsor-card { padding: 32px 24px 26px; gap: 18px; }
   .sponsor-card-logo { min-height: 80px; }
@@ -10596,12 +10567,32 @@ button.app-pill.purple.clickable:hover {
   white-space: nowrap;
   padding: 0 0.04em;
 }
+/* Long-headline modifier — used on the in-app reauth screen when
+   the dynamic error message exceeds ~90 chars (e.g. the network
+   diagnostic blob). Demotes the H1 to body-paragraph styling so a
+   200-char message doesn't dominate the viewport, while keeping
+   the semantic <h1> so screen-readers still get the page heading.
+   Short messages keep the big serif treatment unchanged. */
+.login-page-title.is-long {
+  font-family: inherit;
+  font-size: clamp(16px, 1.6vw, 19px);
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: var(--text);
+  margin: 12px auto 18px;
+  padding: 0;
+  font-variation-settings: normal;
+  max-width: 52ch;
+  text-wrap: pretty;
+}
 .login-page-sub {
   font-size: 17px;
   color: var(--text-muted);
   line-height: 1.6;
   margin: 0 auto 28px;
   max-width: 44ch;
+  text-wrap: balance;
 }
 .login-page-sub strong {
   color: var(--text);

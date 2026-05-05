@@ -1308,7 +1308,8 @@ function forgetPendingInvite(email) {
   if (_plan?.team_id) {
     supabase.from('pending_invites').delete()
       .eq('team_id', _plan.team_id)
-      .ilike('email', email);
+      .eq('email', lc)
+      .then(() => {});
   }
 }
 function _formatRelativeTime(ms) {
@@ -4613,13 +4614,21 @@ window.planSendInvite = async function() {
 };
 
 window.planResendInvite = async function(email) {
+  const btn = document.querySelector(`.team-invite-pending-row[data-email="${CSS.escape(email)}"] .team-invite-pending-btn.resend`);
+  if (btn) { btn.textContent = 'Resent ✓'; btn.disabled = true; }
   const ok = await _sendTeamInvite(email, { resend: true });
-  if (ok) renderApp(); // bumps the "sent X ago" timestamp + reorders
+  if (ok) setTimeout(renderApp, 1200); // brief pause so user sees "Resent ✓"
+  else if (btn) { btn.textContent = 'Resend'; btn.disabled = false; }
 };
 
 window.planCancelPendingInvite = function(email) {
-  forgetPendingInvite(email);
-  renderApp();
+  planShowConfirm({
+    title: 'Cancel invite',
+    body: `Cancel the invite to <strong>${escHtml(email)}</strong>? They won't be able to join your team unless you send them a new invite.`,
+    confirmLabel: 'Cancel invite',
+    confirmTone: 'danger',
+    onConfirm: () => { forgetPendingInvite(email); renderApp(); },
+  });
 };
 
 // ── Demo mode (no auth, no DB) ────────────────────────────────────────────────

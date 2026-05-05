@@ -558,6 +558,18 @@ function truncateBoothDesc(desc) {
   return words.slice(0, 18).join(' ') + '…';
 }
 
+function renderArrivalCard(day) {
+  const label = day === 'Day 1' ? 'Day 1 · Wednesday 13 May' : 'Day 2 · Thursday 14 May';
+  return `
+    <div class="checklist-arrival-card">
+      <div class="checklist-arrival-time">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>9:30 – 10:00 · ${escHtml(label)}</span>
+      </div>
+      <div class="checklist-arrival-body">Grab a coffee and get ready for a big day.</div>
+    </div>`;
+}
+
 function renderGapCard(day, startTime, endTime, _gapIndex) {
   const diffMin = parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
   if (diffMin < 20) return '';
@@ -959,23 +971,43 @@ function renderChecklistTab() {
       </div>`;
   }
 
-  // Build session HTML with day group labels and gap cards
+  // Build session HTML with day labels, arrival card, and contiguous gap cards.
+  // One session per hour is enforced at plan-build time. Gaps are calculated as
+  // the contiguous free window between consecutive sessions (or day-start to
+  // first session). A single gap card spans the full window — no merging needed.
   let currentDay = null;
-  let gapIndex = 0;
+  let gapIndex   = 0;
   const sessionParts = [];
+
   sortedSessions.forEach((item, i) => {
-    if (item.day !== currentDay) {
+    const isNewDay = item.day !== currentDay;
+
+    if (isNewDay) {
       currentDay = item.day;
       const dayLabel = item.day === 'Day 1' ? 'Day 1 · Wednesday 13 May'
                      : item.day === 'Day 2' ? 'Day 2 · Thursday 14 May' : '';
       if (dayLabel) sessionParts.push(`<div class="checklist-day-label">${dayLabel}</div>`);
+
+      // Arrival card for morning/full-day attendees
+      const hasMorning = sortedSessions.some(s => s.day === item.day && s.start_time < '13:00');
+      if (hasMorning) sessionParts.push(renderArrivalCard(item.day));
+
+      // Gap from day-start to first session of this day
+      const dayStart = hasMorning ? '10:00' : '13:00';
+      if (item.start_time > dayStart) {
+        const gap = parseTimeToMinutes(item.start_time) - parseTimeToMinutes(dayStart);
+        if (gap >= 20) sessionParts.push(renderGapCard(item.day, dayStart, item.start_time, gapIndex++));
+      }
+    } else {
+      // Gap between previous session's end and this session's start
+      const prev = sortedSessions[i - 1];
+      if (prev && prev.day === item.day && prev.end_time && item.start_time) {
+        const gap = parseTimeToMinutes(item.start_time) - parseTimeToMinutes(prev.end_time);
+        if (gap >= 20) sessionParts.push(renderGapCard(item.day, prev.end_time, item.start_time, gapIndex++));
+      }
     }
+
     sessionParts.push(renderSessionRow(item, i));
-    const next = sortedSessions[i + 1];
-    if (next && next.day === item.day && item.end_time && next.start_time) {
-      const gap = parseTimeToMinutes(next.start_time) - parseTimeToMinutes(item.end_time);
-      if (gap >= 20) sessionParts.push(renderGapCard(item.day, item.end_time, next.start_time, gapIndex++));
-    }
   });
   const sessionItems = sessionParts.join('');
 

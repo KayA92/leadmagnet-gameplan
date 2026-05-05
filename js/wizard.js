@@ -288,6 +288,67 @@ function buildPreviewBooths(allRanked) {
 }
 
 
+// Returns clock-aligned hour blocks for the user's attendance window.
+// Day 1 default: 10:00–17:00. Day 2 default: 10:00–16:00.
+function getConferenceHours(answers) {
+  const times = Array.isArray(answers.time) ? answers.time
+              : (answers.time ? [answers.time] : ['wed-full']);
+  const blocks = [];
+  const addBlocks = (day, startH, endH) => {
+    for (let h = startH; h < endH; h++) {
+      blocks.push({
+        day,
+        start: `${String(h).padStart(2, '0')}:00`,
+        end:   `${String(h + 1).padStart(2, '0')}:00`,
+      });
+    }
+  };
+  for (const t of times) {
+    const day        = t.startsWith('wed') ? 'Day 1' : 'Day 2';
+    const defaultEnd = day === 'Day 1' ? 17 : 16;
+    const startH     = t.endsWith('-pm') ? 13 : 10;
+    const endH       = t.endsWith('-am') ? 13 : defaultEnd;
+    addBlocks(day, startH, endH);
+  }
+  return blocks;
+}
+
+// Builds the plan sessions: one top-ranked session per hour block.
+// Extends to 17:00–18:00 on Day 1 if a non-neutral session exists there
+// and the user isn't morning-only.
+function buildHourlyPlan(filteredSessions, answers) {
+  const blocks   = getConferenceHours(answers);
+  const selected = [];
+
+  for (const block of blocks) {
+    const inBlock = filteredSessions.filter(s =>
+      s.day === block.day &&
+      s.start_time >= block.start &&
+      s.start_time < block.end
+    );
+    if (!inBlock.length) continue;
+    selected.push(inBlock.reduce((a, b) => (a._rank < b._rank ? a : b)));
+  }
+
+  // Optional 17:00–18:00 extension on Day 1
+  const times = Array.isArray(answers.time) ? answers.time : (answers.time ? [answers.time] : []);
+  const morningOnly = times.length > 0 && times.every(t => t.endsWith('-am'));
+  if (!morningOnly) {
+    const lateDay1 = filteredSessions.filter(s =>
+      s.day === 'Day 1' && s.start_time >= '17:00' && s.start_time < '18:00' && s._bucket !== 'neutral'
+    );
+    if (lateDay1.length) {
+      const best = lateDay1.reduce((a, b) => (a._rank < b._rank ? a : b));
+      if (!selected.some(s => s.session_id === best.session_id)) selected.push(best);
+    }
+  }
+
+  return selected.sort((a, b) => {
+    if (a.day !== b.day) return a.day < b.day ? -1 : 1;
+    return a.start_time.localeCompare(b.start_time);
+  });
+}
+
 async function startReveal() {
   state.filteredSessions   = selectSessions(state.answers, state.allSessions);
   state.filteredExhibitors = selectBooths(state.answers, state.allExhibitors);
@@ -296,9 +357,10 @@ async function startReveal() {
   startProgress();
   startStatusCycle();
 
-  const sessions = buildPreviewSessions(state.filteredSessions);
-  const booths   = buildPreviewBooths(state.filteredExhibitors);
-  state.plan = { sessions, booths, themes: [] };
+  state.previewSessions = buildPreviewSessions(state.filteredSessions);
+  const planSessions    = buildHourlyPlan(state.filteredSessions, state.answers);
+  const booths          = buildPreviewBooths(state.filteredExhibitors);
+  state.plan = { sessions: planSessions, booths, themes: [] };
 
   await wait(5000);
 
@@ -385,7 +447,8 @@ function renderPlanPreview() {
   const container = $('plan-preview-content');
   if (!container || !state.plan) return;
 
-  const { sessions: rankedSessions = [], booths: rankedBooths = [] } = state.plan;
+  const rankedSessions = state.previewSessions || [];
+  const { booths: rankedBooths = [] } = state.plan;
   const cpdHours = (rankedSessions.length * 40 / 60).toFixed(1);
 
   // Quiet tuned-to-you line — single sentence acknowledging what the user

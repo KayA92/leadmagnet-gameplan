@@ -373,6 +373,12 @@ export function selectSessions(answers, allSessions) {
     seenIds.add(session.session_id);
     if (!matchesAnySlot(session)) continue;
 
+    // Exclude sessions that span an hour boundary with a non-zero end minute
+    // (e.g. 10:50–11:10) — they can't sit cleanly in a single hour slot.
+    const [startH] = (session.start_time || '').split(':').map(Number);
+    const [endH, endM] = (session.end_time || '').split(':').map(Number);
+    if (!isNaN(startH) && !isNaN(endH) && !isNaN(endM) && endH !== startH && endM !== 0) continue;
+
     const { score, problemNorm, roleTheatreMatch, manualBoost } = scoreProgramme(session, answers);
     scored.push({ ...session, _score: score, _problemNorm: problemNorm, _roleTheatreMatch: roleTheatreMatch, _manualBoost: manualBoost });
   }

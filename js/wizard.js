@@ -235,30 +235,55 @@ function deconflictSessions(rankedItems, allSessions) {
   return placed;
 }
 
-// Builds the 12-pill preview booth array:
-//   • Ranks 1–3 always shown (top matches)
-//   • 4 randomly chosen from high-bucket exhibitors in ranks 4–11
-//   • 4 randomly chosen from medium-bucket exhibitors in ranks 4–11
-//   • All sorted back into AI rank order, Workiro appended last as pill 12
+// Builds the preview booth array. Two paths:
+//
+// Path A — Workiro is top/high/medium:
+//   Exclude Workiro from the general pool, take one fewer from their bucket,
+//   insert Workiro, sort by rank → 11 total.
+//
+// Path B — Workiro is neutral:
+//   Full 3/4/4 from all non-Workiro exhibitors, append Workiro as 12th → 12 total.
 function buildPreviewBooths(allRanked) {
   const ranked = allRanked
     .filter(e => typeof e._rank === 'number')
     .sort((a, b) => a._rank - b._rank);
-  const host = allRanked.find(e => e._rank === 'host');
 
-  const top3 = ranked.slice(0, 3);
-  const top3Names = new Set(top3.map(e => e.company_name));
+  const workiro = allRanked.find(e => e.is_host);
+  const bucket  = workiro?._bucket || 'neutral';
 
-  // Draw high and medium from the full pool — top-ranked exhibitors often cluster
-  // in 'high', so restricting to ranks 4–11 leaves no medium candidates.
-  const pool = shuffleArray(ranked.filter(e => !top3Names.has(e.company_name)));
+  // General pool always excludes Workiro — their slot is handled per path
+  const general = ranked.filter(e => !e.is_host);
 
-  const highPicks   = pool.filter(e => e._bucket === 'high').slice(0, 4);
-  const usedNames   = new Set([...top3Names, ...highPicks.map(e => e.company_name)]);
-  const mediumPicks = pool.filter(e => e._bucket === 'medium' && !usedNames.has(e.company_name)).slice(0, 4);
+  function pick3_4_4(pool, topN, highN, mediumN) {
+    const topPicks  = pool.filter(e => e._bucket === 'top').slice(0, topN);
+    const usedNames = new Set(topPicks.map(e => e.company_name));
 
-  const display = [...top3, ...highPicks, ...mediumPicks].sort((a, b) => a._rank - b._rank);
-  if (host) display.push(host);
+    // Draw high and medium from shuffled remainder — top-ranked exhibitors often
+    // cluster in 'high', so restricting by rank leaves no medium candidates.
+    const rest        = shuffleArray(pool.filter(e => !usedNames.has(e.company_name)));
+    const highPicks   = rest.filter(e => e._bucket === 'high').slice(0, highN);
+    highPicks.forEach(e => usedNames.add(e.company_name));
+    const mediumPicks = rest.filter(e => e._bucket === 'medium' && !usedNames.has(e.company_name)).slice(0, mediumN);
+
+    return [...topPicks, ...highPicks, ...mediumPicks];
+  }
+
+  let display;
+
+  if (bucket === 'neutral') {
+    // Path B: full 3/4/4, Workiro bolted on as 12th
+    display = pick3_4_4(general, 3, 4, 4);
+    if (workiro) display.push(workiro);
+  } else {
+    // Path A: one fewer slot in Workiro's bucket, insert Workiro, sort by rank
+    const topN    = bucket === 'top'    ? 2 : 3;
+    const highN   = bucket === 'high'   ? 3 : 4;
+    const mediumN = bucket === 'medium' ? 3 : 4;
+    display = pick3_4_4(general, topN, highN, mediumN);
+    if (workiro) display.push(workiro);
+    display.sort((a, b) => a._rank - b._rank);
+  }
+
   return display.map((e, i) => ({ ...e, rank: i + 1, match: { bucket: e._bucket || 'neutral', rank: i + 1 } }));
 }
 
@@ -271,8 +296,7 @@ async function startReveal() {
   startProgress();
   startStatusCycle();
 
-  const deconflicted = deconflictSessions(state.filteredSessions, state.allSessions);
-  const sessions = buildPreviewSessions(deconflicted);
+  const sessions = buildPreviewSessions(state.filteredSessions);
   const booths   = buildPreviewBooths(state.filteredExhibitors);
   state.plan = { sessions, booths, themes: [] };
 
@@ -418,7 +442,7 @@ function renderPlanPreview() {
         <div class="mini-title">${escHtml(b.company_name)}</div>
         <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(standNum)}</div>
       </div>
-      ${renderMatchBadge({ bucket, rank: displayRank, type: 'booth', hostStar: !!b.is_host })}
+      ${renderMatchBadge({ bucket, rank: displayRank, type: 'booth' })}
     </div>`;
   };
 

@@ -189,7 +189,6 @@ function assignBuckets(ranked, config = EXHIBITOR_BUCKETS) {
 
   // Initial assignment by score
   for (const e of ranked) {
-    if (e._rank === 'host') { e._bucket = 'top'; continue; }
     const s = e._score || 0;
     e._bucket = s > THRESHOLDS.top    ? 'top'
               : s > THRESHOLDS.high   ? 'high'
@@ -203,9 +202,7 @@ function assignBuckets(ranked, config = EXHIBITOR_BUCKETS) {
   const byRankDesc = (a, b) => ((b._score || 0) - (a._score || 0)) || ((a._rank || 0) - (b._rank || 0));
   const byRankAsc  = (a, b) => ((a._score || 0) - (b._score || 0)) || ((b._rank || 0) - (a._rank || 0));
 
-  const scorable = ranked
-    .filter(e => e._rank !== 'host')
-    .sort(byRankDesc);
+  const scorable = ranked.slice().sort(byRankDesc);
 
   // Cap maximums: demote lowest-scoring excess entries to the next bucket down.
   // Run top→high→medium so cascaded demotions are handled in one pass.
@@ -249,10 +246,7 @@ function assignBuckets(ranked, config = EXHIBITOR_BUCKETS) {
 // wizard.js builds the preview from the top 11 + host (Workiro = 12th pill).
 // state.filteredExhibitors holds the full list for console inspection.
 export function selectBooths(answers, allExhibitors) {
-  const workiro = allExhibitors.find(e => e.is_host);
-
   const pool = allExhibitors.filter(e => {
-    if (e.is_host) return false;
     if (e.show_category === 'FD Show' && answers.role !== 'industry') return false;
     return true;
   });
@@ -313,12 +307,6 @@ export function selectBooths(answers, allExhibitors) {
     ...selected.map((e, i) => ({ ...e, _rank: i + 1 })),
     ...rest.map((e, i) => ({ ...e, _rank: i + 12 })),
   ];
-
-  // Workiro last with a host marker
-  if (workiro) {
-    const { score, problemNorm, toolNorm, manualBoost } = scoreExhibitor(workiro, answers);
-    ranked.push({ ...workiro, _score: score, _problemNorm: problemNorm, _toolNorm: toolNorm, _manualBoost: manualBoost, _rank: 'host' });
-  }
 
   assignBuckets(ranked);
   return ranked;

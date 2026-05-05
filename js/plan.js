@@ -1009,11 +1009,8 @@ function renderChecklistTab() {
                      : item.day === 'Day 2' ? 'Day 2 · Thursday 14 May' : '';
       if (dayLabel) sessionParts.push(`<div class="checklist-day-label">${dayLabel}</div>`);
 
-      // Arrival card for morning/full-day attendees
-      const hasMorning = sortedSessions.some(s => s.day === item.day && s.start_time < '13:00');
-      if (hasMorning) sessionParts.push(renderArrivalCard(item.day));
-
       // Gap from day-start to first session of this day
+      const hasMorning = sortedSessions.some(s => s.day === item.day && s.start_time < '13:00');
       const dayStart = hasMorning ? '10:00' : '13:00';
       if (item.start_time > dayStart) {
         const gap = parseTimeToMinutes(item.start_time) - parseTimeToMinutes(dayStart);

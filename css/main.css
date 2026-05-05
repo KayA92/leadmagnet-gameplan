@@ -10688,6 +10688,11 @@ button.app-pill.purple.clickable:hover {
   box-sizing: border-box;
   flex-wrap: wrap;
 }
+/* The display: flex above overrides the [hidden] HTML attribute, so
+   the resend block was visible on initial page load. Re-honour
+   [hidden] explicitly so the JS controlling resendEl.hidden actually
+   hides/shows the block. */
+.login-page-resend[hidden] { display: none; }
 .login-page-resend-label { line-height: 1.5; }
 .login-page-resend-btn {
   font-family: 'IBM Plex Sans', system-ui, sans-serif;

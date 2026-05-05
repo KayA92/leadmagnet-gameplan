@@ -355,8 +355,15 @@ async function startReveal() {
 
   state.previewSessions = buildPreviewSessions(state.filteredSessions);
   const planSessions    = buildHourlyPlan(state.filteredSessions, state.answers);
-  const booths          = buildPreviewBooths(state.filteredExhibitors);
-  state.plan = { sessions: planSessions, booths, themes: [] };
+  const ranked = [...state.filteredExhibitors]
+    .filter(e => typeof e._rank === 'number')
+    .sort((a, b) => a._rank - b._rank);
+  const workiro = ranked.find(e => e.is_host);
+  const workiroInTop12 = workiro && ranked.indexOf(workiro) < 12;
+  const planBooths = workiroInTop12
+    ? ranked.slice(0, 12)
+    : [...ranked.filter(e => !e.is_host).slice(0, 11), ...(workiro ? [workiro] : [])];
+  state.plan = { sessions: planSessions, booths: planBooths, themes: [] };
 
   await wait(5000);
 

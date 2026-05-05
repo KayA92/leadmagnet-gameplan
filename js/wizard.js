@@ -436,11 +436,15 @@ function renderPlanPreview() {
     const displayRank = typeof b._rank === 'number' ? b._rank : (i + 1);
     const bucket = b._bucket || 'neutral';
     const standNum = (b.stand_number || '').toString().replace(/\.$/, '').trim();
-    return `<div class="mini-item" style="animation-delay:${animIndex * 80}ms;">
+    const hostNote = b.is_host
+      ? `<div class="mini-meta mini-host-line"><span class="type-pill booth">We created this app</span></div>`
+      : '';
+    return `<div class="mini-item booth-card${b.is_host ? ' host-booth' : ''}" style="animation-delay:${animIndex * 80}ms;">
       <div class="mini-tick">${TICK_SVG}</div>
       <div class="mini-body">
         <div class="mini-title">${escHtml(b.company_name)}</div>
         <div class="mini-meta"><span class="type-pill booth">Booth</span>Stand ${escHtml(standNum)}</div>
+        ${hostNote}
       </div>
       ${renderMatchBadge({ bucket, rank: displayRank, type: 'booth' })}
     </div>`;

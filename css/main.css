@@ -1471,6 +1471,24 @@ body::before {
   border-color: rgba(168,85,247,0.25);
   background: rgba(168,85,247,0.06);
 }
+/* Booth cards — purple tint to distinguish from mint session cards */
+.mini-item.booth-card {
+  background: rgba(168,85,247,0.05);
+  border-color: rgba(168,85,247,0.18);
+}
+.mini-item.booth-card .mini-tick {
+  background: rgba(168,85,247,0.15);
+  border-color: rgba(168,85,247,0.40);
+}
+.mini-item.booth-card .mini-tick svg { color: var(--purple); }
+/* Workiro — stronger neon purple to signal host/creator */
+.mini-item.host-booth {
+  background: rgba(168,85,247,0.09);
+  border-color: rgba(168,85,247,0.55);
+  box-shadow: 0 0 18px rgba(168,85,247,0.18);
+}
+.mini-host-line { margin-top: 4px; }
+.mini-host-line .type-pill { white-space: nowrap; }
 
 /* Mini-item now has 3 columns: tick · body · confidence badge */
 .mini-item { grid-template-columns: auto 1fr auto; }

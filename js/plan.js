@@ -433,17 +433,36 @@ function bestAlternativeScore(item) {
 // Excludes the current session and anything else already in the user's
 // plan. Click on the count line opens the same swap modal as the SWAP
 // button — the user picks for themselves from the full list.
-function sameBucketAlternativeCount(item, bucket) {
-  if (!item.day || !item.start_time || !bucket) return 0;
-  const planKeys = new Set((_plan?.sessions || []).map(s => `${s.session_id}|${s.day || ''}|${s.start_time || ''}`));
-  let count = 0;
+// Returns the best available { bucket, count } for the same hour slot, but
+// only if the best bucket is at least as good as the current session's bucket.
+// Returning null suppresses the notification — no point surfacing
+// "26 neutral alternatives" when you already have a neutral session.
+function bestHourAlternative(item, currentBucket) {
+  if (!item.day || !item.start_time || !currentBucket) return null;
+  const itemHour = parseInt((item.start_time || '').split(':')[0], 10);
+  if (isNaN(itemHour)) return null;
+  const BUCKET_ORDER = ['top', 'high', 'medium', 'neutral'];
+  const currentIdx = BUCKET_ORDER.indexOf(currentBucket);
+  if (currentIdx === -1) return null;
+  const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
+  const counts = { top: 0, high: 0, medium: 0, neutral: 0 };
   for (const s of (_allSessions || [])) {
-    if (s.day !== item.day || s.start_time !== item.start_time) continue;
     if (s.session_id === item.session_id) continue;
-    if (planKeys.has(`${s.session_id}|${s.day || ''}|${s.start_time || ''}`)) continue;
-    if (matchForSession(s).bucket === bucket) count++;
+    if (s.day !== item.day) continue;
+    const sHour = parseInt((s.start_time || '').split(':')[0], 10);
+    if (sHour !== itemHour) continue;
+    if (planIds.has(s.session_id)) continue;
+    const b = matchForSession(s).bucket;
+    if (b in counts) counts[b]++;
   }
-  return count;
+  for (const b of BUCKET_ORDER) {
+    if (counts[b] > 0) {
+      // Only surface if this best available bucket is at least as good as current
+      if (BUCKET_ORDER.indexOf(b) <= currentIdx) return { bucket: b, count: counts[b] };
+      break; // best available is worse than current — nothing to suggest
+    }
+  }
+  return null;
 }
 
 // ── Render helpers ────────────────────────────────────────────────────────────
@@ -734,7 +753,7 @@ function renderChecklistTab() {
     const planRankIdx  = (item.rank && Number.isFinite(item.rank)) ? item.rank : (i + 1);
     const match        = matchForSession(item, planRankIdx);
     const whyTags      = whyMatched(item, plan, match.bucket);
-    const altCount     = sameBucketAlternativeCount(item, match.bucket);
+    const altInfo      = bestHourAlternative(item, match.bucket);
     const teamNotes    = teamNotesByItem[noteKey] || [];
 
     // Universal SWAP badge — shown under the time block on EVERY session.
@@ -753,15 +772,15 @@ function renderChecklistTab() {
         ${whyTags.map(t => `<span class="checklist-why-tag">${escHtml(t.text)}</span>`).join('')}
       </div>` : ''}`;
 
-    // Single-line alts teaser: "↔ 4 other HIGH MATCH alternatives at this
-    // time". Only shown if same-bucket alternatives exist for this slot.
-    // Click opens the same swap modal as the inline SWAP button so the
-    // user sees ALL options in that slot and picks for themselves.
-    const altsHtml = altCount > 0 ? `
-      <button class="checklist-alternatives-link tier-${match.bucket}" type="button"
+    // Surfaces the best available bucket in this hour — only shown if there's
+    // something at least as good as the current session. A top session with no
+    // better alternatives gets no teaser; a neutral slot with top alternatives
+    // shows "5 other TOP MATCH alternatives at this time".
+    const altsHtml = altInfo ? `
+      <button class="checklist-alternatives-link tier-${altInfo.bucket}" type="button"
         onclick="planOpenSlotSwap('${escHtml(item.session_id)}', event)">
         ${SWAP_SVG}
-        <span>${altCount} other <strong>${escHtml(bucketLabel(match.bucket).toUpperCase())}</strong> alternative${altCount === 1 ? '' : 's'} at this time</span>
+        <span>${altInfo.count} other <strong>${escHtml(bucketLabel(altInfo.bucket).toUpperCase())}</strong> alternative${altInfo.count === 1 ? '' : 's'} at this time</span>
       </button>` : '';
 
     const teamNotesHtml = renderTeamNotesBlock(teamNotes, noteKey, item.title || '');
@@ -4093,35 +4112,23 @@ window.planOpenSlotSwap = function(currentId, ev) {
   const current = (_allSessions || []).find(s => s.session_id === currentId)
     || (_plan?.sessions || []).find(s => s.session_id === currentId);
   if (!current) return;
-  const candidates = (_allSessions || []).filter(s =>
-    s.session_id !== currentId &&
-    s.day === current.day &&
-    s.start_time === current.start_time,
-  );
-  const cats = _plan?.categories || [];
-  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
+  const currentHour = parseInt((current.start_time || '').split(':')[0], 10);
+  const slotStart = isNaN(currentHour) ? (current.start_time || '') : `${String(currentHour).padStart(2, '0')}:00`;
+  const slotEnd   = isNaN(currentHour) ? (current.end_time   || '') : `${String(currentHour + 1).padStart(2, '0')}:00`;
+  const candidates = (_allSessions || []).filter(s => {
+    if (s.session_id === currentId) return false;
+    if (s.day !== current.day) return false;
+    const sHour = parseInt((s.start_time || '').split(':')[0], 10);
+    return sHour === currentHour;
+  });
   const scored = candidates.map(s => ({
     session: s,
-    score:   (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
     match:   matchForSession(s),
   }));
-  // Sort by ranking ascending — closest swaps appear first.
   scored.sort((a, b) =>
     a.match.rank - b.match.rank ||
-    b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
-  // Reassign buckets and ranks relative to this slot's candidate pool so the
-  // modal always shows a high/medium/neutral distribution rather than all-neutral.
-  const slotTotal = scored.length;
-  scored.forEach((item, i) => {
-    const pct = (i + 1) / slotTotal;
-    item.match = {
-      bucket: pct <= 0.25 ? 'high' : pct <= 0.6 ? 'medium' : 'neutral',
-      rank: i + 1,
-      localTotal: slotTotal,
-    };
-  });
   const dayLabel = current.day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   // Free-time row sits at the top of the list — distinct purple tint
@@ -4150,7 +4157,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
-              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', total: m.localTotal, compact: true })}
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
               ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>
@@ -4171,7 +4178,7 @@ window.planOpenSlotSwap = function(currentId, ev) {
       <button class="login-modal-close" onclick="document.getElementById('planSlotSwapModal')?.remove()" aria-label="Close" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(current.start_time || '')}–${escHtml(current.end_time || '')}</div>
+      <div class="login-modal-eyebrow">${escHtml(dayLabel)} · ${escHtml(slotStart)}–${escHtml(slotEnd)}</div>
       <h2 class="login-modal-title">Edit this <em>slot.</em></h2>
       <p class="login-modal-sub">Currently: <strong style="color:var(--text);">${escHtml(current.title || '')}</strong>. Swap for another session, or free the slot for booth visits.</p>
       <div class="slot-swap-list">${freeTimeRow}${candidatesHtml}</div>

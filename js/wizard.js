@@ -271,14 +271,16 @@ async function startReveal() {
   startProgress();
   startStatusCycle();
 
-  stopProgress();
-  stopStatusCycle();
-  stopTicker();
-
   const deconflicted = deconflictSessions(state.filteredSessions, state.allSessions);
   const sessions = buildPreviewSessions(deconflicted);
   const booths   = buildPreviewBooths(state.filteredExhibitors);
   state.plan = { sessions, booths, themes: [] };
+
+  await wait(5000);
+
+  stopProgress();
+  stopStatusCycle();
+  stopTicker();
 
   await wait(300);
   goToStage(7);

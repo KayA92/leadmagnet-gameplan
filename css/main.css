@@ -10131,7 +10131,8 @@ button.app-pill.purple.clickable:hover {
   background-clip: text;
   color: transparent;
   animation: gradient-shift 8s ease-in-out infinite;
-  padding: 0 0.04em;
+  display: inline-block;
+  padding: 0 0.08em;
 }
 .sponsors-grid {
   display: grid;
@@ -10230,19 +10231,27 @@ button.app-pill.purple.clickable:hover {
   flex: 1;
   text-wrap: pretty;
 }
-/* Booth-number callout inside the sponsor desc — purple, fully bold
-   ('Come visit us at booth X' reads as one assertive sentence). The
-   wrapper itself is white-space:nowrap so 'booth' and the stand
-   number never split across a line break. */
+/* Booth-number callout inside the sponsor desc — full sentence in
+   bold so 'Come visit us at booth X' reads as one assertive line.
+   Default is white-on-dark (home + in-app sponsors). Login overrides
+   to purple + a forced new line below. */
 .sponsor-card-booth {
   display: inline;
-  color: var(--purple);
+  color: var(--text);
   font-weight: 700;
 }
 .sponsor-card-booth strong {
-  color: var(--purple);
+  color: var(--text);
   font-weight: 700;
 }
+/* Login page: purple + forced new line so the body copy reads as a
+   credit, and the booth invite as a clear call-out. */
+.login-page-sponsors .sponsor-card-booth {
+  display: block;
+  margin-top: 6px;
+  color: var(--purple);
+}
+.login-page-sponsors .sponsor-card-booth strong { color: var(--purple); }
 /* "What we can help with" — only renders when there's overlap between
    the sponsor's solve list and the user's onboarding answers. */
 .sponsor-card-relevance {

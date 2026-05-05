@@ -326,8 +326,10 @@ Deno.serve(async (req: Request) => {
     const encodedEmail = encodeURIComponent(inviteeEmail.toLowerCase());
     const isNewUser = !(await checkUserExists(inviteeEmail));
 
+    const encodedInviter = encodeURIComponent(inviterName || '');
+    const encodedCompany = encodeURIComponent(inviterCompany || '');
     const ctaUrl = isNewUser
-      ? `${SITE_URL}/?team=${inviteToken}&email=${encodedEmail}`
+      ? `${SITE_URL}/join/?team=${inviteToken}&email=${encodedEmail}&inviter=${encodedInviter}&company=${encodedCompany}`
       : `${SITE_URL}/login/?team=${inviteToken}&email=${encodedEmail}`;
 
     const subject = isNewUser

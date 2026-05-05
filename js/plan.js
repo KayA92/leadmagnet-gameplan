@@ -4615,18 +4615,62 @@ async function initDemoMode() {
     ]);
     log('fetched', `sessions=${allSessions.length} booths=${allExhibitors.length}`);
 
-    // Pick the first 11 sessions across both days (chronological), and the
-    // first 8 booths. Matches the dummy ranking arrays so the bucket badges
-    // line up with the SESSION_PLAN_DUMMY / BOOTH_PLAN_DUMMY positions.
-    const sessions = [...(allSessions || [])]
-      .filter(s => s.title && s.day && s.start_time)
-      .sort((a, b) => {
-        const da = a.day === 'Day 1' ? 1 : 2;
-        const db = b.day === 'Day 1' ? 1 : 2;
-        return da - db || (a.start_time || '').localeCompare(b.start_time || '');
-      })
-      .slice(0, 11)
-      .map((s, i) => ({ ...s, rank: i + 1 }));
+    // Build a deconflicted, gap-friendly demo plan. The earlier
+    // 'first 11 chronologically' approach grabbed sessions running in
+    // parallel across different theatres (10:00 in Bright, 10:00 in
+    // Sage…) which packed every minute of the day and never showed
+    // any gap-cards. Real users get a single session per time slot
+    // from the AI matcher + wizard's deconflict step, with natural
+    // breaks between them.
+    //
+    // Mirror that here:
+    //   1. Drop micro-sessions (<30 min — Showcase / Case Study
+    //      stages) which clutter the Checklist when stacked next to
+    //      40-min mainstream sessions.
+    //   2. Drop vendor-sponsored theatres (Wolters / Sage / Bright /
+    //      TaxCalc / etc.) so the demo plan looks like a real user's
+    //      AI-matched plan — main programme + Masterclasses, not a
+    //      single-vendor brochure.
+    //   3. Pick alternate time slots per day with theatre rotation
+    //      (each pick prefers a theatre we haven't shown yet) so the
+    //      plan looks varied AND has gap-card breaks between every
+    //      pair of sessions.
+    const _toMin = (t) => { const [h,m] = (t||'').split(':').map(Number); return (h||0)*60 + (m||0); };
+    const _longEnough = (s) => s.start_time && s.end_time && (_toMin(s.end_time) - _toMin(s.start_time) >= 30);
+    const _isMainProgramme = (s) => /^Theatre\b/i.test(s.theatre || '') || /^Masterclasses\b/i.test(s.theatre || '');
+
+    // Group main-programme, long-enough sessions by day → slot → array
+    // of candidate sessions in that slot.
+    const _bySlot = {};
+    for (const s of (allSessions || [])) {
+      if (!s.title || !s.day || !s.start_time) continue;
+      if (!_longEnough(s) || !_isMainProgramme(s)) continue;
+      const slot = `${s.day}|${s.start_time}`;
+      (_bySlot[slot] = _bySlot[slot] || []).push(s);
+    }
+    const _slotKeysSorted = (day) => Object.keys(_bySlot)
+      .filter(k => k.startsWith(`${day}|`))
+      .sort((a, b) => a.split('|')[1].localeCompare(b.split('|')[1]));
+
+    // Walk alternate slots per day, picking a theatre that hasn't been
+    // used yet (falls back to first candidate if everything's been
+    // shown). Gives 3-4 sessions per day with theatre variety + gaps.
+    const _seenTheatres = new Set();
+    const _pickFromSlots = (slotKeys) => {
+      const out = [];
+      for (let i = 0; i < slotKeys.length && out.length < 4; i += 2) {
+        const candidates = _bySlot[slotKeys[i]] || [];
+        const pick = candidates.find(c => !_seenTheatres.has(c.theatre)) || candidates[0];
+        if (pick) {
+          _seenTheatres.add(pick.theatre);
+          out.push(pick);
+        }
+      }
+      return out;
+    };
+    const _demoDay1 = _pickFromSlots(_slotKeysSorted('Day 1'));
+    const _demoDay2 = _pickFromSlots(_slotKeysSorted('Day 2'));
+    const sessions = [..._demoDay1, ..._demoDay2].map((s, i) => ({ ...s, rank: i + 1 }));
     const booths = [...(allExhibitors || [])]
       .filter(e => e.company_name)
       .slice(0, 8)

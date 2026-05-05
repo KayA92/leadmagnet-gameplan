@@ -10107,6 +10107,32 @@ button.app-pill.purple.clickable:hover {
   border-color: var(--mint);
   opacity: 1;
 }
+/* Booth swap row — info top-left, button top-right, description full-width below */
+.slot-swap-row--booth {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.slot-swap-booth-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.slot-swap-booth-info {
+  flex: 1;
+  min-width: 0;
+}
+.slot-swap-booth-info .match-badge { margin-top: 6px; }
+.slot-swap-booth-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* Free-time row at the top of the swap list — distinct purple tint
    so it reads as a different KIND of action vs the session swap rows
    below it. Mirrors the gap-card / break-card colour. */

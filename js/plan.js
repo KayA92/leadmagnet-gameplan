@@ -4454,19 +4454,21 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
   const candidatesHtml = scored.length === 0
     ? '<div style="color:var(--text-muted);font-size:14px;padding:12px 0">No other booths available to swap.</div>'
     : scored.map(({ booth: b, match: m }) => {
-        const desc = (b.company_description || '').slice(0, 100).trim();
+        const desc = (b.company_description || '').slice(0, 160).trim();
         const truncDesc = desc.length < (b.company_description || '').length ? desc + '…' : desc;
         return `
-          <div class="slot-swap-row">
-            <div class="slot-swap-row-main">
-              <div class="slot-swap-row-title">${escHtml(b.company_name || '')}</div>
-              <div class="slot-swap-row-meta">Stand ${escHtml(String(b.stand_number || ''))}</div>
-              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', total: m.localTotal, compact: true })}
-              ${truncDesc ? `<div class="slot-swap-row-desc">${escHtml(truncDesc)}</div>` : ''}
+          <div class="slot-swap-row slot-swap-row--booth">
+            <div class="slot-swap-booth-top">
+              <div class="slot-swap-booth-info">
+                <div class="slot-swap-row-title">${escHtml(b.company_name || '')}</div>
+                <div class="slot-swap-row-meta">Stand ${escHtml(String(b.stand_number || ''))}</div>
+                ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', total: m.localTotal, compact: true })}
+              </div>
+              <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentStandNumber))}','${escHtml(String(b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap
+              </button>
             </div>
-            <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentStandNumber))}','${escHtml(String(b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap
-            </button>
+            ${truncDesc ? `<p class="slot-swap-booth-desc">${escHtml(truncDesc)}</p>` : ''}
           </div>`;
       }).join('');
 

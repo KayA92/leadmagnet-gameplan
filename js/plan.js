@@ -584,7 +584,7 @@ function renderGapCard(day, startTime, endTime, _gapIndex) {
   const hours    = Math.floor(diffMin / 60);
   const mins     = diffMin % 60;
   const duration = hours > 0 ? `${hours}h${mins > 0 ? ` ${mins}m` : ''}` : `${mins} min`;
-  const kind = diffMin >= 60 ? 'Lunch break' : diffMin >= 45 ? 'Long break' : 'Break';
+  const kind = diffMin >= 45 ? 'Long break' : 'Break';
   return `
     <div class="checklist-gap-card">
       <div class="checklist-gap-main">

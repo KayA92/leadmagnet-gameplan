@@ -354,6 +354,7 @@ async function startReveal() {
   startStatusCycle();
 
   state.previewSessions = buildPreviewSessions(state.filteredSessions);
+  state.previewBooths   = buildPreviewBooths(state.filteredExhibitors);
   const planSessions    = buildHourlyPlan(state.filteredSessions, state.answers);
   const ranked = [...state.filteredExhibitors]
     .filter(e => typeof e._rank === 'number')
@@ -451,7 +452,7 @@ function renderPlanPreview() {
   if (!container || !state.plan) return;
 
   const rankedSessions = state.previewSessions || [];
-  const { booths: rankedBooths = [] } = state.plan;
+  const rankedBooths   = state.previewBooths   || [];
   const cpdHours = (rankedSessions.length * 40 / 60).toFixed(1);
 
   // Quiet tuned-to-you line — single sentence acknowledging what the user

@@ -10223,24 +10223,25 @@ button.app-pill.purple.clickable:hover {
 }
 .sponsor-card-desc {
   font-size: 16px;
-  font-style: italic;
   color: var(--text);
   line-height: 1.6;
   margin: 0;
   max-width: 36ch;
   flex: 1;
+  text-wrap: pretty;
 }
-/* Booth-number callout inside the sponsor desc — purple so it stands
-   apart from the body copy without yelling. */
+/* Booth-number callout inside the sponsor desc — purple, fully bold
+   ('Come visit us at booth X' reads as one assertive sentence). The
+   wrapper itself is white-space:nowrap so 'booth' and the stand
+   number never split across a line break. */
 .sponsor-card-booth {
   display: inline;
   color: var(--purple);
-  font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
 }
 .sponsor-card-booth strong {
   color: var(--purple);
-  font-weight: 800;
+  font-weight: 700;
 }
 /* "What we can help with" — only renders when there's overlap between
    the sponsor's solve list and the user's onboarding answers. */

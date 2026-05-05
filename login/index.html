@@ -73,7 +73,7 @@
     <div class="login-page-msg" id="login-msg" style="display:none;"></div>
 
     <div class="login-page-resend" id="login-page-resend" hidden>
-      <span class="login-page-resend-label">Didn't get it in 60 seconds?</span>
+      <span class="login-page-resend-label">Didn't get the email?</span>
       <button class="login-page-resend-btn" id="login-page-resend-btn" type="button">Resend</button>
     </div>
 
@@ -105,9 +105,9 @@
       <div class="sponsor-card-logo">
         <img src="../images/workiro-logo.svg" alt="Workiro">
       </div>
-      <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+ professionals. Come visit us at booth <strong>1144</strong>.</p>
+      <p class="sponsor-card-desc">Cloud document management for UK accountants — trusted by 65,000+&nbsp;professionals. <span class="sponsor-card-booth">Come visit us at booth&nbsp;1144.</span></p>
       <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
-        workiro.com
+        Visit workiro.com
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
@@ -115,17 +115,28 @@
       <div class="sponsor-card-logo">
         <img src="../images/XU%20Magazine.webp" alt="XU Magazine">
       </div>
-      <p class="sponsor-card-desc">The independent news source for accounting app users. Come visit us at booth <strong>510</strong>.</p>
+      <p class="sponsor-card-desc">The independent news source for accounting app&nbsp;users. <span class="sponsor-card-booth">Come visit us at booth&nbsp;510.</span></p>
       <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
-        xumagazine.com
+        Visit xumagazine.com
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
   </div>
 </section>
 
+<div class="autoevent-foot">
+  <div class="autoevent-foot-line">
+    <span class="autoevent-foot-label">Powered by</span>
+    <img class="autoevent-foot-logo" src="../images/AutoEvent.svg" alt="AutoEvent">
+    <span class="autoevent-foot-built">— a free tool by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a></span>
+  </div>
+  <div class="autoevent-foot-cta">
+    Want one of these for your next event? <a href="/about/">About AutoEvent →</a>
+  </div>
+</div>
+
 <div class="hero-page-footer">
-  Free · Built by <a href="https://workiro.com" target="_blank" rel="noopener">Workiro</a> · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
+  Free · <a href="https://www.workiro.com/terms-and-policies/autoevent" target="_blank" rel="noopener">Privacy &amp; terms</a>
 </div>
 
 <script type="module">
@@ -199,11 +210,13 @@
       msg.innerHTML = `<strong>Check your inbox.</strong> A magic link is on its way to <strong>${email}</strong>. Click it to enter.`;
       lastEmail = email;
       emailInput.value = '';
-      // Reveal the resend prompt 60s later — gives email time to arrive.
-      // Most magic links land in <60s; if it didn't, this is the safety net.
+      // Reveal the resend prompt 15s after a successful send — long
+      // enough that most magic links have already arrived (so we
+      // don't trigger premature resends), short enough that the user
+      // is still on the page when it appears.
       resendRevealTimer = setTimeout(() => {
         if (lastEmail) resendEl.hidden = false;
-      }, 60000);
+      }, 15000);
     }
   });
 

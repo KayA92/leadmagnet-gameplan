@@ -4039,30 +4039,14 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
     }
     return true;
   });
-  const cats = _plan?.categories || [];
-  const wantedCanonicals = new Set(cats.flatMap(c => PLAN_CATEGORY_MATCH[c] || []));
   const scored = candidates.map(s => ({
     session: s,
-    score:   (s.canonical_categories || []).filter(c => wantedCanonicals.has(c)).length,
     match:   matchForSession(s),
   }));
-  // Sort by ranking ascending (top match first), then category overlap.
   scored.sort((a, b) =>
     a.match.rank - b.match.rank ||
-    b.score - a.score ||
     (a.session.title || '').localeCompare(b.session.title || ''),
   );
-  // Reassign buckets and ranks relative to this slot's candidate pool so the
-  // modal always shows a high/medium/neutral distribution rather than all-neutral.
-  const slotTotal = scored.length;
-  scored.forEach((item, i) => {
-    const pct = (i + 1) / slotTotal;
-    item.match = {
-      bucket: pct <= 0.25 ? 'high' : pct <= 0.6 ? 'medium' : 'neutral',
-      rank: i + 1,
-      localTotal: slotTotal,
-    };
-  });
   const dayLabel = day === 'Day 1' ? 'Wed 13 May' : 'Thu 14 May';
   const planIds = new Set((_plan?.sessions || []).map(s => s.session_id));
   const candidatesHtml = scored.length === 0
@@ -4078,7 +4062,7 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
             <div class="slot-swap-row-main">
               <div class="slot-swap-row-title">${escHtml(s.title || '')}</div>
               <div class="slot-swap-row-meta">${escHtml(s.theatre || '')}${s.start_time ? ' · ' + escHtml(s.start_time) : ''}</div>
-              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', total: m.localTotal, compact: true })}
+              ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'session', compact: true })}
               ${tagsHtml}
               ${inPlan ? '<span class="slot-swap-already-tag">Already in your plan</span>' : ''}
             </div>

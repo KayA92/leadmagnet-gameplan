@@ -2427,6 +2427,8 @@ window.openPlanEditor = function(mode) {
   overlay.scrollTop = 0;
   const bar = document.getElementById('planEditorFloatingBar');
   if (bar) bar.classList.remove('visible');
+  const backToTop = document.getElementById('planBackToTop');
+  if (backToTop) backToTop.classList.remove('visible');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
@@ -2461,6 +2463,8 @@ window.openPlanEditorWithProblem = function(cat) {
   overlay.classList.add('open');
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
+  const backToTopW = document.getElementById('planBackToTop');
+  if (backToTopW) backToTopW.classList.remove('visible');
 
   renderPlanEditorFilters();
   renderPlanEditorResults();

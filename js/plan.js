@@ -303,7 +303,7 @@ function matchForBooth(b, planRankIndex) {
     return { bucket: scored._bucket, rank };
   }
   if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'booth');
-  return dummyMatchByHash(b?.stand_number || b?.company_name, 'booth');
+  return dummyMatchByHash(b?.booth_id || b?.stand_number || b?.company_name, 'booth');
 }
 
 // Human-readable labels for the user's selected categories. Includes both the
@@ -2746,6 +2746,8 @@ function renderPlanEditorBooths(container) {
     : null;
 
   const filtered = (_allExhibitors || []).filter(e => {
+    // Mirror selectBooths pool filter: FD Show exhibitors only for industry attendees
+    if (e.show_category === 'FD Show' && _plan?.role !== 'industry') return false;
     if (wantedCats || wantOther) {
       const hasCats      = (e.canonical_categories || []).length > 0;
       const matchesCat   = wantedCats && (e.canonical_categories || []).some(c => wantedCats.has(c));

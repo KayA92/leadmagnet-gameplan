@@ -2480,13 +2480,19 @@ window.closePlanEditor = function() {
   if (bar) bar.classList.remove('visible');
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  const wasBooths = _planEditorMode === 'booths';
   _planEditorMode = null;
   if (_planEditorEscHandler) {
     document.removeEventListener('keydown', _planEditorEscHandler);
     _planEditorEscHandler = null;
   }
   renderApp();
+  if (wasBooths) {
+    const anchor = document.getElementById('booths-anchor');
+    if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
 };
 
 window.planEditorOnSearch = function(value) {

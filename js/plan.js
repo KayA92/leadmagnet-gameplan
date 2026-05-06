@@ -2851,106 +2851,24 @@ window.togglePlanBooth = async function(standNumber) {
 
 // ── Sponsors footer ───────────────────────────────────────────────────────────
 
-// Per-sponsor "pains we solve" mapping. Pain labels match the
-// humanised strings stored in plan.problem (PAIN_LABELS in wizard.js).
-// Category slugs match plan.categories. If a user's onboarding has
-// nothing in common with a sponsor, the pains-we-solve block is hidden
-// for that card — we don't fake relevance.
-const SPONSOR_SOLVES = {
-  workiro: {
-    name: 'Workiro',
-    painLabels: [
-      'Document chaos', 'Audit-ready client files', 'Portal adoption / clients hate it',
-      'AML / KYC pressure', 'Chasing clients for records', 'Cyber threats / phishing',
-      'FRS 102 transition', 'Disconnected tech stack',
-    ],
-    categories: [
-      'doc-mgmt', 'doc-management', 'portals-esign', 'aml-onboarding', 'practice-mgmt',
-      'practice-management', 'cyber', 'cyber-security',
-    ],
-  },
-  xu: {
-    name: 'XU Magazine',
-    painLabels: [
-      'AI — where to even start', 'Data mess blocking AI', 'AI — proving the ROI',
-      'AI — team adoption', 'AI skills gap', 'AI governance & risk',
-      'Disconnected tech stack', 'Stuck in compliance',
-    ],
-    categories: [
-      'cloud-accounting', 'ai-automation', 'practice-mgmt', 'practice-management',
-      'tax-mtd', 'forecasting', 'reporting', 'data-analytics',
-    ],
-  },
+const SPONSOR_STATIC_PAINS = {
+  workiro: ['Document chaos', 'Audit-ready client files', 'Data mess blocking AI'],
+  xu:      ['AI — where to even start', 'Winning new clients'],
 };
-function _matchSponsorRelevance(sponsorKey, plan) {
-  const sp = SPONSOR_SOLVES[sponsorKey];
-  if (!sp || !plan) return { pains: [], cats: [] };
-  const userPains = (plan.problem || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
-  const userCats  = plan.categories || [];
-  const lc = (s) => s.toLowerCase();
-  const matchedPains = userPains.filter(p =>
-    sp.painLabels.some(want => lc(want) === lc(p))
-  );
-  const matchedCats = userCats.filter(c => sp.categories.includes(c));
-  return { pains: matchedPains, cats: matchedCats };
-}
 
-// "Also felt by" — for a given sponsor, lists OTHER teammates whose
-// onboarding answers also overlap with the sponsor's solve list.
-// Only computed when the team has 2+ members. Returns user objects
-// from _teamData.members so we can render avatar + first name.
-function _sponsorFeltBy(sponsorKey) {
-  if (!_teamData) return [];
-  if ((_teamData.members?.length ?? 0) < 2) return [];
-  const sp = SPONSOR_SOLVES[sponsorKey];
-  if (!sp) return [];
-  const lc = (s) => (s || '').toLowerCase();
-  const wantPains = new Set(sp.painLabels.map(lc));
-  const wantCats  = new Set(sp.categories);
-  const out = [];
-  for (const tp of (_teamData.teamPlans || [])) {
-    if (tp.user_id === _authUser?.id) continue;
-    const member = _teamData.members.find(m => m.users?.id === tp.user_id);
-    if (!member?.users) continue;
-    const tpPains = (tp.problem || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
-    const overlap = tpPains.some(p => wantPains.has(lc(p)))
-                 || (tp.categories || []).some(c => wantCats.has(c));
-    if (overlap) out.push(member.users);
-  }
-  return out;
-}
-
-function _renderSponsorPainsBlock(sponsorKey, plan) {
-  const { pains, cats } = _matchSponsorRelevance(sponsorKey, plan);
-  if (!pains.length && !cats.length) return '';
-  const painPills = pains.map(p =>
-    `<span class="sponsor-help-pill pain">${escHtml(p)}</span>`).join('');
-  const catPills = cats.map(c =>
-    `<span class="sponsor-help-pill cat">${escHtml(CATEGORY_LABELS[c] || c)}</span>`).join('');
-  const feltBy = _sponsorFeltBy(sponsorKey);
-  const feltByHtml = feltBy.length ? `
-    <div class="sponsor-card-felt-by">
-      <span class="sponsor-felt-label">Also felt by</span>
-      <div class="sponsor-felt-list">
-        ${feltBy.map((u, i) => `
-          <span class="sponsor-felt-pill">
-            <span class="mini-av t${(i % 4) + 1}">${escHtml((u.first_name?.[0] || '?').toUpperCase())}</span>
-            <span class="sponsor-felt-name">${escHtml(u.first_name || 'Teammate')}</span>
-          </span>
-        `).join('')}
-      </div>
-    </div>
-  ` : '';
+function _renderSponsorPainsBlock(sponsorKey) {
+  const pains = SPONSOR_STATIC_PAINS[sponsorKey] || [];
+  if (!pains.length) return '';
+  const pills = pains.map(p => `<span class="sponsor-help-pill pain">${escHtml(p)}</span>`).join('');
   return `
     <div class="sponsor-card-relevance">
       <div class="sponsor-card-relevance-label">What we can help with</div>
-      <div class="sponsor-card-relevance-pills">${painPills}${catPills}</div>
-      ${feltByHtml}
+      <div class="sponsor-card-relevance-pills">${pills}</div>
     </div>
   `;
 }
 
-function sponsorsFooterHtml(plan = _plan) {
+function sponsorsFooterHtml() {
   return `
     <section class="sponsors-footer" style="max-width:760px;">
       <h2 class="sponsors-footer-heading">This free Accountex 2026 Planner <span class="sponsors-footer-heading-line2"><em>is brought to you by:</em></span></h2>
@@ -2963,7 +2881,7 @@ function sponsorsFooterHtml(plan = _plan) {
             Cloud document management for UK accountants — trusted by 65,000+ professionals.
             <span class="sponsor-card-booth">Come visit us at booth <strong>1144</strong>.</span>
           </p>
-          ${_renderSponsorPainsBlock('workiro', plan)}
+          ${_renderSponsorPainsBlock('workiro')}
           <a class="sponsor-card-link" href="https://workiro.com" target="_blank" rel="noopener">
             Visit workiro.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -2977,7 +2895,7 @@ function sponsorsFooterHtml(plan = _plan) {
             The independent news source for accounting app users.
             <span class="sponsor-card-booth">Come visit us at booth <strong>510</strong>.</span>
           </p>
-          ${_renderSponsorPainsBlock('xu', plan)}
+          ${_renderSponsorPainsBlock('xu')}
           <a class="sponsor-card-link" href="https://xumagazine.com" target="_blank" rel="noopener">
             Visit xumagazine.com
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -3078,7 +2996,7 @@ function renderApp() {
 }
 
 function renderCurrentTab() {
-  const footer = sponsorsFooterHtml(_plan);
+  const footer = sponsorsFooterHtml();
   switch (_currentTab) {
     case 'checklist': return renderChecklistTab() + footer;
     case 'team':      return renderTeamTab()      + footer;

@@ -109,7 +109,7 @@ function updateProgress() {
 // makes the wait feel like the AI is actively reasoning, not stalled.
 const STATUS_MESSAGES = [
   'Scanning every session…',
-  'Reading speaker bios so you don\'t have to…',
+  'Skimming every speaker bio…',
   'Matching theatres to your mission…',
   'Cross-referencing your pain points…',
   'Hmm — interesting candidates emerging…',
@@ -127,7 +127,7 @@ const STATUS_MESSAGES = [
   'Deciding what to drop, what to keep…',
   'Double-checking against your top priorities…',
   'Mapping booths to your tech stack…',
-  'Sorting growth sessions from compliance ones…',
+  'Sorting growth from compliance…',
   'Distilling 240+ down to your shortlist…',
   'Auto-selecting your best picks…',
   'Locking in the final order…',

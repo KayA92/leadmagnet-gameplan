@@ -1366,9 +1366,6 @@ function renderPendingInvitesBlock() {
           </div>
           <div class="team-invite-pending-actions">
             <button class="team-invite-pending-btn resend" type="button" data-email="${escHtml(e.email)}" onclick="planResendInvite(this.dataset.email)">Resend</button>
-            <button class="team-invite-pending-btn cancel" type="button" aria-label="Cancel pending" data-email="${escHtml(e.email)}" onclick="planCancelPendingInvite(this.dataset.email)">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
           </div>
         </div>
       `).join('')}

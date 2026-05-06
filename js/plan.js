@@ -2954,42 +2954,7 @@ function renderApp() {
     }, { passive: true });
   }
 
-  if (_pendingJoinToken) {
-    const banner = document.createElement('div');
-    banner.className = 'team-join-prompt';
-    banner.innerHTML = `
-      <div class="team-join-prompt-inner">
-        <div class="team-join-prompt-text">
-          <strong>You've been invited to join${_pendingJoinCompany ? ` <em>${escHtml(_pendingJoinCompany)}</em>'s` : ' a'} team.</strong>
-          Your existing plan stays unchanged.
-        </div>
-        <div class="team-join-prompt-actions">
-          <button class="team-join-accept-btn" type="button">Join team</button>
-          <button class="team-join-decline-btn" type="button">Not now</button>
-        </div>
-      </div>`;
-    const acceptBtn = banner.querySelector('.team-join-accept-btn');
-    const declineBtn = banner.querySelector('.team-join-decline-btn');
-    acceptBtn.addEventListener('click', async () => {
-      acceptBtn.disabled = true; acceptBtn.textContent = 'Joining…';
-      const { data, error } = await supabase.rpc('accept_team_invite', { p_invite_token: _pendingJoinToken });
-      if (error || data?.error) {
-        console.error('accept_team_invite error:', error || data?.error);
-        acceptBtn.disabled = false; acceptBtn.textContent = 'Join team';
-        showError('Could not join team. Please try again.');
-        return;
-      }
-      _pendingJoinToken   = null;
-      _pendingJoinCompany = null;
-      window.location.reload();
-    });
-    declineBtn.addEventListener('click', () => {
-      _pendingJoinToken   = null;
-      _pendingJoinCompany = null;
-      renderApp();
-    });
-    root.prepend(banner);
-  }
+
 }
 
 function renderCurrentTab() {
@@ -3183,16 +3148,14 @@ async function handleSignIn(authUser, teamToken) {
           if (joinErr) throw joinErr;
           if (joinResult?.error) { showError(`Could not join team: ${joinResult.error}`); return; }
         } else {
-          // Existing user → show join prompt after plan renders
-          _pendingJoinToken = teamToken;
+          // Existing user → auto-join silently (they already confirmed intent by clicking the email)
+          const { data: joinResult, error: joinErr } = await supabase.rpc('accept_team_invite', { p_invite_token: teamToken });
           localStorage.removeItem('pendingTeamToken');
-          // Remove ?team= from URL now so a reload after joining doesn't re-trigger the prompt
+          if (joinErr) console.error('accept_team_invite (existing user):', joinErr);
+          // Clean ?team= from URL regardless of join outcome
           const cleanUrl = new URL(window.location.href);
           cleanUrl.searchParams.delete('team');
           history.replaceState(null, '', cleanUrl.toString());
-          // Fetch team company name for the banner (best-effort display only)
-          const { data: inviteInfo } = await supabase.rpc('get_invite_info', { p_invite_token: teamToken });
-          if (inviteInfo?.company) _pendingJoinCompany = inviteInfo.company;
         }
       }
     }
@@ -3301,16 +3264,7 @@ async function handleSignIn(authUser, teamToken) {
       }
     }
 
-    // Check for a pending invite the user hasn't acted on yet (in-app path —
-    // fires when the invitee is already on the plan page and just refreshed,
-    // without clicking the invite email). Only runs if no URL-based token.
-    if (!_pendingJoinToken) {
-      const { data: incoming } = await supabase.rpc('get_incoming_invite');
-      if (incoming?.invite_token) {
-        _pendingJoinToken   = incoming.invite_token;
-        _pendingJoinCompany = incoming.company || null;
-      }
-    }
+
 
     log('renderApp', 'all data ready');
     showLoading(false);

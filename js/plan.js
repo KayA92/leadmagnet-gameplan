@@ -3269,22 +3269,28 @@ async function handleSignIn(authUser, teamToken) {
       log('loadTeamData', `members=${teamData?.members?.length ?? 0}`);
     }
 
-    // Re-hydrate booth metadata from current exhibitors data so name/description
-    // changes in the CSV are reflected without needing a plan rebuild
-    const exhibitorsByStand = Object.fromEntries(
-      allExhibitors.map(e => [String(e.stand_number), e])
-    );
-    full.booths = (full.booths || []).map(b => {
-      const fresh = exhibitorsByStand[String(b.stand_number)];
-      return fresh ? { ...fresh, rating: b.rating, attended: b.attended, reason: b.reason } : b;
-    });
-
     _plan          = full;
     _allSessions   = allSessions;
     _allExhibitors = allExhibitors;
     _teamData    = teamData;
     _authUser    = authUser;
     computeRankedLists();
+
+    // Re-hydrate booth metadata — iterate ranked list first so shared stands
+    // resolve to the highest-ranked exhibitor for this user's answers
+    const exhibitorsByStand = {};
+    for (const e of _rankedBooths) {
+      const k = String(e.stand_number);
+      if (!exhibitorsByStand[k]) exhibitorsByStand[k] = e;
+    }
+    for (const e of _allExhibitors) {
+      const k = String(e.stand_number);
+      if (!exhibitorsByStand[k]) exhibitorsByStand[k] = e;
+    }
+    _plan.booths = (_plan.booths || []).map(b => {
+      const fresh = exhibitorsByStand[String(b.stand_number)];
+      return fresh ? { ...fresh, rating: b.rating, attended: b.attended, reason: b.reason } : b;
+    });
 
     // Guarantee Workiro always appears in the booths list
     if (!(_plan.booths || []).some(b => b.company_name === 'Workiro')) {

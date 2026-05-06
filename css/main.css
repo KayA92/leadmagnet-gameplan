@@ -4290,9 +4290,6 @@ button.app-pill.purple.clickable:hover {
   color: var(--text-faint);
   text-align: right;
 }
-/* Quiet × in the top-right corner of a teammate card. Hover-reveal so
-   it doesn't sit there shouting on every card. Click opens the
-   in-app confirm modal — same pattern as the booth-card × on Checklist. */
 .teammate { position: relative; }
 .teammate-quiet-remove {
   position: absolute;
@@ -4309,12 +4306,7 @@ button.app-pill.purple.clickable:hover {
   border-radius: 6px;
   color: rgba(255,255,255,0.55);
   cursor: pointer;
-  opacity: 0;
   transition: all 0.15s;
-}
-.teammate:hover .teammate-quiet-remove,
-.teammate-quiet-remove:focus-visible {
-  opacity: 1;
 }
 .teammate-quiet-remove:hover {
   color: var(--pink);

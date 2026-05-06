@@ -42465,21 +42465,22 @@
     "show_category": "Accountex London",
     "country": "United Kingdom (UK)",
     "website": "https://www.workiro.com",
-    "products_services": "AI & Automation, Data Entry / OCR (Optical Character Recognition), Document Management",
+    "products_services": "AI & Automation, Document Management, Data Entry / OCR (Optical Character Recognition)",
     "old_categories": "AI & Automation, Document Management, Doc Automation",
-    "categories": "Document Management, AI & Automation, Data & Analytics",
+    "categories": "Document Management, AI & Automation, Data & Analytics, Practice Management",
     "target_audience": "Accountants in Practice, Accountants in Industry/Business, Bookkeepers",
     "canonical_categories": [
       "doc-management",
       "ai-automation",
-      "data-analytics"
+      "data-analytics",
+      "practice-management"
     ],
     "company_description": "Workiro is document management built for accountants. It gives firms greater traceability, control and confidence across every client interaction. Documents, emails, eSignatures and collaboration live in one secure system of record, fully integrated with tools like TaxCalc, IRIS, CCH, Digita, Xero and Microsoft 365 - helping teams work faster, stay organised, and scale without losing oversight.",
     "profile_url": "https://divcommanual.com/acx-fds/exhibitor-listing/workiro/",
     "logo_url": "https://divcommanual.com/acx-fds/wp-content/uploads/sites/6/2026/01/Workiro-Virtual-Cabinet-2.0.png",
     "employee_count": 18,
     "company_size": "small",
-    "manual_boost": 0,
+    "manual_boost": 1,
     "is_host": true,
     "pain_scores": {
       "ai-start": {

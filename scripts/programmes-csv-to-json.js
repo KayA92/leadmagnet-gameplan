@@ -465,11 +465,11 @@ function parseManualBoost(v) {
 
 const SPEAKERS = 5;
 
-function slugId(title, day, time) {
-  const t = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 45);
-  const d = day.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const m = time.replace(':', '-');
-  return `auto-${t}-${d}-${m}`;
+function slugId(str) {
+  return 'auto-' + str.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60);
 }
 
 // Load existing pain_scores keyed by session_id so plain runs preserve them
@@ -513,7 +513,7 @@ const programmes = rows.slice(1)
     }
 
     const rawId = get(H.id);
-    const session_id = rawId || slugId(get(H.title), get(H.day), get(H.start));
+    const session_id = rawId || slugId(get(H.title) + '-' + get(H.day) + '-' + get(H.start));
 
     return {
       session_id,
@@ -534,17 +534,6 @@ const programmes = rows.slice(1)
     };
   });
 
-// Remove exact-duplicate rows (same session_id = same title/day/time in CSV)
-const seenIds = new Set();
-const programmesDeduped = programmes.filter(p => {
-  if (seenIds.has(p.session_id)) return false;
-  seenIds.add(p.session_id);
-  return true;
-});
-if (programmesDeduped.length < programmes.length) {
-  console.log(`Removed ${programmes.length - programmesDeduped.length} duplicate session(s).`);
-}
-
 async function main() {
   const args = process.argv.slice(2);
   const doScore      = args.includes('--score');
@@ -555,14 +544,14 @@ async function main() {
   const progFilter   = progIdx >= 0 ? args[progIdx + 1] : null;
 
   if (doScore) {
-    await runScoring(programmesDeduped, { tagFilter, programmeFilter: progFilter });
+    await runScoring(programmes, { tagFilter, programmeFilter: progFilter });
   }
   if (doCsv) {
-    writePainScoresCsv(programmesDeduped);
+    writePainScoresCsv(programmes);
   }
 
-  fs.writeFileSync(outPath, JSON.stringify(programmesDeduped, null, 2), 'utf8');
-  console.log(`Written ${programmesDeduped.length} programmes → ${outPath}`);
+  fs.writeFileSync(outPath, JSON.stringify(programmes, null, 2), 'utf8');
+  console.log(`Written ${programmes.length} programmes → ${outPath}`);
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

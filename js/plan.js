@@ -4366,8 +4366,8 @@ window.planFillSlot = function(day, slotStart, slotEnd, ev) {
 
 window.planOpenSlotSwap = function(currentId, ev) {
   if (ev) ev.stopPropagation();
-  const current = (_plan?.sessions || []).find(s => s.session_id === currentId)
-    || (_allSessions || []).find(s => s.session_id === currentId);
+  const current = (_allSessions || []).find(s => s.session_id === currentId)
+    || (_plan?.sessions || []).find(s => s.session_id === currentId);
   if (!current) return;
   const currentHour = parseInt((current.start_time || '').split(':')[0], 10);
   const slotStart = isNaN(currentHour) ? (current.start_time || '') : `${String(currentHour).padStart(2, '0')}:00`;

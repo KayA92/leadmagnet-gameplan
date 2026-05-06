@@ -2819,7 +2819,11 @@ window.togglePlanSession = async function(sessionId, day, startTime) {
     _plan.sessions = (_plan.sessions || []).filter(s => !match(s));
   } else {
     const full = (_allSessions || []).find(match);
-    if (full) _plan.sessions = [...(_plan.sessions || []), full];
+    if (full) {
+      const existingNote = (_plan.notes || []).find(n => n.item_type === 'session' && n.item_id === String(sessionId));
+      const restored = existingNote?.rating ? { ...full, rating: existingNote.rating } : full;
+      _plan.sessions = [...(_plan.sessions || []), restored];
+    }
   }
   renderPlanEditorResults();
   await supabase.from('plans').update({ sessions: _plan.sessions }).eq('id', _plan.id);
@@ -2840,7 +2844,9 @@ window.togglePlanBooth = async function(standNumber) {
   } else {
     const full = (_allExhibitors || []).find(e => String(e.stand_number) === String(standNumber));
     if (full) {
-      _plan.booths = [...(_plan.booths || []), full];
+      const existingNote = (_plan.notes || []).find(n => n.item_type === 'booth' && n.item_id === String(standNumber));
+      const restored = existingNote?.rating ? { ...full, rating: existingNote.rating } : full;
+      _plan.booths = [...(_plan.booths || []), restored];
       sortBoothsByRank();
     }
   }
@@ -3151,7 +3157,29 @@ async function updateRating(planId, itemId, itemType, rating) {
   });
   if (itemType === 'session') _plan.sessions = updated;
   else _plan.booths = updated;
-  await supabase.from('plans').update({ [field]: updated }).eq('id', planId);
+
+  const ratingForNotes = rating > 0 ? rating : null;
+  await Promise.all([
+    supabase.from('plans').update({ [field]: updated }).eq('id', planId),
+    supabase.from('notes').upsert(
+      { plan_id: planId, item_type: itemType, item_id: String(itemId), rating: ratingForNotes, created_by: _authUser?.id || null },
+      { onConflict: 'plan_id,item_type,item_id' }
+    ),
+  ]);
+
+  // Update in-memory notes array — same pattern as saveNote
+  const notes = _plan.notes || [];
+  const idx = notes.findIndex(n => n.item_type === itemType && n.item_id === String(itemId) && n.plan_id === planId);
+  const noteObj = idx >= 0
+    ? { ...notes[idx], rating: ratingForNotes }
+    : { plan_id: planId, item_type: itemType, item_id: String(itemId), rating: ratingForNotes, created_by: _authUser?.id || null };
+  if (idx >= 0) notes[idx] = noteObj; else notes.push(noteObj);
+  _plan.notes = notes;
+  if (_teamData) {
+    const ti = _teamData.allNotes.findIndex(n => n.item_type === itemType && n.item_id === String(itemId) && n.plan_id === planId);
+    if (ti >= 0) _teamData.allNotes[ti] = { ..._teamData.allNotes[ti], rating: ratingForNotes };
+    else _teamData.allNotes.push(noteObj);
+  }
 }
 
 async function saveNote(planId, itemId, itemType, noteText, createdBy) {
@@ -3346,6 +3374,20 @@ async function handleSignIn(authUser, teamToken) {
     full.booths = (full.booths || []).map(b => {
       const fresh = exhibitorsByStand[String(b.stand_number)];
       return fresh ? { ...fresh, rating: b.rating, attended: b.attended, reason: b.reason } : b;
+    });
+
+    // Apply ratings from notes table onto sessions and booths — notes table
+    // is the persistent source of truth so ratings survive remove/re-add.
+    const ratingsByKey = Object.fromEntries(
+      (full.notes || []).filter(n => n.rating != null).map(n => [`${n.item_type}:${n.item_id}`, n.rating])
+    );
+    full.sessions = (full.sessions || []).map(s => {
+      const r = ratingsByKey[`session:${s.session_id}`];
+      return r != null ? { ...s, rating: r } : s;
+    });
+    full.booths = (full.booths || []).map(b => {
+      const r = ratingsByKey[`booth:${b.stand_number}`];
+      return r != null ? { ...b, rating: r } : b;
     });
 
     _plan          = full;

@@ -944,7 +944,7 @@ function renderChecklistTab() {
     const teamAvatarHtml = _teamData
       ? _teamData.teamPlans
           .filter(tp => tp.user_id !== _authUser?.id)
-          .filter(tp => (tp.booths || []).some(b => String(b.stand_number) === String(item.stand_number)))
+          .filter(tp => (tp.booths || []).some(b => (b.booth_id || String(b.stand_number)) === (item.booth_id || String(item.stand_number))))
           .map(tp => {
             const member  = _teamData.members.find(m => m.users?.id === tp.user_id);
             const initial = member?.users?.first_name?.[0]?.toUpperCase()
@@ -956,15 +956,15 @@ function renderChecklistTab() {
       : '';
 
     return `
-      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
+      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.booth_id || item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
-        <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(String(item.stand_number))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
+        <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(String(item.booth_id || item.stand_number))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
-            <button class="checklist-time-swap variant-booth" onclick="planOpenBoothSwap('${escHtml(String(item.stand_number))}', event)" type="button" aria-label="Swap booth">
+            <button class="checklist-time-swap variant-booth" onclick="planOpenBoothSwap('${escHtml(String(item.booth_id || item.stand_number))}', event)" type="button" aria-label="Swap booth">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
               Swap
             </button>
@@ -2193,7 +2193,7 @@ function renderDebriefTab() {
     for (const p of plans) {
       const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
       const it = list.find(x => itemType === 'booth'
-        ? String(x.stand_number) === idStr
+        ? (x.booth_id || String(x.stand_number)) === idStr
         : String(x.session_id) === idStr);
       if (!it || !it.rating) continue;
       const isMe = p.user_id === _authUser?.id;
@@ -2737,7 +2737,7 @@ function renderPlanEditorSessions(container) {
 
 function renderPlanEditorBooths(container) {
   const q        = (_planEditorQuery || '').toLowerCase();
-  const planNums = new Set((_plan?.booths || []).map(b => b.stand_number));
+  const planNums = new Set((_plan?.booths || []).map(b => b.booth_id || String(b.stand_number)));
   const planCats = _plan?.categories || [];
 
   const wantOther  = _planEditorCategories.has('other');
@@ -2778,11 +2778,12 @@ function renderPlanEditorBooths(container) {
 
   // In-plan booths pin to top; out-of-plan sort by rank ascending.
   const planBoothRankIndex = new Map();
-  (_plan?.booths || []).forEach((b, idx) => planBoothRankIndex.set(b.stand_number, idx + 1));
+  (_plan?.booths || []).forEach((b, idx) => planBoothRankIndex.set(b.booth_id || String(b.stand_number), idx + 1));
 
   const enriched = filtered.map(e => {
-    const inPlan = planNums.has(e.stand_number);
-    const m = matchForBooth(e, inPlan ? planBoothRankIndex.get(e.stand_number) : null);
+    const boothKey = e.booth_id || String(e.stand_number);
+    const inPlan = planNums.has(boothKey);
+    const m = matchForBooth(e, inPlan ? planBoothRankIndex.get(boothKey) : null);
     return { e, inPlan, m };
   });
   enriched.sort((a, b) => {
@@ -2801,7 +2802,7 @@ function renderPlanEditorBooths(container) {
           ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
         </div>
         <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
-          onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
+          onclick="togglePlanBooth('${escHtml(String(e.booth_id || e.stand_number))}')" type="button">
           ${inPlan
             ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
             : `+ Add`}
@@ -2833,12 +2834,13 @@ function sortBoothsByRank() {
   );
 }
 
-window.togglePlanBooth = async function(standNumber) {
-  const inPlan = (_plan.booths || []).some(b => String(b.stand_number) === String(standNumber));
+window.togglePlanBooth = async function(boothId) {
+  const matchBooth = b => (b.booth_id || String(b.stand_number)) === String(boothId);
+  const inPlan = (_plan.booths || []).some(matchBooth);
   if (inPlan) {
-    _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
+    _plan.booths = (_plan.booths || []).filter(b => !matchBooth(b));
   } else {
-    const full = (_allExhibitors || []).find(e => String(e.stand_number) === String(standNumber));
+    const full = (_allExhibitors || []).find(e => (e.booth_id || String(e.stand_number)) === String(boothId));
     if (full) {
       _plan.booths = [...(_plan.booths || []), full];
       sortBoothsByRank();
@@ -3027,7 +3029,7 @@ async function toggleAttended(planId, itemId, sessions) {
 
 async function toggleBoothAttended(planId, itemId, booths) {
   const updated = booths.map(b =>
-    b.stand_number === itemId ? { ...b, attended: !b.attended } : b,
+    (b.booth_id || b.stand_number) === itemId ? { ...b, attended: !b.attended } : b,
   );
   _plan.booths = updated;
   await supabase.from('plans').update({ booths: updated }).eq('id', planId);
@@ -3042,7 +3044,7 @@ async function updateRating(planId, itemId, itemType, rating) {
   const field = itemType === 'session' ? 'sessions' : 'booths';
   const list  = itemType === 'session' ? (_plan.sessions || []) : (_plan.booths || []);
   const updated = list.map(item => {
-    const id = itemType === 'session' ? item.session_id : item.stand_number;
+    const id = itemType === 'session' ? item.session_id : (item.booth_id || item.stand_number);
     return id === itemId ? { ...item, rating } : item;
   });
   if (itemType === 'session') _plan.sessions = updated;
@@ -3239,19 +3241,26 @@ async function handleSignIn(authUser, teamToken) {
     _authUser    = authUser;
     computeRankedLists();
 
-    // Re-hydrate booth metadata — iterate ranked list first so shared stands
-    // resolve to the highest-ranked exhibitor for this user's answers
-    const exhibitorsByStand = {};
+    // Re-hydrate booth metadata.
+    // Primary key: booth_id (unique per exhibitor — new plans and new exhibitors.json).
+    // Fallback key: stand_number (for plans saved before booth_id was introduced).
+    // Both maps are built from _rankedBooths first so shared-stand ties resolve to
+    // the highest-ranked exhibitor for this user's answers.
+    const exhibitorsByBoothId = {};
+    const exhibitorsByStand   = {};
     for (const e of _rankedBooths) {
+      if (e.booth_id && !exhibitorsByBoothId[e.booth_id]) exhibitorsByBoothId[e.booth_id] = e;
       const k = String(e.stand_number);
       if (!exhibitorsByStand[k]) exhibitorsByStand[k] = e;
     }
     for (const e of _allExhibitors) {
+      if (e.booth_id && !exhibitorsByBoothId[e.booth_id]) exhibitorsByBoothId[e.booth_id] = e;
       const k = String(e.stand_number);
       if (!exhibitorsByStand[k]) exhibitorsByStand[k] = e;
     }
     _plan.booths = (_plan.booths || []).map(b => {
-      const fresh = exhibitorsByStand[String(b.stand_number)];
+      const fresh = (b.booth_id && exhibitorsByBoothId[b.booth_id])
+        || exhibitorsByStand[String(b.stand_number)];
       return fresh ? { ...fresh, rating: b.rating, attended: b.attended, reason: b.reason } : b;
     });
 
@@ -3498,7 +3507,7 @@ function buildPrintHtml() {
     for (const p of plans) {
       const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
       const it = list.find(x => itemType === 'booth'
-        ? String(x.stand_number) === idStr
+        ? (x.booth_id || String(x.stand_number)) === idStr
         : String(x.session_id) === idStr);
       if (!it || !it.rating) continue;
       const isMe = p.user_id === _authUser?.id;
@@ -3912,9 +3921,9 @@ window.planRemoveSession = function(sessionId, day, startTime) {
   renderApp();
 };
 
-window.planRemoveBooth = function(standNumber) {
+window.planRemoveBooth = function(boothId) {
   if (!_plan) return;
-  _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
+  _plan.booths = (_plan.booths || []).filter(b => (b.booth_id || String(b.stand_number)) !== String(boothId));
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
 };
@@ -4015,7 +4024,7 @@ window.planShowTeamNotes = function(noteKey, itemTitle) {
   });
 };
 
-window.planConfirmRemoveBooth = function(standNumber, companyName) {
+window.planConfirmRemoveBooth = function(boothId, companyName) {
   const label = companyName
     ? `Remove <strong>${escHtml(companyName)}</strong> from your plan?`
     : 'Remove this booth from your plan?';
@@ -4024,7 +4033,7 @@ window.planConfirmRemoveBooth = function(standNumber, companyName) {
     body: `${label} You can re-add it any time from <strong>Edit booths</strong>.`,
     confirmLabel: 'Remove',
     confirmTone: 'danger',
-    onConfirm: () => window.planRemoveBooth(standNumber),
+    onConfirm: () => window.planRemoveBooth(boothId),
   });
 };
 
@@ -4333,13 +4342,13 @@ window.planMakeSlotFreeTime = function(sessionId) {
   renderApp();
 };
 
-window.planOpenBoothSwap = function(currentStandNumber, ev) {
+window.planOpenBoothSwap = function(currentBoothId, ev) {
   if (ev) ev.stopPropagation();
-  const current = (_allExhibitors || []).find(e => String(e.stand_number) === String(currentStandNumber))
-    || (_plan?.booths || []).find(e => String(e.stand_number) === String(currentStandNumber));
+  const byId = e => (e.booth_id || String(e.stand_number)) === String(currentBoothId);
+  const current = (_allExhibitors || []).find(byId) || (_plan?.booths || []).find(byId);
   if (!current) return;
 
-  const planStands  = new Set((_plan?.booths || []).map(b => String(b.stand_number)));
+  const planIds     = new Set((_plan?.booths || []).map(b => b.booth_id || String(b.stand_number)));
   const currentCats = new Set(current.canonical_categories || []);
 
   // Filter _rankedBooths to exhibitors in the same canonical_category space as the
@@ -4347,10 +4356,10 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
   // tool shows other tax tools) and a naturally limited list. Falls back to
   // top/high/medium from the full scored list if no category overlap exists.
   const baseFilter = e =>
-    String(e.stand_number) !== String(currentStandNumber) &&
+    (e.booth_id || String(e.stand_number)) !== String(currentBoothId) &&
     e._rank !== 'host' &&
     !e.is_host &&
-    !planStands.has(String(e.stand_number));
+    !planIds.has(e.booth_id || String(e.stand_number));
 
   let candidates = (_rankedBooths || [])
     .filter(e => baseFilter(e) && (e.canonical_categories || []).some(c => currentCats.has(c)))
@@ -4383,7 +4392,7 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
                 <div class="slot-swap-row-meta">Stand ${escHtml(String(b.stand_number || ''))}</div>
                 ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
               </div>
-              <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentStandNumber))}','${escHtml(String(b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
+              <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentBoothId))}','${escHtml(String(b.booth_id || b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap
               </button>
             </div>
@@ -4402,7 +4411,7 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
       <button class="login-modal-close" onclick="document.getElementById('planSlotSwapModal')?.remove()" aria-label="Close" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <div class="login-modal-eyebrow">Booths · Stand ${escHtml(String(currentStandNumber))}</div>
+      <div class="login-modal-eyebrow">Booths · Stand ${escHtml(String(current.stand_number || ''))}</div>
       <h2 class="login-modal-title">Swap this <em>booth.</em></h2>
       <p class="login-modal-sub">Currently: <strong style="color:var(--text);">${escHtml(current.company_name || '')}</strong>. Swap for another exhibitor.</p>
       <div class="slot-swap-list">${candidatesHtml}</div>
@@ -4410,12 +4419,12 @@ window.planOpenBoothSwap = function(currentStandNumber, ev) {
   document.body.appendChild(modal);
 };
 
-window.planSwapBooth = function(currentStandNumber, newStandNumber) {
+window.planSwapBooth = function(currentBoothId, newBoothId) {
   if (!_plan) return;
-  const newBooth = (_allExhibitors || []).find(e => String(e.stand_number) === String(newStandNumber));
+  const newBooth = (_allExhibitors || []).find(e => (e.booth_id || String(e.stand_number)) === String(newBoothId));
   if (!newBooth) return;
   _plan.booths = (_plan.booths || []).map(b =>
-    String(b.stand_number) === String(currentStandNumber) ? newBooth : b,
+    (b.booth_id || String(b.stand_number)) === String(currentBoothId) ? newBooth : b,
   );
   sortBoothsByRank();
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);

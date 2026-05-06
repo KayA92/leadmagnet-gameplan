@@ -277,7 +277,7 @@ export function selectBooths(answers, allExhibitors) {
     for (const e of buckets[tier]) {
       if (picked >= target) break;
       selected.push(e);
-      used.add(e.company_name);
+      used.add(e.booth_id || e.company_name);
       picked++;
     }
   }
@@ -285,12 +285,12 @@ export function selectBooths(answers, allExhibitors) {
   // Fallback: fill remaining slots from best-scoring unpicked (any tier)
   if (selected.length < 11) {
     const overflow = scored
-      .filter(e => !used.has(e.company_name))
+      .filter(e => !used.has(e.booth_id || e.company_name))
       .sort(cmpDesc);
     for (const e of overflow) {
       if (selected.length >= 11) break;
       selected.push(e);
-      used.add(e.company_name);
+      used.add(e.booth_id || e.company_name);
     }
   }
 
@@ -299,7 +299,7 @@ export function selectBooths(answers, allExhibitors) {
 
   // Remaining exhibitors ranked 13+ by score
   const rest = scored
-    .filter(e => !used.has(e.company_name))
+    .filter(e => !used.has(e.booth_id || e.company_name))
     .sort(cmpDesc);
 
   // Assign _rank to everyone

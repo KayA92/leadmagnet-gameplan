@@ -92,6 +92,13 @@ const { PAIN_TAGS } = require('./pain-tags');
 // escaped double-quotes, and Windows/Unix line endings. fixEncoding() patches
 // common UTF-8-as-Windows-1252 mojibake that appears in the exported CSV.
 
+// Converts a company name to a URL-safe slug used in booth_id.
+// Lowercases, replaces non-alphanumeric runs with hyphens, strips leading/trailing
+// hyphens, and truncates to 50 chars so booth_ids stay readable in DB queries.
+function toNameSlug(name) {
+  return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+}
+
 function fixEncoding(s) {
   return (s || '')
     .replace(/â€™/g, "'").replace(/â€œ/g, '“').replace(/â€/g, '”')
@@ -558,12 +565,14 @@ const exhibitors = rows.slice(1)
     rawCats.forEach(c => (CAT_MAP[c] || []).forEach(k => canonicalSet.add(k)));
 
     const name = get(H.name);
+    const standNumber = get(H.stand);
     const rawSize = parseInt(r[H.size], 10);
     const employeeCount = isNaN(rawSize) ? null : rawSize;
     return {
       show:                  get(H.show),
       company_name:          name,
-      stand_number:          get(H.stand),
+      stand_number:          standNumber,
+      booth_id:              `${standNumber}-${toNameSlug(name)}`,
       stand_type:            get(H.standType),
       show_category:         get(H.showCat),
       country:               get(H.country),

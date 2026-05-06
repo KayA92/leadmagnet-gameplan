@@ -477,7 +477,7 @@ function renderPlanPreview() {
   const boothItems = [];
   rankedBooths.forEach(item => {
     const b = state.allExhibitors.find(
-      x => x.stand_number === item.stand_number || x.company_name === item.company_name,
+      x => (item.booth_id && x.booth_id === item.booth_id) || x.stand_number === item.stand_number,
     );
     // Merge ranked data (rank, _rank, _score, _problemNorm etc.) onto the full exhibitor object
     if (b) boothItems.push({ ...b, ...item });
@@ -631,7 +631,7 @@ async function handleSaveSubmit(e) {
   });
   const enrichedBooths = (state.plan?.booths || []).map(ranked => {
     const full = state.allExhibitors.find(
-      ex => ex.stand_number === ranked.stand_number || ex.company_name === ranked.company_name,
+      ex => (ranked.booth_id && ex.booth_id === ranked.booth_id) || ex.stand_number === ranked.stand_number,
     );
     return full ? { ...full, ...ranked } : ranked;
   });

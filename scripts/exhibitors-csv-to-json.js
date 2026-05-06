@@ -560,10 +560,14 @@ const exhibitors = rows.slice(1)
     const name = get(H.name);
     const rawSize = parseInt(r[H.size], 10);
     const employeeCount = isNaN(rawSize) ? null : rawSize;
+    const standNumber = get(H.stand);
+    const nameSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+    const booth_id = `${standNumber}-${nameSlug}`;
     return {
       show:                  get(H.show),
       company_name:          name,
-      stand_number:          get(H.stand),
+      booth_id,
+      stand_number:          standNumber,
       stand_type:            get(H.standType),
       show_category:         get(H.showCat),
       country:               get(H.country),

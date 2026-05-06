@@ -2820,13 +2820,23 @@ window.togglePlanSession = async function(sessionId, day, startTime) {
   renderApp();
 };
 
+function sortBoothsByRank() {
+  if (!_plan?.booths) return;
+  _plan.booths = [..._plan.booths].sort((a, b) =>
+    (matchForBooth(a)?.rank ?? 999) - (matchForBooth(b)?.rank ?? 999)
+  );
+}
+
 window.togglePlanBooth = async function(standNumber) {
   const inPlan = (_plan.booths || []).some(b => String(b.stand_number) === String(standNumber));
   if (inPlan) {
     _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
   } else {
     const full = (_allExhibitors || []).find(e => String(e.stand_number) === String(standNumber));
-    if (full) _plan.booths = [...(_plan.booths || []), full];
+    if (full) {
+      _plan.booths = [...(_plan.booths || []), full];
+      sortBoothsByRank();
+    }
   }
   renderPlanEditorResults();
   await supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
@@ -4510,6 +4520,7 @@ window.planSwapBooth = function(currentStandNumber, newStandNumber) {
   _plan.booths = (_plan.booths || []).map(b =>
     String(b.stand_number) === String(currentStandNumber) ? newBooth : b,
   );
+  sortBoothsByRank();
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
 };

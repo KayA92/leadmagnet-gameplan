@@ -2954,10 +2954,10 @@ button.app-pill.purple.clickable:hover {
 .editor-filter-pill--bucket-high:hover    { background: rgba(255,138,92,0.08);  border-color: var(--coral);     color: var(--coral); }
 .editor-filter-pill--bucket-medium:hover  { background: rgba(251,191,36,0.08);  border-color: var(--amber);     color: var(--amber); }
 .editor-filter-pill--bucket-neutral:hover { background: rgba(106,169,255,0.08); border-color: var(--cool-blue); color: var(--cool-blue); }
-.editor-filter-pill--bucket-top.active     { background: rgba(255,94,132,0.15);  border-color: var(--pink);      color: var(--pink);      font-weight: 600; }
-.editor-filter-pill--bucket-high.active    { background: rgba(255,138,92,0.12);  border-color: var(--coral);     color: var(--coral);     font-weight: 600; }
-.editor-filter-pill--bucket-medium.active  { background: rgba(251,191,36,0.10);  border-color: var(--amber);     color: var(--amber);     font-weight: 600; }
-.editor-filter-pill--bucket-neutral.active { background: rgba(106,169,255,0.08); border-color: var(--cool-blue); color: var(--cool-blue); font-weight: 600; }
+.editor-filter-pill--bucket-top.active     { background: var(--pink);      border-color: var(--pink);      color: #1a0008; font-weight: 600; }
+.editor-filter-pill--bucket-high.active    { background: var(--coral);     border-color: var(--coral);     color: #1a0800; font-weight: 600; }
+.editor-filter-pill--bucket-medium.active  { background: var(--amber);     border-color: var(--amber);     color: #1a1200; font-weight: 600; }
+.editor-filter-pill--bucket-neutral.active { background: var(--cool-blue); border-color: var(--cool-blue); color: #00101a; font-weight: 600; }
 /* Hidden legacy chip — kept as no-op so no orphan references break. */
 .editor-filter-chip {
   display: none;

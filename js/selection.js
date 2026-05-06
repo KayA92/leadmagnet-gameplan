@@ -154,7 +154,7 @@ function scoreExhibitor(exhibitor, answers) {
   const manualBoost = exhibitor.manual_boost || 0;
 
   return {
-    score:       (0.65 * problemNorm) + (0.20 * toolNorm) + (0.15 * manualBoost),
+    score:       (0.65 * problemNorm) + (0.25 * toolNorm) + (0.10 * manualBoost),
     problemNorm,
     toolNorm,
     manualBoost,
@@ -309,6 +309,21 @@ export function selectBooths(answers, allExhibitors) {
   ];
 
   assignBuckets(ranked);
+
+  // Floor: nothing in the top 11 should have a lower bucket than rank 12
+  // (the best exhibitor that missed the cut). A force-picked item can't look
+  // worse than what it displaced.
+  const BUCKET_ORDER = { neutral: 0, medium: 1, high: 2, top: 3 };
+  const rank12 = ranked.find(e => e._rank === 12);
+  if (rank12) {
+    const floorLevel = BUCKET_ORDER[rank12._bucket] || 0;
+    for (const e of ranked) {
+      if (typeof e._rank === 'number' && e._rank <= 11) {
+        if ((BUCKET_ORDER[e._bucket] || 0) < floorLevel) e._bucket = rank12._bucket;
+      }
+    }
+  }
+
   return ranked;
 }
 

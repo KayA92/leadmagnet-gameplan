@@ -3344,6 +3344,40 @@ button.app-pill.purple.clickable:hover {
   .plan-editor-floating-btn { padding: 8px 12px; font-size: 12px; }
 }
 
+/* Back-to-top pill — mobile plan page */
+.plan-back-to-top {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 16px;
+  z-index: 900;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 14px;
+  background: rgba(24,24,28,0.92);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 999px;
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.plan-back-to-top svg { opacity: 0.85; }
+.plan-back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+@media (max-width: 640px) {
+  .plan-back-to-top { display: inline-flex; }
+}
+
 @media (max-width: 640px) {
   .editor-row {
     grid-template-columns: 1fr auto;

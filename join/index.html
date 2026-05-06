@@ -214,7 +214,7 @@
 
     const ctaJoin   = document.getElementById('join-cta');
     const ctaLogin  = document.getElementById('join-existing');
-    if (ctaJoin)  ctaJoin.href  = qs ? `/?${qs}`        : '/';
+    if (ctaJoin)  ctaJoin.href  = qs ? `/?${qs}#q2`     : '/#q2';
     if (ctaLogin) ctaLogin.href = qs ? `/login/?${qs}` : '/login/';
 
     // Update the document title so the browser tab also reflects the

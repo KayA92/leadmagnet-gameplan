@@ -3210,7 +3210,7 @@ async function handleSignIn(authUser, teamToken) {
 
     if (!full) {
       if (teamToken) {
-        window.location.href = `/?team=${teamToken}`;
+        window.location.href = `/?team=${teamToken}#q2`;
         return;
       }
       showNoPlanState();

@@ -943,6 +943,8 @@ function decorateAndRankByCategory() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 export async function initWizard() {
+  // Capture hash before clearing — used below to honour e.g. /?team=TOKEN#q2 redirects
+  const _initHash = window.location.hash.replace('#', '');
   // Clear any stale hash from a previous session so we always start at stage 0
   if (window.location.hash) history.replaceState(null, '', location.pathname + location.search);
 
@@ -1102,6 +1104,7 @@ export async function initWizard() {
     goToStage(stageId, true);
   });
 
-  // Show stage 0
-  goToStage('0');
+  // Jump to hash-specified stage if present (e.g. #q2 from a team invite redirect),
+  // otherwise show stage 0
+  goToStage(HASH_STAGE[_initHash] || '0');
 }

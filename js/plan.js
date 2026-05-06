@@ -305,9 +305,6 @@ function matchForBooth(b, planRankIndex) {
   if (Number.isFinite(planRankIndex)) return dummyMatchByPlanRank(planRankIndex, 'booth');
   return dummyMatchByHash(b?.stand_number || b?.company_name, 'booth');
 }
-function boothKey(b) {
-  return b?.booth_id || String(b?.stand_number ?? '');
-}
 
 // Human-readable labels for the user's selected categories. Includes both the
 // new 16-category slugs (cloud-accounting, practice-mgmt, etc.) and the
@@ -750,7 +747,7 @@ function renderChecklistTab() {
     }
     for (const b of (tp.booths || [])) {
       if (!b.rating) continue;
-      const key = `booth:${boothKey(b)}`;
+      const key = `booth:${b.stand_number}`;
       (teamRatingsByKey[key] = teamRatingsByKey[key] || []).push({ name, rating: b.rating });
     }
   }
@@ -893,7 +890,7 @@ function renderChecklistTab() {
   }
 
   function renderBoothRow(item, i, displayRank) {
-    const noteKey      = `booth:${boothKey(item)}`;
+    const noteKey      = `booth:${item.stand_number}`;
     const existingNote = typeof notesByItem[noteKey] === 'string' ? notesByItem[noteKey] : '';
     const teamNotes    = teamNotesByItem[noteKey] || [];
     const desc         = item.company_description || '';
@@ -909,7 +906,7 @@ function renderChecklistTab() {
         <a class="checklist-row-host-link" href="https://www.workiro.com" target="_blank" rel="noopener">workiro.com</a>
       </div>` : '';
 
-    const noteItemId  = `booth:${escHtml(boothKey(item))}`;
+    const noteItemId  = `booth:${escHtml(item.stand_number)}`;
     const notePanel   = existingNote
       ? `<div class="checklist-note-panel saved" data-note-id="${noteItemId}" data-saved-text="${escHtml(existingNote)}">
            <div class="note-saved-body">
@@ -948,7 +945,7 @@ function renderChecklistTab() {
     const teamAvatarHtml = _teamData
       ? _teamData.teamPlans
           .filter(tp => tp.user_id !== _authUser?.id)
-          .filter(tp => (tp.booths || []).some(b => boothKey(b) === boothKey(item)))
+          .filter(tp => (tp.booths || []).some(b => String(b.stand_number) === String(item.stand_number)))
           .map(tp => {
             const member  = _teamData.members.find(m => m.users?.id === tp.user_id);
             const initial = member?.users?.first_name?.[0]?.toUpperCase()
@@ -960,15 +957,15 @@ function renderChecklistTab() {
       : '';
 
     return `
-      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(boothKey(item))}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
+      <div class="checklist-row is-booth${isWorkiro ? ' is-host' : ''}${item.attended ? ' attended' : ''}" data-item-type="booth" data-item-id="${escHtml(item.stand_number)}" data-rating="${item.rating || 0}" style="animation-delay:${(sessions.length + i) * 40}ms">
         ${hostStrip}
-        <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(boothKey(item))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
+        <button class="booth-quiet-remove" onclick="planConfirmRemoveBooth('${escHtml(String(item.stand_number))}','${escHtml(item.company_name || '')}')" type="button" aria-label="Remove from plan" title="Remove from plan">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <div class="checklist-row-main">
           <div class="checklist-row-leftcol booth-leftcol">
             <button class="checklist-box" aria-label="Mark as visited">${TICK_SVG}</button>
-            <button class="checklist-time-swap variant-booth" onclick="planOpenBoothSwap('${escHtml(boothKey(item))}', event)" type="button" aria-label="Swap booth">
+            <button class="checklist-time-swap variant-booth" onclick="planOpenBoothSwap('${escHtml(String(item.stand_number))}', event)" type="button" aria-label="Swap booth">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
               Swap
             </button>
@@ -1939,12 +1936,12 @@ function buildBoothHeatRanked() {
 
   // Current user's plan takes priority for booth metadata
   for (const b of (_plan?.booths || [])) {
-    boothMetaMap[boothKey(b)] = b;
+    boothMetaMap[String(b.stand_number)] = b;
   }
 
   for (const p of allPlans) {
     for (const b of (p.booths || [])) {
-      const key = boothKey(b);
+      const key = String(b.stand_number);
       if (!boothMetaMap[key]) boothMetaMap[key] = b;
       if (!b.rating) continue;
       if (!scoreMap[key]) scoreMap[key] = { total: 0, count: 0 };
@@ -2048,13 +2045,13 @@ function buildSummaryText() {
 
   // Booths: rated ones first (already covers all team plans via buildBoothHeatRanked),
   // then noted-but-unrated booths from any team plan
-  const ratedBoothIds = new Set(boothHeatRanked.map(h => boothKey(h.booth)));
+  const ratedBoothIds = new Set(boothHeatRanked.map(h => String(h.booth.stand_number)));
   const allTeamPlans  = (_teamData?.teamPlans?.length ? _teamData.teamPlans : [_plan].filter(Boolean));
   const seenBoothIds  = new Set(ratedBoothIds);
   const notedUnratedBooths = [];
   for (const p of allTeamPlans) {
     for (const b of (p.booths || [])) {
-      const key = boothKey(b);
+      const key = String(b.stand_number);
       if (!seenBoothIds.has(key) && boothNoteMap[key]) {
         seenBoothIds.add(key);
         notedUnratedBooths.push(b);
@@ -2072,7 +2069,7 @@ function buildSummaryText() {
     for (const { booth: b, avgRating } of allBoothItems) {
       const flames = avgRating > 0 ? '🔥'.repeat(Math.round(avgRating)) : '';
       lines.push(`${flames ? flames + ' ' : ''}${b.company_name} (Stand ${b.stand_number})`);
-      for (const n of (boothNoteMap[boothKey(b)] || [])) {
+      for (const n of (boothNoteMap[String(b.stand_number)] || [])) {
         const who = authorName(n.created_by);
         lines.push(`   "${n.note_text}"${who ? ' — ' + who : ''}`);
       }
@@ -2200,7 +2197,7 @@ function renderDebriefTab() {
     for (const p of plans) {
       const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
       const it = list.find(x => itemType === 'booth'
-        ? boothKey(x) === idStr
+        ? String(x.stand_number) === idStr
         : String(x.session_id) === idStr);
       if (!it || !it.rating) continue;
       const isMe = p.user_id === _authUser?.id;
@@ -2278,7 +2275,7 @@ function renderDebriefTab() {
 
   const boothCards = boothHeatRanked.map(({ booth: b, avgRating, raterCount }, i) => {
     const meta = `Stand ${b.stand_number}`;
-    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', boothKey(b), 'purple');
+    return renderHotCard(i + 1, b.company_name, meta, avgRating, raterCount, 'booth', b.stand_number, 'purple');
   }).join('');
 
   return `
@@ -2740,7 +2737,7 @@ function renderPlanEditorSessions(container) {
 
 function renderPlanEditorBooths(container) {
   const q        = (_planEditorQuery || '').toLowerCase();
-  const planNums = new Set((_plan?.booths || []).map(b => boothKey(b)));
+  const planNums = new Set((_plan?.booths || []).map(b => b.stand_number));
   const planCats = _plan?.categories || [];
 
   const wantOther  = _planEditorCategories.has('other');
@@ -2781,11 +2778,11 @@ function renderPlanEditorBooths(container) {
 
   // In-plan booths pin to top; out-of-plan sort by rank ascending.
   const planBoothRankIndex = new Map();
-  (_plan?.booths || []).forEach((b, idx) => planBoothRankIndex.set(boothKey(b), idx + 1));
+  (_plan?.booths || []).forEach((b, idx) => planBoothRankIndex.set(b.stand_number, idx + 1));
 
   const enriched = filtered.map(e => {
-    const inPlan = planNums.has(boothKey(e));
-    const m = matchForBooth(e, inPlan ? planBoothRankIndex.get(boothKey(e)) : null);
+    const inPlan = planNums.has(e.stand_number);
+    const m = matchForBooth(e, inPlan ? planBoothRankIndex.get(e.stand_number) : null);
     return { e, inPlan, m };
   });
   enriched.sort((a, b) => {
@@ -2804,7 +2801,7 @@ function renderPlanEditorBooths(container) {
           ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
         </div>
         <button class="editor-row-toggle ${inPlan ? 'in' : 'out'}"
-          onclick="togglePlanBooth('${escHtml(boothKey(e))}')" type="button">
+          onclick="togglePlanBooth('${escHtml(String(e.stand_number))}')" type="button">
           ${inPlan
             ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> In your plan`
             : `+ Add`}
@@ -2836,12 +2833,12 @@ function sortBoothsByRank() {
   );
 }
 
-window.togglePlanBooth = async function(boothId) {
-  const inPlan = (_plan.booths || []).some(b => boothKey(b) === String(boothId));
+window.togglePlanBooth = async function(standNumber) {
+  const inPlan = (_plan.booths || []).some(b => String(b.stand_number) === String(standNumber));
   if (inPlan) {
-    _plan.booths = (_plan.booths || []).filter(b => boothKey(b) !== String(boothId));
+    _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
   } else {
-    const full = (_allExhibitors || []).find(e => boothKey(e) === String(boothId));
+    const full = (_allExhibitors || []).find(e => String(e.stand_number) === String(standNumber));
     if (full) {
       _plan.booths = [...(_plan.booths || []), full];
       sortBoothsByRank();
@@ -3147,7 +3144,7 @@ async function toggleAttended(planId, itemId, sessions) {
 
 async function toggleBoothAttended(planId, itemId, booths) {
   const updated = booths.map(b =>
-    boothKey(b) === itemId ? { ...b, attended: !b.attended } : b,
+    b.stand_number === itemId ? { ...b, attended: !b.attended } : b,
   );
   _plan.booths = updated;
   await supabase.from('plans').update({ booths: updated }).eq('id', planId);
@@ -3162,7 +3159,7 @@ async function updateRating(planId, itemId, itemType, rating) {
   const field = itemType === 'session' ? 'sessions' : 'booths';
   const list  = itemType === 'session' ? (_plan.sessions || []) : (_plan.booths || []);
   const updated = list.map(item => {
-    const id = itemType === 'session' ? item.session_id : boothKey(item);
+    const id = itemType === 'session' ? item.session_id : item.stand_number;
     return id === itemId ? { ...item, rating } : item;
   });
   if (itemType === 'session') _plan.sessions = updated;
@@ -3357,10 +3354,10 @@ async function handleSignIn(authUser, teamToken) {
     // Re-hydrate booth metadata from current exhibitors data so name/description
     // changes in the CSV are reflected without needing a plan rebuild
     const exhibitorsByStand = Object.fromEntries(
-      allExhibitors.map(e => [e.booth_id || String(e.stand_number), e])
+      allExhibitors.map(e => [String(e.stand_number), e])
     );
     full.booths = (full.booths || []).map(b => {
-      const fresh = exhibitorsByStand[boothKey(b)];
+      const fresh = exhibitorsByStand[String(b.stand_number)];
       return fresh ? { ...fresh, rating: b.rating, attended: b.attended, reason: b.reason } : b;
     });
 
@@ -3623,7 +3620,7 @@ function buildPrintHtml() {
     for (const p of plans) {
       const list = itemType === 'booth' ? (p.booths || []) : (p.sessions || []);
       const it = list.find(x => itemType === 'booth'
-        ? boothKey(x) === idStr
+        ? String(x.stand_number) === idStr
         : String(x.session_id) === idStr);
       if (!it || !it.rating) continue;
       const isMe = p.user_id === _authUser?.id;
@@ -3835,10 +3832,10 @@ function buildPrintHtml() {
           i + 1,
           b.company_name || 'Vendor',
           `Stand ${b.stand_number}`,
-          ratersFor('booth', boothKey(b)),
+          ratersFor('booth', b.stand_number),
           h.avgRating,
           h.raterCount,
-          notesFor('booth', boothKey(b)),
+          notesFor('booth', b.stand_number),
           'purple',
         );
       }).join('')}
@@ -4037,9 +4034,9 @@ window.planRemoveSession = function(sessionId, day, startTime) {
   renderApp();
 };
 
-window.planRemoveBooth = function(boothId) {
+window.planRemoveBooth = function(standNumber) {
   if (!_plan) return;
-  _plan.booths = (_plan.booths || []).filter(b => boothKey(b) !== String(boothId));
+  _plan.booths = (_plan.booths || []).filter(b => String(b.stand_number) !== String(standNumber));
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
   renderApp();
 };
@@ -4140,7 +4137,7 @@ window.planShowTeamNotes = function(noteKey, itemTitle) {
   });
 };
 
-window.planConfirmRemoveBooth = function(boothId, companyName) {
+window.planConfirmRemoveBooth = function(standNumber, companyName) {
   const label = companyName
     ? `Remove <strong>${escHtml(companyName)}</strong> from your plan?`
     : 'Remove this booth from your plan?';
@@ -4149,7 +4146,7 @@ window.planConfirmRemoveBooth = function(boothId, companyName) {
     body: `${label} You can re-add it any time from <strong>Edit booths</strong>.`,
     confirmLabel: 'Remove',
     confirmTone: 'danger',
-    onConfirm: () => window.planRemoveBooth(boothId),
+    onConfirm: () => window.planRemoveBooth(standNumber),
   });
 };
 
@@ -4458,13 +4455,13 @@ window.planMakeSlotFreeTime = function(sessionId) {
   renderApp();
 };
 
-window.planOpenBoothSwap = function(currentBoothId, ev) {
+window.planOpenBoothSwap = function(currentStandNumber, ev) {
   if (ev) ev.stopPropagation();
-  const current = (_allExhibitors || []).find(e => boothKey(e) === String(currentBoothId))
-    || (_plan?.booths || []).find(e => boothKey(e) === String(currentBoothId));
+  const current = (_allExhibitors || []).find(e => String(e.stand_number) === String(currentStandNumber))
+    || (_plan?.booths || []).find(e => String(e.stand_number) === String(currentStandNumber));
   if (!current) return;
 
-  const planStands  = new Set((_plan?.booths || []).map(b => boothKey(b)));
+  const planStands  = new Set((_plan?.booths || []).map(b => String(b.stand_number)));
   const currentCats = new Set(current.canonical_categories || []);
 
   // Filter _rankedBooths to exhibitors in the same canonical_category space as the
@@ -4472,10 +4469,10 @@ window.planOpenBoothSwap = function(currentBoothId, ev) {
   // tool shows other tax tools) and a naturally limited list. Falls back to
   // top/high/medium from the full scored list if no category overlap exists.
   const baseFilter = e =>
-    boothKey(e) !== String(currentBoothId) &&
+    String(e.stand_number) !== String(currentStandNumber) &&
     e._rank !== 'host' &&
     !e.is_host &&
-    !planStands.has(boothKey(e));
+    !planStands.has(String(e.stand_number));
 
   let candidates = (_rankedBooths || [])
     .filter(e => baseFilter(e) && (e.canonical_categories || []).some(c => currentCats.has(c)))
@@ -4508,7 +4505,7 @@ window.planOpenBoothSwap = function(currentBoothId, ev) {
                 <div class="slot-swap-row-meta">Stand ${escHtml(String(b.stand_number || ''))}</div>
                 ${renderMatchBadge({ bucket: m.bucket, rank: m.rank, type: 'booth', compact: true })}
               </div>
-              <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentBoothId))}','${escHtml(boothKey(b))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
+              <button class="slot-swap-row-btn outlined" onclick="planSwapBooth('${escHtml(String(currentStandNumber))}','${escHtml(String(b.stand_number))}');document.getElementById('planSlotSwapModal')?.remove()" type="button">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Swap
               </button>
             </div>
@@ -4527,7 +4524,7 @@ window.planOpenBoothSwap = function(currentBoothId, ev) {
       <button class="login-modal-close" onclick="document.getElementById('planSlotSwapModal')?.remove()" aria-label="Close" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <div class="login-modal-eyebrow">Booths · Stand ${escHtml(String(current.stand_number || ''))}</div>
+      <div class="login-modal-eyebrow">Booths · Stand ${escHtml(String(currentStandNumber))}</div>
       <h2 class="login-modal-title">Swap this <em>booth.</em></h2>
       <p class="login-modal-sub">Currently: <strong style="color:var(--text);">${escHtml(current.company_name || '')}</strong>. Swap for another exhibitor.</p>
       <div class="slot-swap-list">${candidatesHtml}</div>
@@ -4535,12 +4532,12 @@ window.planOpenBoothSwap = function(currentBoothId, ev) {
   document.body.appendChild(modal);
 };
 
-window.planSwapBooth = function(currentBoothId, newBoothId) {
+window.planSwapBooth = function(currentStandNumber, newStandNumber) {
   if (!_plan) return;
-  const newBooth = (_allExhibitors || []).find(e => boothKey(e) === String(newBoothId));
+  const newBooth = (_allExhibitors || []).find(e => String(e.stand_number) === String(newStandNumber));
   if (!newBooth) return;
   _plan.booths = (_plan.booths || []).map(b =>
-    boothKey(b) === String(currentBoothId) ? newBooth : b,
+    String(b.stand_number) === String(currentStandNumber) ? newBooth : b,
   );
   sortBoothsByRank();
   supabase.from('plans').update({ booths: _plan.booths }).eq('id', _plan.id);
@@ -4769,7 +4766,7 @@ async function initDemoMode() {
     const planSess = sessions;
     const planBooths = booths;
     const planSessIds = planSess.map(s => s.session_id);
-    const planBoothNums = planBooths.map(b => boothKey(b));
+    const planBoothNums = planBooths.map(b => String(b.stand_number));
     const teamPlanFor = (uid, problem, categories, role, sessIds, boothNums, sessRatings = {}, boothRatings = {}) => ({
       id: `demo-plan-${uid}`,
       user_id: uid,
@@ -4780,8 +4777,8 @@ async function initDemoMode() {
         .filter(s => sessIds.includes(s.session_id))
         .map(s => ({ ...s, rating: sessRatings[s.session_id] || 0 })),
       booths: (allExhibitors || [])
-        .filter(e => boothNums.includes(boothKey(e)))
-        .map(e => ({ ...e, rating: boothRatings[boothKey(e)] || 0 })),
+        .filter(e => boothNums.includes(String(e.stand_number)))
+        .map(e => ({ ...e, rating: boothRatings[String(e.stand_number)] || 0 })),
       ai_themes: [],
     });
     const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString();

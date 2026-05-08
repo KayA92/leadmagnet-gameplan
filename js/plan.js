@@ -4586,12 +4586,19 @@ async function initDemoMode() {
     const _longEnough = (s) => s.start_time && s.end_time && (_toMin(s.end_time) - _toMin(s.start_time) >= 30);
     const _isMainProgramme = (s) => /^Theatre\b/i.test(s.theatre || '') || /^Masterclasses\b/i.test(s.theatre || '');
 
-    // Group main-programme, long-enough sessions by day → slot → array
-    // of candidate sessions in that slot.
+    // Webinar-grade demo seed. Three filters running together:
+    //   1. Main-programme theatres (skip vendor stages)
+    //   2. >=30 min duration (skip showcase / case-study micro slots)
+    //   3. HIGH-VALUE TITLE — only sessions whose title pulls one of the
+    //      themes a UK accountant founder would actually attend (AI,
+    //      MTD, advisory, practice management, value pricing, growth).
+    //      Stops the Checklist showing soft 'soft skills' titles next
+    //      to the punchy AI ones.
+    const _highValue = /\b(AI|automation|MTD|tax|advisory|practice|margin|value|growth|client|profit|workflow|automate|CFO)\b/i;
     const _bySlot = {};
     for (const s of (allSessions || [])) {
       if (!s.title || !s.day || !s.start_time) continue;
-      if (!_longEnough(s) || !_isMainProgramme(s)) continue;
+      if (!_longEnough(s) || !_isMainProgramme(s) || !_highValue.test(s.title)) continue;
       const slot = `${s.day}|${s.start_time}`;
       (_bySlot[slot] = _bySlot[slot] || []).push(s);
     }
@@ -4617,11 +4624,30 @@ async function initDemoMode() {
     };
     const _demoDay1 = _pickFromSlots(_slotKeysSorted('Day 1'));
     const _demoDay2 = _pickFromSlots(_slotKeysSorted('Day 2'));
-    const sessions = [..._demoDay1, ..._demoDay2].map((s, i) => ({ ...s, rank: i + 1 }));
+    // Force a top/high match badge on every demo session. The Checklist
+    // calls matchForSession() which checks `s.match` first — pinning it
+    // here means the Checklist always shows clean TOP / HIGH pills in
+    // the demo, regardless of how the live scorer rates these picks
+    // against the synthetic answers below. First 3 → top, rest → high.
+    const sessions = [..._demoDay1, ..._demoDay2].map((s, i) => ({
+      ...s,
+      rank: i + 1,
+      match: i < 3
+        ? { bucket: 'top',  rank: i + 1 }
+        : { bucket: 'high', rank: i + 8 },
+    }));
+    // Same forced-match treatment for booths — first 2 → top, rest → high.
+    // Avoids the "neutral booth" badge in the demo.
     const booths = [...(allExhibitors || [])]
       .filter(e => e.company_name)
       .slice(0, 8)
-      .map((b, i) => ({ ...b, rank: i + 1 }));
+      .map((b, i) => ({
+        ...b,
+        rank: i + 1,
+        match: i < 2
+          ? { bucket: 'top',  rank: i + 1 }
+          : { bucket: 'high', rank: i + 4 },
+      }));
 
     _authUser    = { id: 'demo-user', email: 'demo@autoevent.io', is_anonymous: false };
     _userProfile = { first_name: 'Demo', last_name: 'User', company: 'Demo Firm Ltd' };
